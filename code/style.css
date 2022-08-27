@@ -1,0 +1,86 @@
+
+#canvasDiv {
+    /* background-color: yellow; */
+    width: 600px;
+    height: 600px;
+    float:left;
+}
+
+#rightPanel {
+    background-color: #eee;
+    width: 300px;
+    height: 600px;
+    float:left;
+}
+
+#panelTabs {
+    background-color: #ddd;
+    width: 100%;
+    /* margin: 10px; */
+    padding-top: 20px;
+}
+
+.panelTab {
+    background-color: #dd99dd;
+    min-width: 32%;
+    height: 50px;
+    border-radius: 5px;
+    font-size: 12;
+    color: #eee;
+    font-weight: bold;
+    margin-right: -5px;
+    border-radius: 0px 20px 0px 0px;
+    cursor: pointer;
+}
+
+.selectedTab {
+    background-color: #dd55dd;
+}
+
+.buttonPanel {
+    background-color: #eee;
+    width: 100%;
+    /* margin: 10px; */
+    height: 75%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panelButton {
+    background-color: #dd55dd;
+    min-width: 50px;
+    width: 100%;
+    height: 50px;
+    border-radius: 5px;
+    color: #eee;
+    font-size: 18;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+#digitPanel button {
+    font-size: 32;
+}
+
+#smallDigitPanel button {
+    font-size: 14;
+}
+
+.colorButtonLabel {
+    height: 50%;
+    width: 50%;
+    border: 2px solid rgba(240, 240, 240, 50);
+}
+
+
+
+
+#footer {
+    width: 100%;
+    font-size: 18;
+    float:left;
+}
