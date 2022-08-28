@@ -1,4 +1,12 @@
 
+#pageContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
 #canvasDiv {
     /* background-color: yellow; */
     width: 600px;
@@ -21,20 +29,22 @@
 }
 
 .panelTab {
-    background-color: #dd99dd;
-    min-width: 32%;
+    background-color: #ddd;
+    min-width: 24%;
     height: 50px;
     border-radius: 5px;
     font-size: 12;
-    color: #eee;
+    color: #222;
     font-weight: bold;
+    margin: 0;
     margin-right: -5px;
     border-radius: 0px 20px 0px 0px;
     cursor: pointer;
 }
 
 .selectedTab {
-    background-color: #dd55dd;
+    background-color: #eee;
+    border-bottom: 2px solid #eee;
 }
 
 .buttonPanel {
@@ -76,10 +86,12 @@
     border: 2px solid rgba(240, 240, 240, 50);
 }
 
+.disabledButton {
+    background-color: #aaa;
+}
 
 
-
-#footer {
+#pageFooter {
     width: 100%;
     font-size: 18;
     float:left;

@@ -77,10 +77,11 @@ const RGBA_COLORS = [
     [ 75,  75,  75, 175], // BLACK 
 ];
 
-const MODE_DIGIT = 0;
+const MODE_DIGIT  = 0;
 const MODE_PENCIL = 1;
-const MODE_COLOR = 2;
-const NUM_MODES = 3;
+const MODE_COLOR  = 2;
+const MODE_SOLVER = 3;
+const NUM_MODES   = 4;
 let editMode = MODE_DIGIT;
 
 let isSolved = false;
@@ -193,7 +194,7 @@ function draw ()
             }
 
             // Ensure digit does not conflict
-            if (isCellConflicting (i, j))
+            if (isCellConflicting (board, i, j))
             {
                 stroke (0);
                 strokeWeight (cellBorderWidth);
@@ -318,11 +319,11 @@ function draw ()
     }
 
     // check if board is solved
-    if (isBoardSolved () && !isSolved)
-    {
-        alert ("Congrats! You solved it!");
-        isSolved = true;
-    }
+    // if (isBoardSolved () && !isSolved)
+    // {
+    //     alert ("Congrats! You solved it!");
+    //     isSolved = true;
+    // }
 
 }
 
@@ -334,7 +335,7 @@ function isBoardSolved ()
 {
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
-            if (board[i][j] == 0 || isCellConflicting (i, j))
+            if (board[i][j] == 0 || isCellConflicting (board, i, j))
                 return false;
     
     // Reaches here if all numbers are filled in and there were
@@ -347,7 +348,7 @@ function isBoardSolved ()
 // return true if there is a conflict with this cell
 // by having the same digit in either the same row, col, or box.
 // returns false if there is no conflict
-function isCellConflicting (i, j)
+function isCellConflicting (board, i, j)
 {
     // check row
     for (let jj = 0; jj < 9; ++jj)
@@ -427,15 +428,15 @@ function keyPressed ()
     // switch mode
     if (key == " ")
     {
-        console.log (editMode);
         editMode = (editMode + 1) % NUM_MODES;
-        console.log (editMode);
         if (editMode == MODE_DIGIT)
             digitTab ();
         else if (editMode == MODE_PENCIL)
             smallDigitTab ();
-        else // if editMode == MODE_COLOR
+        else if (editMode == MODE_COLOR)
             colorTab ();
+        else // if (editMode == MODE_SOLVER)
+            solverTab ();
     }
 
     // delete from selected
@@ -755,10 +756,12 @@ function digitTab ()
     select ("#digitPanel")     .style ("display", "flex");
     select ("#smallDigitPanel").style ("display", "none");
     select ("#colorPanel")     .style ("display", "none");
+    select ("#solverPanel")    .style ("display", "none");
 
     select ("#digitTab")     .addClass ("selectedTab");
     select ("#smallDigitTab").removeClass ("selectedTab");
     select ("#colorTab")     .removeClass ("selectedTab");
+    select ("#solverTab")    .removeClass ("selectedTab");
 
     editMode = MODE_DIGIT;
 }
@@ -770,10 +773,12 @@ function smallDigitTab ()
     select ("#digitPanel")     .style ("display", "none");
     select ("#smallDigitPanel").style ("display", "flex");
     select ("#colorPanel")     .style ("display", "none");
+    select ("#solverPanel")    .style ("display", "none");
 
     select ("#digitTab")     .removeClass ("selectedTab");
     select ("#smallDigitTab").addClass ("selectedTab");
     select ("#colorTab")     .removeClass ("selectedTab");
+    select ("#solverTab")    .removeClass ("selectedTab");
 
     editMode = MODE_PENCIL;
 }
@@ -785,10 +790,29 @@ function colorTab ()
     select ("#digitPanel")     .style ("display", "none");
     select ("#smallDigitPanel").style ("display", "none");
     select ("#colorPanel")     .style ("display", "flex");
+    select ("#solverPanel")    .style ("display", "none");
 
     select ("#digitTab")     .removeClass ("selectedTab");
     select ("#smallDigitTab").removeClass ("selectedTab");
     select ("#colorTab")     .addClass ("selectedTab");
+    select ("#solverTab")    .removeClass ("selectedTab");
 
     editMode = MODE_COLOR;
+}
+
+//========================================================================
+
+function solverTab ()
+{
+    select ("#digitPanel")     .style ("display", "none");
+    select ("#smallDigitPanel").style ("display", "none");
+    select ("#colorPanel")     .style ("display", "none");
+    select ("#solverPanel")    .style ("display", "flex");
+
+    select ("#digitTab")     .removeClass ("selectedTab");
+    select ("#smallDigitTab").removeClass ("selectedTab");
+    select ("#colorTab")     .removeClass ("selectedTab");
+    select ("#solverTab")    .addClass ("selectedTab");
+
+    editMode = MODE_SOLVER;
 }
