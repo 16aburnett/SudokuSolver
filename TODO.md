@@ -7,6 +7,20 @@
 - coloring cells - lots of colors
 - draw lines - mutli-colored
 
+- naked pairs
+- hidden pairs
+[[4512], [6312], 345, 5643, ...]
+
+- hotkeys for tabs (zxcvbnm)
+
+- board generation
+    - generated digits should not be editable
+    - difficulty based on
+        - how many bifurcation steps needed for basic solver
+            - 0 -> Easy
+            - 10+? -> Difficult
+
+
 - undo/redo
 
 - checker to detect if there are conflicting filled in digits (ignores pencils)

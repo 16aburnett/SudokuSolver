@@ -16,7 +16,7 @@
 
 #rightPanel {
     background-color: #eee;
-    width: 300px;
+    width: 400px;
     height: 600px;
     float:left;
 }
@@ -24,22 +24,24 @@
 #panelTabs {
     background-color: #ddd;
     width: 100%;
-    /* margin: 10px; */
-    padding-top: 20px;
+    height: 60px;
+    padding-top: 5px;
+    /* border-bottom: 2px solid #222; */
 }
 
 .panelTab {
     background-color: #ddd;
-    min-width: 24%;
-    height: 50px;
+    width: 17%;
+    height: 60px;
     border-radius: 5px;
     font-size: 12;
     color: #222;
     font-weight: bold;
     margin: 0;
-    margin-right: -5px;
+    margin-right: -2px;
     border-radius: 0px 20px 0px 0px;
     cursor: pointer;
+    float: left;
 }
 
 .selectedTab {
@@ -72,17 +74,27 @@
     cursor: pointer;
 }
 
-#digitPanel button {
+button {
+    position: relative;
+}
+
+.digitButtonLabel {
     font-size: 32;
 }
 
-#smallDigitPanel button {
+.topDigitButtonLabel {
+    font-size: 14;
+    position: absolute;
+    top: 0px;
+}
+
+.smallDigitButtonLabel {
     font-size: 14;
 }
 
 .colorButtonLabel {
-    height: 50%;
-    width: 50%;
+    height: 25px;
+    width: 25px;
     border: 2px solid rgba(240, 240, 240, 50);
 }
 

@@ -4,6 +4,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.1/addons/p5.sound.min.js" integrity="sha512-WzkwpdWEMAY/W8WvP9KS2/VI6zkgejR4/KTxTl4qHx0utqeyVE0JY+S1DlMuxDChC7x0oXtk/ESji6a0lP/Tdg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <link rel="stylesheet" href="style.css">
         <script type="text/javascript" src="naiveSolver.js"></script>
+        <script type="text/javascript" src="basicSolver.js"></script>
         <script type="text/javascript" src="sketch.js"></script>
     </head>
     <body>
@@ -17,8 +18,10 @@
             <div id="rightPanel">
                 <div id="panelTabs">
                     <button class="panelTab selectedTab" id="digitTab" onclick="digitTab()">Digits</button>
+                    <button class="panelTab" id="topDigitTab" onclick="topDigitTab()">Top Digits</button>
                     <button class="panelTab" id="smallDigitTab" onclick="smallDigitTab()">Small Digits</button>
                     <button class="panelTab" id="colorTab" onclick="colorTab()">Colors</button>
+                    <button class="panelTab" id="boardTab" onclick="boardTab()">Board</button>
                     <button class="panelTab" id="solverTab" onclick="solverTab()">Solver</button>
                 </div>
                 <div>
@@ -26,35 +29,77 @@
                         <table>
                             <tr>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(1)">1</button>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(1)">1</button>
                                 </td>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(2)">2</button>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(2)">2</button>
                                 </td>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(3)">3</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(4)">4</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(5)">5</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(6)">6</button>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(3)">3</button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(7)">7</button>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(4)">4</button>
                                 </td>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(8)">8</button>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(5)">5</button>
                                 </td>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(9)">9</button>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(6)">6</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(7)">7</button>
+                                </td>
+                                <td>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(8)">8</button>
+                                </td>
+                                <td>
+                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(9)">9</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id="topDigitPanel" class="buttonPanel" style="display: none;">
+                        <table>
+                            <tr>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(1)"><div class="topDigitButtonLabel">1</div></button>
+                                </td>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(2)"><div class="topDigitButtonLabel">2</div></button>
+                                </td>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(3)"><div class="topDigitButtonLabel">3</div></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(4)"><div class="topDigitButtonLabel">4</div></button>
+                                </td>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(5)"><div class="topDigitButtonLabel">5</div></button>
+                                </td>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(6)"><div class="topDigitButtonLabel">6</div></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(7)"><div class="topDigitButtonLabel">7</div></button>
+                                </td>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(8)"><div class="topDigitButtonLabel">8</div></button>
+                                </td>
+                                <td>
+                                    <button class="panelButton" onclick="inputDigit(9)"><div class="topDigitButtonLabel">9</div></button>
                                 </td>
                             </tr>
                             <tr>
@@ -68,35 +113,35 @@
                         <table>
                             <tr>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(1)">1</button>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(1)">1</button>
                                 </td>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(2)">2</button>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(2)">2</button>
                                 </td>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(3)">3</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(4)">4</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(5)">5</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(6)">6</button>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(3)">3</button>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(7)">7</button>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(4)">4</button>
                                 </td>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(8)">8</button>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(5)">5</button>
                                 </td>
                                 <td>
-                                    <button class="panelButton" onclick="inputDigit(9)">9</button>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(6)">6</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(7)">7</button>
+                                </td>
+                                <td>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(8)">8</button>
+                                </td>
+                                <td>
+                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(9)">9</button>
                                 </td>
                             </tr>
                             <tr>
@@ -166,14 +211,70 @@
                             </tr>
                         </table>
                     </div>
+                    <div id="boardPanel" class="buttonPanel" style="display: none;">
+                        <table>
+                            <tr>
+                                <td colspan="3">Board Generation coming soon</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">(pre-made boards below)</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <button class="panelButton" id="easyBoardButton" onclick="loadEasyBoard ()" title="Easy Board">Easy Board</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <button class="panelButton" id="mediumBoardButton" onclick="loadMediumBoard ()" title="Medium Board">Medium Board</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <button class="panelButton" id="hardBoardButton" onclick="loadHardBoard ()" title="Hard Board">Hard Board</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <button class="panelButton" id="expertBoardButton" onclick="loadExpertBoard ()" title="Expert Board">Expert Board</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <button class="panelButton" id="evilBoardButton" onclick="loadEvilBoard ()" title="Evil Board">Evil Board</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                     <div id="solverPanel" class="buttonPanel" style="display: none;">
                         <table>
                             <tr>
-                                <td colspan="3">Naive Solver</td>
+                                <th colspan="3">Naive Solver (bifurcation)</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3">This may take a few seconds to solve. It places digits and backtracks if it reaches an unsolvable state</td>
                             </tr>
                             <tr>
                                 <td colspan="3">
                                     <button class="panelButton" id="naiveSolverSolveButton" onclick="naiveSolverSolve ()" title="Solve">Solve</button>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <th colspan="3">Basic Solver (as needed bifurcation)</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3">This solver first analyzes what digits are possible for a given cell and only makes decisions when it is certain of what digit must go in a position. If it cannot be certain, then bifurcation is used.</td>
+                            </tr>
+                            <tr>
+                                <td colspan="1">
+                                    <button class="panelButton" id="basicSolverPencil" onclick="basicSolverPencilDigits ()" title="Pencil Digits">Pencil Digits</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="basicSolverReduce" onclick="basicSolverReducePenciledDigits ()" title="Reduce Digits">Reduce Digits</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="basicSolverFill" onclick="basicSolverFillDigits ()" title="Fill Digits">Fill Digits</button>
                                 </td>
                             </tr>
                         </table>

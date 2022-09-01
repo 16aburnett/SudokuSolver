@@ -1,6 +1,7 @@
 // Sudoku Solver
 // By Amy Burnett
 //========================================================================
+// Globals
 
 let board = [
 //   0  1  2   3  4  5   6  7  8
@@ -51,19 +52,21 @@ let isSelecting = false;
 let isShifting = false;
 let cursorPosition = [0, 0];
 
+let topDigits = [];
+
 let pencilMarks = [];
 
 let cellColors = [];
-const COLOR_WHITE  = 0; 
-const COLOR_RED    = 1;  
-const COLOR_ORANGE = 2; 
-const COLOR_YELLOW = 3; 
-const COLOR_GREEN  = 4; 
-const COLOR_BLUE   = 5; 
-const COLOR_PURPLE = 6; 
-const COLOR_PINK   = 7; 
-const COLOR_GRAY   = 8; 
-const COLOR_BLACK  = 9; 
+const COLOR_WHITE  = 0;
+const COLOR_RED    = 1; 
+const COLOR_ORANGE = 2;
+const COLOR_YELLOW = 3;
+const COLOR_GREEN  = 4;
+const COLOR_BLUE   = 5;
+const COLOR_PURPLE = 6;
+const COLOR_PINK   = 7;
+const COLOR_GRAY   = 8;
+const COLOR_BLACK  = 9;
 const RGBA_COLORS = [
     [255, 255, 255, 175], // WHITE 
     [255,  80,  80, 175], // RED   
@@ -78,10 +81,12 @@ const RGBA_COLORS = [
 ];
 
 const MODE_DIGIT  = 0;
-const MODE_PENCIL = 1;
-const MODE_COLOR  = 2;
-const MODE_SOLVER = 3;
-const NUM_MODES   = 4;
+const MODE_TOP    = 1;
+const MODE_PENCIL = 2;
+const MODE_COLOR  = 3;
+const MODE_BOARD  = 4;
+const MODE_SOLVER = 5;
+const NUM_MODES   = 6;
 let editMode = MODE_DIGIT;
 
 let isSolved = false;
@@ -115,10 +120,15 @@ function setup ()
     for (let i = 0; i < 9; ++i)
     {
         // push row
+        topDigits  .push ([]);
         pencilMarks.push ([]);
-        cellColors.push ([]);
+        cellColors .push ([]);
         for (let j = 0; j < 9; ++j)
         {
+            // push "must" digits (top digits)
+            // digit              1 2 3 4 5 6 7 8 9
+            // index              0 1 2 3 4 5 6 7 8
+            topDigits[i]  .push ([0,0,0,0,0,0,0,0,0]);
             // push possible digits
             // digit              1 2 3 4 5 6 7 8 9
             // index              0 1 2 3 4 5 6 7 8
@@ -132,7 +142,7 @@ function setup ()
             //                      E W     E      
             // color id           1 2 3 4 5 6 7 8 9
             // index              0 1 2 3 4 5 6 7 8
-            cellColors[i].push  ([0,0,0,0,0,0,0,0,0]);
+            cellColors[i] .push ([0,0,0,0,0,0,0,0,0]);
         }
     }
 
@@ -196,6 +206,7 @@ function draw ()
             // Ensure digit does not conflict
             if (isCellConflicting (board, i, j))
             {
+                // Digit is invalid, highlight it 
                 stroke (0);
                 strokeWeight (cellBorderWidth);
                 fill (240, 70, 70, 255);
@@ -214,7 +225,6 @@ function draw ()
                 // West Line
                 line (x+selectPadding, y+selectPadding, x+selectPadding, y+cellHeight-selectPadding);
             }
-            
 
             // draw filled digit, if filled in (non-zero)
             if (board[i][j] != 0)
@@ -230,6 +240,32 @@ function draw ()
             // if digit is not filled in, draw any penciled-in digits
             else
             {
+                // top digits
+                let topDigitsStr = "";
+                for (let p = 0; p < 9; ++p)
+                {
+                    if (topDigits[i][j][p])
+                        topDigitsStr = topDigitsStr + (p+1);
+                }
+
+                // Ensure we have pencil marks
+                if (topDigitsStr.length > 0)
+                {
+                    stroke (0);
+                    strokeWeight (0);
+                    fill (0);
+                    textFont ("Courier");
+                    textAlign (CENTER, CENTER);
+                    // iteratively decrease size until it fits
+                    let strHeight = (cellHeight - 10) / 2;
+                    textSize (--strHeight);
+                    while (textWidth (topDigitsStr) >= cellWidth - 10)
+                        textSize (--strHeight);
+                    text (topDigitsStr, cellCenterX, y + ((cellHeight - 10) / 4));
+                }
+
+
+                // center pencil marks (small digits)
                 let pencilMarksStr = "";
                 for (let p = 0; p < 9; ++p)
                 {
@@ -379,6 +415,37 @@ function isCellConflicting (board, i, j)
     return false;
 }
 
+function isDigitValid (board, i, j, digit)
+{
+    // check row
+    for (let jj = 0; jj < 9; ++jj)
+    {
+        if (jj != j && board[i][jj] == digit && board[i][jj] != 0)
+            return false;
+    }
+    // check col
+    for (let ii = 0; ii < 9; ++ii)
+    {
+        if (ii != i && board[ii][j] == digit && board[ii][j] != 0)
+            return false;
+    }
+    // check box
+    let boxI = Math.floor (i / 3);
+    let boxJ = Math.floor (j / 3);
+    for (let bi = boxI * 3; bi < (boxI+1)*3; ++bi)
+    {
+        for (let bj = boxJ * 3; bj < (boxJ+1)*3; ++bj)
+        {
+            // ensure we are not looking at the same position
+            if (!(bi == i && bj == j) && board[bi][bj] == digit && board[bi][bj] != 0)
+                return false;
+        }
+    }
+
+    // reaches here if we did not find a conflict
+    return true;
+}
+
 //========================================================================
 
 function clearSelectedCells ()
@@ -386,6 +453,48 @@ function clearSelectedCells ()
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
             selectedCells[i][j] = 0;
+}
+
+function clearBoard ()
+{
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            board[i][j] = 0;
+}
+
+function clearTopDigits ()
+{
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            for (let k = 0; k < 9; ++k)
+                topDigits[i][j][k] = 0;
+}
+
+function clearPencilMarks ()
+{
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            for (let k = 0; k < 9; ++k)
+                pencilMarks[i][j][k] = 0;
+}
+
+function clearColors ()
+{
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            for (let k = 0; k < 9; ++k)
+                cellColors[i][j][k] = 0;
+}
+
+//========================================================================
+
+function getPenciledDigits (i, j)
+{
+    let penciledDigits = [];
+    for (let p = 0; p < 9; ++p)
+        if (pencilMarks[i][j][p] == 1)
+            penciledDigits.push (p+1);
+    return penciledDigits;
 }
 
 //========================================================================
@@ -428,15 +537,7 @@ function keyPressed ()
     // switch mode
     if (key == " ")
     {
-        editMode = (editMode + 1) % NUM_MODES;
-        if (editMode == MODE_DIGIT)
-            digitTab ();
-        else if (editMode == MODE_PENCIL)
-            smallDigitTab ();
-        else if (editMode == MODE_COLOR)
-            colorTab ();
-        else // if (editMode == MODE_SOLVER)
-            solverTab ();
+        cycleMode ();
     }
 
     // delete from selected
@@ -533,6 +634,13 @@ function inputDigit (digit)
                     {
                         board[i][j] = 0;
                     }
+                    else if (editMode == MODE_TOP && board[i][j] == 0)
+                    {
+                        for (let k = 0; k < 9; ++k)
+                        {
+                            topDigits[i][j][k] = 0;
+                        }
+                    }
                     else if (editMode == MODE_PENCIL && board[i][j] == 0)
                     {
                         for (let k = 0; k < 9; ++k)
@@ -565,6 +673,11 @@ function inputDigit (digit)
                     board[i][j] = digit;
                     wasChanged = true;
                 }
+                else if (editMode == MODE_TOP && board[i][j] == 0 && topDigits[i][j][digit-1] == 0)
+                {
+                    topDigits[i][j][digit-1] = 1;
+                    wasChanged = true;
+                }
                 else if (editMode == MODE_PENCIL && board[i][j] == 0 && pencilMarks[i][j][digit-1] == 0)
                 {
                     pencilMarks[i][j][digit-1] = 1;
@@ -592,6 +705,10 @@ function inputDigit (digit)
                     if (editMode == MODE_DIGIT)
                     {
                         board[i][j] = 0;
+                    }
+                    else if (editMode == MODE_TOP && board[i][j] == 0)
+                    {
+                        topDigits[i][j][digit-1] = 0;
                     }
                     else if (editMode == MODE_PENCIL && board[i][j] == 0)
                     {
@@ -751,34 +868,227 @@ function mousePositionToCell ()
 
 //========================================================================
 
-function digitTab ()
+function loadEasyBoard ()
 {
-    select ("#digitPanel")     .style ("display", "flex");
+    let newBoard = [
+    //   0  1  2   3  4  5   6  7  8
+        [4, 9, 7,  0, 3, 0,  6, 0, 0], // 0
+        [1, 0, 6,  5, 9, 0,  7, 3, 0], // 1
+        [5, 0, 3,  0, 0, 4,  0, 1, 0], // 2
+    
+        [9, 3, 1,  0, 0, 0,  0, 0, 0], // 3
+        [0, 0, 0,  0, 1, 5,  3, 4, 2], // 4
+        [0, 0, 0,  0, 0, 0,  0, 0, 0], // 5
+    
+        [0, 5, 4,  8, 0, 1,  9, 0, 6], // 6
+        [0, 1, 0,  2, 0, 6,  0, 7, 3], // 7
+        [0, 6, 0,  0, 4, 9,  8, 0, 0]  // 8
+    ];
+
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            board[i][j] = newBoard[i][j];
+    
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearPencilMarks ();
+    clearColors ();
+    
+}
+
+//========================================================================
+
+function loadMediumBoard ()
+{
+    let newBoard = [
+    //   0  1  2   3  4  5   6  7  8
+        [0, 0, 7,  0, 2, 4,  1, 0, 0], // 0
+        [3, 2, 0,  9, 0, 7,  0, 0, 8], // 1
+        [0, 0, 0,  0, 6, 0,  0, 0, 7], // 2
+    
+        [2, 5, 4,  1, 7, 8,  0, 0, 0], // 3
+        [7, 0, 0,  0, 0, 0,  0, 0, 0], // 4
+        [1, 0, 0,  0, 0, 0,  7, 8, 0], // 5
+    
+        [5, 0, 2,  0, 3, 6,  0, 0, 0], // 6
+        [0, 0, 0,  2, 5, 0,  4, 0, 3], // 7
+        [0, 3, 1,  0, 0, 0,  0, 0, 2]  // 8
+    ];
+
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            board[i][j] = newBoard[i][j];
+    
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearPencilMarks ();
+    clearColors ();
+    
+}
+
+//========================================================================
+
+function loadHardBoard ()
+{
+    let newBoard = [
+    //   0  1  2   3  4  5   6  7  8
+        [5, 3, 0,  0, 0, 9,  0, 6, 0], // 0
+        [6, 0, 9,  0, 0, 0,  1, 0, 0], // 1
+        [8, 0, 0,  0, 1, 0,  0, 0, 4], // 2
+    
+        [0, 5, 3,  0, 0, 0,  0, 0, 8], // 3
+        [0, 0, 0,  0, 4, 0,  0, 0, 0], // 4
+        [4, 0, 0,  2, 0, 8,  0, 0, 5], // 5
+    
+        [0, 7, 0,  0, 6, 0,  8, 9, 2], // 6
+        [0, 0, 0,  8, 7, 0,  0, 4, 0], // 7
+        [0, 0, 0,  0, 0, 4,  0, 7, 0]  // 8
+    ];
+
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            board[i][j] = newBoard[i][j];
+    
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearPencilMarks ();
+    clearColors ();
+    
+}
+
+//========================================================================
+
+function loadExpertBoard ()
+{
+    let newBoard = [
+    //   0  1  2   3  4  5   6  7  8
+        [0, 3, 0,  0, 0, 0,  0, 0, 9], // 0
+        [5, 0, 0,  7, 0, 4,  0, 0, 2], // 1
+        [0, 0, 0,  0, 1, 0,  0, 0, 0], // 2
+    
+        [0, 0, 9,  0, 0, 0,  7, 0, 6], // 3
+        [8, 0, 0,  0, 0, 6,  0, 0, 5], // 4
+        [0, 5, 0,  4, 0, 0,  0, 9, 0], // 5
+    
+        [0, 0, 7,  0, 6, 8,  0, 1, 0], // 6
+        [0, 1, 0,  0, 0, 0,  0, 0, 0], // 7
+        [0, 0, 0,  0, 9, 0,  0, 0, 0]  // 8
+    ];
+
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            board[i][j] = newBoard[i][j];
+    
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearPencilMarks ();
+    clearColors ();
+    
+}
+
+//========================================================================
+
+function loadEvilBoard ()
+{
+    let newBoard = [
+    //   0  1  2   3  4  5   6  7  8
+        [4, 0, 0,  0, 0, 0,  0, 0, 8], // 0
+        [0, 3, 8,  2, 0, 0,  1, 0, 0], // 1
+        [6, 0, 0,  0, 0, 3,  0, 0, 0], // 2
+    
+        [0, 1, 3,  0, 0, 9,  0, 0, 5], // 3
+        [0, 6, 0,  0, 0, 0,  0, 0, 0], // 4
+        [0, 0, 0,  4, 0, 0,  0, 9, 0], // 5
+    
+        [0, 0, 0,  0, 7, 0,  2, 0, 0], // 6
+        [8, 0, 0,  0, 0, 0,  0, 0, 0], // 7
+        [0, 9, 5,  0, 0, 4,  0, 0, 1]  // 8
+    ];
+
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            board[i][j] = newBoard[i][j];
+    
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearPencilMarks ();
+    clearColors ();
+    
+}
+
+//========================================================================
+
+function cycleMode ()
+{
+    editMode = (editMode + 1) % NUM_MODES;
+    if (editMode == MODE_DIGIT)
+        digitTab ();
+    else if (editMode == MODE_TOP)
+        topDigitTab ();
+    else if (editMode == MODE_PENCIL)
+        smallDigitTab ();
+    else if (editMode == MODE_COLOR)
+        colorTab ();
+    else if (editMode == MODE_BOARD)
+        boardTab ();
+    else if (editMode == MODE_SOLVER)
+        solverTab ();
+}
+
+//========================================================================
+
+function hideTabs ()
+{
+    select ("#digitPanel")     .style ("display", "none");
+    select ("#topDigitPanel")  .style ("display", "none");
     select ("#smallDigitPanel").style ("display", "none");
     select ("#colorPanel")     .style ("display", "none");
+    select ("#boardPanel")     .style ("display", "none");
     select ("#solverPanel")    .style ("display", "none");
 
-    select ("#digitTab")     .addClass ("selectedTab");
+    select ("#digitTab")     .removeClass ("selectedTab");
+    select ("#topDigitTab")  .removeClass ("selectedTab");
     select ("#smallDigitTab").removeClass ("selectedTab");
     select ("#colorTab")     .removeClass ("selectedTab");
+    select ("#boardTab")     .removeClass ("selectedTab");
     select ("#solverTab")    .removeClass ("selectedTab");
+}
+
+//========================================================================
+
+function digitTab ()
+{
+    hideTabs ();
+
+    select ("#digitPanel")     .style ("display", "flex");
+
+    select ("#digitTab")     .addClass ("selectedTab");
 
     editMode = MODE_DIGIT;
 }
 
 //========================================================================
 
+function topDigitTab ()
+{
+    hideTabs ();
+    
+    select ("#topDigitPanel").style ("display", "flex");
+
+    select ("#topDigitTab").addClass ("selectedTab");
+
+    editMode = MODE_TOP;
+}
+
+//========================================================================
+
 function smallDigitTab ()
 {
-    select ("#digitPanel")     .style ("display", "none");
+    hideTabs ();
+    
     select ("#smallDigitPanel").style ("display", "flex");
-    select ("#colorPanel")     .style ("display", "none");
-    select ("#solverPanel")    .style ("display", "none");
 
-    select ("#digitTab")     .removeClass ("selectedTab");
     select ("#smallDigitTab").addClass ("selectedTab");
-    select ("#colorTab")     .removeClass ("selectedTab");
-    select ("#solverTab")    .removeClass ("selectedTab");
 
     editMode = MODE_PENCIL;
 }
@@ -787,31 +1097,36 @@ function smallDigitTab ()
 
 function colorTab ()
 {
-    select ("#digitPanel")     .style ("display", "none");
-    select ("#smallDigitPanel").style ("display", "none");
+    hideTabs ();
+    
     select ("#colorPanel")     .style ("display", "flex");
-    select ("#solverPanel")    .style ("display", "none");
 
-    select ("#digitTab")     .removeClass ("selectedTab");
-    select ("#smallDigitTab").removeClass ("selectedTab");
     select ("#colorTab")     .addClass ("selectedTab");
-    select ("#solverTab")    .removeClass ("selectedTab");
 
     editMode = MODE_COLOR;
 }
 
 //========================================================================
 
+function boardTab ()
+{
+    hideTabs ();
+    
+    select ("#boardPanel")     .style ("display", "flex");
+
+    select ("#boardTab")     .addClass ("selectedTab");
+
+    editMode = MODE_BOARD;
+}
+
+//========================================================================
+
 function solverTab ()
 {
-    select ("#digitPanel")     .style ("display", "none");
-    select ("#smallDigitPanel").style ("display", "none");
-    select ("#colorPanel")     .style ("display", "none");
+    hideTabs ();
+    
     select ("#solverPanel")    .style ("display", "flex");
 
-    select ("#digitTab")     .removeClass ("selectedTab");
-    select ("#smallDigitTab").removeClass ("selectedTab");
-    select ("#colorTab")     .removeClass ("selectedTab");
     select ("#solverTab")    .addClass ("selectedTab");
 
     editMode = MODE_SOLVER;
