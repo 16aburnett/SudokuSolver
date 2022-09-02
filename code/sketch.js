@@ -33,6 +33,15 @@ let boxBorderWidth = 4;
 let selectBorderWidth = 6;
 let selectBorderPadding = 3;
 
+// Color Theme
+let isDarkMode = false;
+let boardBackgroundColor;
+let digitColor;
+let borderColor;
+// let selectionColor = [50, 50, 200, 220];
+let selectionBorderColor = [50, 255, 255, 220];
+let cursorBorderColor =    [250, 255, 50, 220];
+
 let selectedCells = [
 //   0  1  2   3  4  5   6  7  8
     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 0
@@ -98,11 +107,128 @@ let history = [];
 
 //========================================================================
 
+const DARKMODE_BACKGROUND0 = "#000";
+const DARKMODE_BACKGROUND1 = "#111";
+const DARKMODE_BACKGROUND2 = "#222";
+
+const DARKMODE_FOREGROUND0 = "#eee";
+const DARKMODE_FOREGROUND1 = "#ddd";
+
+function setDarkMode ()
+{
+    boardBackgroundColor = DARKMODE_BACKGROUND0;
+    digitColor = DARKMODE_FOREGROUND0;
+    borderColor = DARKMODE_FOREGROUND0;
+    select ("body").style ("background-color", DARKMODE_BACKGROUND0);
+    select ("body").style ("color", DARKMODE_FOREGROUND0);
+    select ("button").style ("color", DARKMODE_FOREGROUND0);
+
+    select ("#rightPanel").style ("background-color", DARKMODE_BACKGROUND0);
+    select ("#panelTabs").style ("background-color", DARKMODE_BACKGROUND0);
+    for (let tab of selectAll (".panelTab"))
+    {
+        tab.style ("background-color", DARKMODE_BACKGROUND0);
+        tab.style ("color", DARKMODE_FOREGROUND0);
+        tab.style ("border", `2px solid ${DARKMODE_FOREGROUND0}`);
+    }
+    for (let tab of selectAll (".selectedTab"))
+    {
+        tab.style ("background-color", DARKMODE_BACKGROUND2);
+        tab.style ("border-bottom", `2px solid ${DARKMODE_BACKGROUND2}`);
+    }
+    for (let tab of selectAll (".buttonPanel"))
+    {
+        tab.style ("background-color", DARKMODE_BACKGROUND2);
+    }
+    for (let element of selectAll (".color-foreground0"))
+    {
+        element.style ("color", DARKMODE_FOREGROUND0);
+    }
+
+    selectionBorderColor = [50, 255, 255, 220];
+    cursorBorderColor =    [250, 255, 50, 220];
+    
+    // change button
+    select ("#darkModeBtn").html ("Light Mode");
+    select ("#darkModeBtn").style ("background-color", DARKMODE_FOREGROUND0);
+    select ("#darkModeBtn").style ("color", DARKMODE_BACKGROUND0);
+}
+
+//========================================================================
+
+const LIGHTMODE_BACKGROUND0 = "#fff";
+const LIGHTMODE_BACKGROUND1 = "#eee";
+const LIGHTMODE_BACKGROUND2 = "#ddd";
+
+const LIGHTMODE_FOREGROUND0 = "#111";
+const LIGHTMODE_FOREGROUND1 = "#222";
+
+function setLightMode ()
+{
+    boardBackgroundColor = LIGHTMODE_BACKGROUND0;
+    digitColor = LIGHTMODE_FOREGROUND0;
+    borderColor = LIGHTMODE_FOREGROUND0;
+    select ("body").style ("background-color", LIGHTMODE_BACKGROUND0);
+    select ("body").style ("color", LIGHTMODE_FOREGROUND0);
+    select ("button").style ("color", LIGHTMODE_FOREGROUND0);
+
+    select ("#rightPanel").style ("background-color", LIGHTMODE_BACKGROUND0);
+    select ("#panelTabs").style ("background-color", LIGHTMODE_BACKGROUND0);
+    for (let tab of selectAll (".panelTab"))
+    {
+        tab.style ("background-color", LIGHTMODE_BACKGROUND0);
+        tab.style ("color", LIGHTMODE_FOREGROUND0);
+        tab.style ("border", `2px solid ${LIGHTMODE_FOREGROUND0}`);
+    }
+    for (let tab of selectAll (".selectedTab"))
+    {
+        tab.style ("background-color", LIGHTMODE_BACKGROUND2);
+        tab.style ("border-bottom", `2px solid ${LIGHTMODE_BACKGROUND2}`);
+    }
+    for (let tab of selectAll (".buttonPanel"))
+    {
+        tab.style ("background-color", LIGHTMODE_BACKGROUND2);
+    }
+    for (let element of selectAll (".color-foreground0"))
+    {
+        element.style ("color", LIGHTMODE_FOREGROUND0);
+    }
+
+    selectionBorderColor = [50, 50, 200, 220];
+    cursorBorderColor =    [50, 255, 50, 220];
+
+    // change button
+    select ("#darkModeBtn").html ("Dark Mode");
+    select ("#darkModeBtn").style ("background-color", LIGHTMODE_FOREGROUND0);
+    select ("#darkModeBtn").style ("color", LIGHTMODE_BACKGROUND0);
+}
+
+//========================================================================
+
+function toggleLightAndDark ()
+{
+    isDarkMode = ! isDarkMode;
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+}
+
+//========================================================================
+
 function setup ()
 {
+    // darkmode setup
+    if (isDarkMode)
+    {
+        setDarkMode ();
+    }
+    // lightmode setup
+    else
+    {
+        setLightMode ();
+    }
+
     let canvas = createCanvas (600, 600);
     canvas.parent ("#canvasDiv");
-    background (240);
+    background (boardBackgroundColor);
 
     let padding = 10;
 
@@ -163,7 +289,7 @@ function setup ()
 
 function draw ()
 {
-    background (240);
+    background (boardBackgroundColor);
 
     // draw each cell
     for (let i = 0; i < 9; ++i)
@@ -177,9 +303,9 @@ function draw ()
             let cellCenterY = y + cellHeight / 2;
 
             // draw cell
-            stroke (0);
+            stroke (borderColor);
             strokeWeight (cellBorderWidth);
-            fill (255);
+            noFill ();
             rect (x, y, cellWidth, cellHeight);
 
             // add cell color - if exists
@@ -229,9 +355,8 @@ function draw ()
             // draw filled digit, if filled in (non-zero)
             if (board[i][j] != 0)
             {
-                stroke (0);
-                strokeWeight (1);
-                fill (0);
+                noStroke ();
+                fill (digitColor);
                 textFont ("Courier");
                 textAlign (CENTER, CENTER);
                 textSize (cellHeight);
@@ -251,9 +376,8 @@ function draw ()
                 // Ensure we have pencil marks
                 if (topDigitsStr.length > 0)
                 {
-                    stroke (0);
-                    strokeWeight (0);
-                    fill (0);
+                    noStroke ();
+                    fill (digitColor);
                     textFont ("Courier");
                     textAlign (CENTER, CENTER);
                     // iteratively decrease size until it fits
@@ -276,9 +400,9 @@ function draw ()
                 // Ensure we have pencil marks
                 if (pencilMarksStr.length > 0)
                 {
-                    stroke (0);
+                    stroke (digitColor);
                     strokeWeight (1);
-                    fill (0);
+                    fill (digitColor);
                     textFont ("Courier");
                     textAlign (CENTER, CENTER);
                     // iteratively decrease size until it fits
@@ -299,7 +423,7 @@ function draw ()
         for (let j = 0; j < 3; ++j)
         {
             let x = boardX + j * boxHeight;
-            stroke (0);
+            stroke (borderColor);
             strokeWeight (boxBorderWidth);
             noFill ();
             rect (x, y, boxWidth, boxHeight);
@@ -320,10 +444,10 @@ function draw ()
                 let isCursorPosition = i == cursorPosition[0] && j == cursorPosition[1];
                 // cursor position gets a different color
                 if (isCursorPosition)
-                    stroke (50, 200, 50, 220);
+                    stroke (cursorBorderColor);
                 // normal selected color - not cursor's position
                 else
-                    stroke (50, 50, 200, 220);
+                    stroke (selectionBorderColor);
                 strokeWeight (selectBorderWidth);
                 noFill ();
                 let selectPadding = selectBorderPadding;
@@ -1064,6 +1188,8 @@ function digitTab ()
 
     select ("#digitTab")     .addClass ("selectedTab");
 
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
     editMode = MODE_DIGIT;
 }
 
@@ -1076,6 +1202,8 @@ function topDigitTab ()
     select ("#topDigitPanel").style ("display", "flex");
 
     select ("#topDigitTab").addClass ("selectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
 
     editMode = MODE_TOP;
 }
@@ -1089,6 +1217,8 @@ function smallDigitTab ()
     select ("#smallDigitPanel").style ("display", "flex");
 
     select ("#smallDigitTab").addClass ("selectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
 
     editMode = MODE_PENCIL;
 }
@@ -1102,6 +1232,8 @@ function colorTab ()
     select ("#colorPanel")     .style ("display", "flex");
 
     select ("#colorTab")     .addClass ("selectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
 
     editMode = MODE_COLOR;
 }
@@ -1115,6 +1247,8 @@ function boardTab ()
     select ("#boardPanel")     .style ("display", "flex");
 
     select ("#boardTab")     .addClass ("selectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
 
     editMode = MODE_BOARD;
 }
@@ -1128,6 +1262,8 @@ function solverTab ()
     select ("#solverPanel")    .style ("display", "flex");
 
     select ("#solverTab")    .addClass ("selectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
 
     editMode = MODE_SOLVER;
 }

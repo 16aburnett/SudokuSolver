@@ -56,7 +56,6 @@ function basicSolverPencilDigits ()
 
 function basicSolverReducePenciledDigits ()
 {
-    editMode = MODE_PENCIL;
     // clear previous selections
     clearSelectedCells ();
 
@@ -79,8 +78,11 @@ function basicSolverReducePenciledDigits ()
 
 //========================================================================
 
+// reduces pencil marks if a digit only has one possible location in a row
 function reduceRows ()
 {
+    editMode = MODE_PENCIL;
+
     let hasChanged = false;
     for (let i = 0; i < 9; ++i)
     {
@@ -113,13 +115,17 @@ function reduceRows ()
             }
         }
     }
+    editMode = MODE_SOLVER;
     return hasChanged;
 }
 
 //========================================================================
 
+// reduces pencil marks if a digit only has one possible location in a column
 function reduceColumns ()
 {
+    editMode = MODE_PENCIL;
+
     let hasChanged = false;
     for (let j = 0; j < 9; ++j)
     {
@@ -152,13 +158,17 @@ function reduceColumns ()
             }
         }
     }
+    editMode = MODE_SOLVER;
     return hasChanged;
 }
 
 //========================================================================
 
+// reduces pencil marks if a digit only has one possible location in a box
 function reduceBoxes ()
 {
+    editMode = MODE_PENCIL;
+
     let hasChanged = false;
 
     for (let boxi = 0; boxi < 3; ++boxi)
@@ -201,7 +211,7 @@ function reduceBoxes ()
             }
         }
     }
-
+    editMode = MODE_SOLVER;
     return hasChanged;
 }
 
@@ -209,7 +219,20 @@ function reduceBoxes ()
 
 function isolatePairs ()
 {
+    isolatePairsInRows ();
+    isolatePairsInColumns ();
+    isolatePairsInBoxes ();
+}
+
+// searches for naked pairs of digits and isolates them 
+// by removing the pair's digits from the pair's common group 
+// whether that is a row, column or box
+function isolatePairsInRows ()
+{
+    editMode = MODE_PENCIL;
+
     clearColors ();
+
     // row pairs
     for (let i = 0; i < 9; ++i)
     {
@@ -256,7 +279,15 @@ function isolatePairs ()
             }
         }
     }
+    editMode = MODE_SOLVER;
+    return true;
+}
 
+function isolatePairsInColumns ()
+{
+    editMode = MODE_PENCIL;
+
+    clearColors ();
     // column pairs
     // blue
     for (let j = 0; j < 9; ++j)
@@ -304,7 +335,16 @@ function isolatePairs ()
             }
         }
     }
+    editMode = MODE_SOLVER;
+    return true;
+}
 
+
+function isolatePairsInBoxes ()
+{
+    editMode = MODE_PENCIL;
+
+    clearColors ();
     // box pairs
     // pink
     for (let boxi = 0; boxi < 3; ++boxi)
@@ -365,7 +405,8 @@ function isolatePairs ()
             }
         }
     }
-
+    editMode = MODE_SOLVER;
+    return true;
 }
 
 
