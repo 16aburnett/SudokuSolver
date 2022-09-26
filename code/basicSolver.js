@@ -14,7 +14,42 @@
 
 // 4, repeat
 
+//========================================================================
 
+// applies multiple sudoku solving techniques in order to attempt to solve
+// the current sudoku.
+function basicSolverSolve ()
+{
+    while (true)
+    {
+        // save previous board state to check for changes
+        let prevBoard = [];
+        for (let i = 0; i < 9; ++i)
+        {
+            prevBoard.push ([]);
+            for (let j = 0; j < 9; ++j)
+            {
+                prevBoard[i].push (board[i][j]);
+            }
+        }
+
+        basicSolverPencilDigits ();
+
+        for (let i = 0; i < 10; ++i)
+            basicSolverReducePenciledDigits ();
+
+        basicSolverFillDigits ();
+
+        // stop repeating if we are not making progress
+        let hasChanged = false;
+        for (let i = 0; i < 9; ++i)
+            for (let j = 0; j < 9; ++j)
+                if (prevBoard[i][j] != board[i][j])
+                    hasChanged = true;
+        if (!hasChanged) break;
+    }
+
+}
 
 //========================================================================
 
@@ -23,6 +58,7 @@ function basicSolverPencilDigits ()
     editMode = MODE_PENCIL;
     // clear previous selections
     clearSelectedCells ();
+    clearTopDigits ();
     clearColors ();
 
     for (let i = 0; i < 9; ++i)
@@ -73,6 +109,10 @@ function basicSolverReducePenciledDigits ()
 
     isolatePairs ();
 
+    isolateHiddenPairs ();
+
+    fillMustDigits ();
+
     editMode = MODE_SOLVER;
 }
 
@@ -83,6 +123,8 @@ function basicSolverFillDigits ()
     editMode = MODE_DIGIT;
     // clear previous selections
     clearSelectedCells ();
+    clearTopDigits ();
+    clearColors ();
 
     for (let i = 0; i < 9; ++i)
     {
@@ -122,6 +164,10 @@ function basicSolverFillDigits ()
 function reduceRows ()
 {
     editMode = MODE_PENCIL;
+
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearColors ();
 
     let hasChanged = false;
     for (let i = 0; i < 9; ++i)
@@ -167,6 +213,10 @@ function reduceColumns ()
 {
     editMode = MODE_PENCIL;
 
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearColors ();
+
     let hasChanged = false;
     for (let j = 0; j < 9; ++j)
     {
@@ -210,6 +260,10 @@ function reduceColumns ()
 function reduceBoxes ()
 {
     editMode = MODE_PENCIL;
+
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearColors ();
 
     let hasChanged = false;
 
@@ -275,6 +329,8 @@ function isolatePairsInRows ()
 {
     editMode = MODE_PENCIL;
 
+    clearSelectedCells ();
+    clearTopDigits ();
     clearColors ();
 
     // row pairs
@@ -295,8 +351,8 @@ function isolatePairsInRows ()
                     if (penciledDigitsk.length == 2 && penciledDigitsj[0] == penciledDigitsk[0] && penciledDigitsj[1] == penciledDigitsk[1])
                     {
                         // found a pair!
-                        cellColors[i][j][COLOR_RED-1] = 1;
-                        cellColors[i][k][COLOR_RED-1] = 1;
+                        cellColors[i][j][COLOR_GREEN-1] = 1;
+                        cellColors[i][k][COLOR_GREEN-1] = 1;
                         // since this pair exists, we know that neither of these digits
                         // can appear in other cells in this row
                         // so lets remove any pencilmarks
@@ -313,7 +369,7 @@ function isolatePairsInRows ()
                                     {
                                         pencilMarks[i][jj][penciledDigitsj[x]-1] = 0;
                                         // highlight this cell to be sure
-                                        cellColors[i][jj][COLOR_PURPLE-1] = 1;
+                                        cellColors[i][jj][COLOR_RED-1] = 1;
                                     }
                                 }
                             }
@@ -333,7 +389,10 @@ function isolatePairsInColumns ()
 {
     editMode = MODE_PENCIL;
 
+    clearSelectedCells ();
+    clearTopDigits ();
     clearColors ();
+
     // column pairs
     // blue
     for (let j = 0; j < 9; ++j)
@@ -371,7 +430,7 @@ function isolatePairsInColumns ()
                                     {
                                         pencilMarks[ii][j][penciledDigitsi[x]-1] = 0;
                                         // highlight this cell to be sure
-                                        cellColors[ii][j][COLOR_PINK-1] = 1;
+                                        cellColors[ii][j][COLOR_RED-1] = 1;
                                     }
                                 }
                             }
@@ -391,7 +450,10 @@ function isolatePairsInBoxes ()
 {
     editMode = MODE_PENCIL;
 
+    clearSelectedCells ();
+    clearTopDigits ();
     clearColors ();
+
     // box pairs
     // pink
     for (let boxi = 0; boxi < 3; ++boxi)
@@ -418,8 +480,8 @@ function isolatePairsInBoxes ()
                                 if (!(i==k&&j==l) && penciledDigitskl.length == 2 && penciledDigitsij[0] == penciledDigitskl[0] && penciledDigitsij[1] == penciledDigitskl[1])
                                 {
                                     // found a pair!
-                                    cellColors[i][j][COLOR_BLUE-1] = 1;
-                                    cellColors[k][l][COLOR_BLUE-1] = 1;
+                                    cellColors[i][j][COLOR_GREEN-1] = 1;
+                                    cellColors[k][l][COLOR_GREEN-1] = 1;
                                     // since this pair exists, we know that neither of these digits
                                     // can appear in other cells in this box
                                     // so lets remove any pencilmarks
@@ -438,7 +500,7 @@ function isolatePairsInBoxes ()
                                                     {
                                                         pencilMarks[ii][jj][penciledDigitsij[x]-1] = 0;
                                                         // highlight this cell to be sure
-                                                        cellColors[ii][jj][COLOR_YELLOW-1] = 1;
+                                                        cellColors[ii][jj][COLOR_RED-1] = 1;
                                                     }
                                                 }
                                             }
@@ -454,6 +516,15 @@ function isolatePairsInBoxes ()
     }
     editMode = MODE_SOLVER;
     return true;
+}
+
+//========================================================================
+
+function isolateHiddenPairs ()
+{
+    isolateHiddenPairsInRows ();
+    isolateHiddenPairsInColumns ();
+    isolateHiddenPairsInBoxes ();
 }
 
 //========================================================================
@@ -518,14 +589,21 @@ function isolateHiddenPairsInRows ()
             for (let jj = j+1; jj < 9; ++jj)
             {
                 // ignore if cell is alread filled in
-                if (board[i][j] != 0) continue;
+                if (board[i][jj] != 0) continue;
 
                 let digits1 = getTopDigits (i,jj);
                 // ignore if not a pair
                 if (digits1.length != 2) continue;
                 // ensure pairs match
                 if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
-                // pairs match so isolate them
+                // reaches here if pairs match
+
+                // ignore if cells are naked pairs already
+                // this is not necessary
+                // this is just so we only color the cells if there is a change to note
+                if (getPenciledDigits(i,j).length == 2 && getPenciledDigits(i,jj).length == 2) break;
+
+                // pairs match and are not naked pairs so make them naked pairs
                 // aka remove other penciled digits from these cells
 
                 // clear all pencil marks
@@ -550,6 +628,425 @@ function isolateHiddenPairsInRows ()
 
     editMode = MODE_SOLVER;
     return true;
+}
+
+//========================================================================
+
+// searches for hidden pairs of digits and isolates them 
+// by removing other penciled digits from the pair's cells
+function isolateHiddenPairsInColumns ()
+{
+    editMode = MODE_PENCIL;
+
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearColors ();
+
+    // for each column
+    for (let j = 0; j < 9; ++j)
+    {
+        // we need two digits that mutually occupy the same two cells in the same column
+        // lets start with finding a digit that occupies only two cells
+        for (let d0 = 1; d0 <= 9; ++d0)
+        {
+            // find possible positions of this digit in this column
+            let isAlreadyFilledIn = false;
+            let possibleLocationsI = [];
+            for (let i = 0; i < 9; ++i)
+            {
+                // this is a possible location
+                // if d0 is penciled here
+                if (pencilMarks[i][j][d0-1] == 1 && board[i][j] == 0)
+                    possibleLocationsI.push (i);
+
+                // we can also ignore if d0 was already filled in this column
+                if (board[i][j] == d0) 
+                {
+                    isAlreadyFilledIn = true;
+                    break;
+                }
+            }
+            // ensure digit wasnt already filled in
+            if (isAlreadyFilledIn) continue;
+            // ensure this digit has exactly 2 valid locations (to make a pair)
+            if (possibleLocationsI.length != 2) continue;
+            // reaches here if this digit can only go in 2 locations in this column
+            // highlight those two positions
+            // cellColors[possibleLocationsI[0]][j][COLOR_BLUE-1] = 1;
+            // cellColors[possibleLocationsI[1]][j][COLOR_BLUE-1] = 1;
+            // mark the digit
+            topDigits[possibleLocationsI[0]][j][d0-1] = 1;
+            topDigits[possibleLocationsI[1]][j][d0-1] = 1;
+            // we will use the digit marks to determine if two digits occupy the same two cells
+        }
+        // search for two cells with the same digit pair
+        for (let i = 0; i < 9; ++i)
+        {
+            // ignore if cell is already filled in
+            if (board[i][j] != 0) continue;
+
+            let digits0 = getTopDigits (i,j);
+            // ignore if not a pair
+            if (digits0.length != 2) continue;
+            // look for another pair that matches
+            for (let ii = i+1; ii < 9; ++ii)
+            {
+                // ignore if cell is already filled in
+                if (board[ii][j] != 0) continue;
+
+                let digits1 = getTopDigits (ii,j);
+                // ignore if not a pair
+                if (digits1.length != 2) continue;
+                // ensure pairs match
+                if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
+                // reaches here if pairs match
+
+                // ignore if cells are naked pairs already
+                // this is not necessary
+                // this is just so we only color the cells if there is a change to note
+                if (getPenciledDigits(i,j).length == 2 && getPenciledDigits(ii,j).length == 2) break;
+
+                // pairs match so isolate them
+                // aka remove other penciled digits from these cells
+
+                // clear all pencil marks
+                for (let d = 1; d <= 9; ++d)
+                {
+                    pencilMarks[i ][j][d-1] = 0;
+                    pencilMarks[ii][j][d-1] = 0;
+                }
+
+                // pencil only the pair digits
+                pencilMarks[i ][j][digits0[0]-1] = 1;
+                pencilMarks[ii][j][digits0[0]-1] = 1;
+                pencilMarks[i ][j][digits1[1]-1] = 1;
+                pencilMarks[ii][j][digits1[1]-1] = 1;
+
+                // highlight isolated cells
+                cellColors[i ][j][COLOR_GREEN-1] = 1;
+                cellColors[ii][j][COLOR_GREEN-1] = 1;
+            } 
+        }
+    }
+
+    editMode = MODE_SOLVER;
+    return true;
+}
+
+//========================================================================
+
+// searches for hidden pairs of digits and isolates them 
+// by removing other penciled digits from the pair's cells
+function isolateHiddenPairsInBoxes ()
+{
+    // editMode = MODE_PENCIL;
+
+    // clearSelectedCells ();
+    // clearTopDigits ();
+    // clearColors ();
+
+    // for each column
+    // for (let j = 0; j < 9; ++j)
+    // {
+    //     // we need two digits that mutually occupy the same two cells in the same column
+    //     // lets start with finding a digit that occupies only two cells
+    //     for (let d0 = 1; d0 <= 9; ++d0)
+    //     {
+    //         // find possible positions of this digit in this column
+    //         let isAlreadyFilledIn = false;
+    //         let possibleLocationsI = [];
+    //         for (let i = 0; i < 9; ++i)
+    //         {
+    //             // this is a possible location
+    //             // if d0 is penciled here
+    //             if (pencilMarks[i][j][d0-1] == 1 && board[i][j] == 0)
+    //                 possibleLocationsI.push (i);
+
+    //             // we can also ignore if d0 was already filled in this column
+    //             if (board[i][j] == d0) 
+    //             {
+    //                 isAlreadyFilledIn = true;
+    //                 break;
+    //             }
+    //         }
+    //         // ensure digit wasnt already filled in
+    //         if (isAlreadyFilledIn) continue;
+    //         // ensure this digit has exactly 2 valid locations (to make a pair)
+    //         if (possibleLocationsI.length != 2) continue;
+    //         // reaches here if this digit can only go in 2 locations in this column
+    //         // highlight those two positions
+    //         // cellColors[possibleLocationsI[0]][j][COLOR_BLUE-1] = 1;
+    //         // cellColors[possibleLocationsI[1]][j][COLOR_BLUE-1] = 1;
+    //         // mark the digit
+    //         topDigits[possibleLocationsI[0]][j][d0-1] = 1;
+    //         topDigits[possibleLocationsI[1]][j][d0-1] = 1;
+    //         // we will use the digit marks to determine if two digits occupy the same two cells
+    //     }
+    //     // search for two cells with the same digit pair
+    //     for (let i = 0; i < 9; ++i)
+    //     {
+    //         // ignore if cell is already filled in
+    //         if (board[i][j] != 0) continue;
+
+    //         let digits0 = getTopDigits (i,j);
+    //         // ignore if not a pair
+    //         if (digits0.length != 2) continue;
+    //         // look for another pair that matches
+    //         for (let ii = i+1; ii < 9; ++ii)
+    //         {
+    //             // ignore if cell is already filled in
+    //             if (board[ii][j] != 0) continue;
+
+    //             let digits1 = getTopDigits (ii,j);
+    //             // ignore if not a pair
+    //             if (digits1.length != 2) continue;
+    //             // ensure pairs match
+    //             if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
+    //             // reaches here if pairs match
+
+    //             // ignore if cells are naked pairs already
+    //             // this is not necessary
+    //             // this is just so we only color the cells if there is a change to note
+    //             if (getPenciledDigits(i,j).length == 2 && getPenciledDigits(ii,j).length == 2) break;
+
+    //             // pairs match so isolate them
+    //             // aka remove other penciled digits from these cells
+
+    //             // clear all pencil marks
+    //             for (let d = 1; d <= 9; ++d)
+    //             {
+    //                 pencilMarks[i ][j][d-1] = 0;
+    //                 pencilMarks[ii][j][d-1] = 0;
+    //             }
+
+    //             // pencil only the pair digits
+    //             pencilMarks[i ][j][digits0[0]-1] = 1;
+    //             pencilMarks[ii][j][digits0[0]-1] = 1;
+    //             pencilMarks[i ][j][digits1[1]-1] = 1;
+    //             pencilMarks[ii][j][digits1[1]-1] = 1;
+
+    //             // highlight isolated cells
+    //             cellColors[i ][j][COLOR_GREEN-1] = 1;
+    //             cellColors[ii][j][COLOR_GREEN-1] = 1;
+    //         } 
+    //     }
+    // }
+
+    // editMode = MODE_SOLVER;
+    return true;
+}
+
+//========================================================================
+
+function fillMustDigits ()
+{
+    fillMustDigitInRow ();
+    fillMustDigitInColumn ();
+    fillMustDigitInBox ();
+}
+
+//========================================================================
+
+// determines a set of cells where each digit must go in a row
+// if the only possible positions for a digit in a row lie in the same box,
+// then we know that digit must go in those cells so we call that a "must" digit for those cells
+// and we can then eliminate that digit from other cells in that box
+function fillMustDigitInRow ()
+{
+    editMode = MODE_COLOR;
+
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearColors ();
+
+    // check each digit
+    for (let d = 1; d <= 9; ++d)
+    {
+        // check each row
+        for (let i = 0; i < 9; ++i)
+        {
+            let alreadyFilledIn = false;
+            // where can d go in this box?
+            let possibleLocationsJ = [];
+            // check each column 
+            for (let j = 0; j < 9; ++j)
+            {
+                // check if this is a valid position for this digit
+                if (pencilMarks[i][j][d-1] && board[i][j] == 0)
+                {
+                    possibleLocationsJ.push (j);
+                }
+                // ignore digit if it is already filled-in the box
+                if (board[i][j] == d) alreadyFilledIn = true;
+            }
+            // ignore this row if digit is already filled in
+            if (alreadyFilledIn) continue;
+            // ensure digit has valid positions
+            if (possibleLocationsJ.length == 0) continue;
+            // ensure possible locations are in a single box
+            let isInSameBox = true;
+            let boxi = Math.floor(i / 3);
+            let boxj = Math.floor(possibleLocationsJ[0] / 3);
+            for (let j = 0; j < possibleLocationsJ.length; ++j)
+            {
+                let boxjj = Math.floor(possibleLocationsJ[j] / 3);
+                if (boxjj != boxj)
+                    isInSameBox = false;
+            }
+            if (!isInSameBox) continue;
+            // each possible location is in the same box
+            // we can remove this digit from non-intersecting cells in the box
+            let hasReduced = false;
+            for (let ii = boxi*3; ii < (boxi+1)*3; ++ii)
+            {
+                for (let jj = boxj*3; jj < (boxj+1)*3; ++jj)
+                {
+                    // highlight cells from the same box
+                    // cellColors[ii][jj][COLOR_PURPLE-1] = 1;
+                    // ensure it is not an intersecting cell
+                    let isIntersectingCell = false;
+                    for (let j = 0; j < possibleLocationsJ.length; ++j)
+                        if (jj == possibleLocationsJ[j] && i == ii)
+                            isIntersectingCell = true;
+                    if (isIntersectingCell) continue;
+                    // this cell is not one of the intersecting cells
+                    // ensure the digit is penciled in, to highlight and remove it
+                    if (pencilMarks[ii][jj][d-1] != 1) continue;
+                    cellColors[ii][jj][COLOR_RED-1] = 1;
+                    // remove digit
+                    pencilMarks[ii][jj][d-1] = 0;
+                    // we removed a digit so we have reduced
+                    hasReduced = true;
+                }
+            }
+            // highlight intersecting cells that caused the reduction
+            // if there was a reduction
+            if (hasReduced)
+            {
+                // highlight row
+                for (let j = 0; j < 9; ++j)
+                {
+                    // ensure it isnt one of intersecting cells
+                    if (possibleLocationsJ.includes(j)) continue;
+                    cellColors[i][j][COLOR_YELLOW-1] = 1;
+                }
+
+                // highlight intersecting cells
+                for (let j = 0; j < possibleLocationsJ.length; ++j)
+                {
+                    // highlight cell
+                    editMode = MODE_COLOR;
+                    cellColors[i][possibleLocationsJ[j]][COLOR_GREEN-1] = 1;
+                    // use top digits to denote which digit
+                    topDigits[i][possibleLocationsJ[j]][d-1] = 1;
+                }
+            }
+        }
+    }
+
+    editMode = MODE_SOLVER;
+}
+
+//========================================================================
+
+// determines a set of cells where each digit must go in a column
+// if the only possible positions for a digit in a column lie in the same box,
+// then we know that digit must go in those cells so we call that a "must" digit for those cells
+// and we can then eliminate that digit from other cells in that box
+function fillMustDigitInColumn ()
+{
+    // editMode = MODE_COLOR;
+
+    // clearSelectedCells ();
+    // clearTopDigits ();
+    // clearColors ();
+
+    // // check each digit
+    // for (let d = 1; d <= 9; ++d)
+    // {
+    //     // check each row
+    //     for (let i = 0; i < 9; ++i)
+    //     {
+    //         let alreadyFilledIn = false;
+    //         // where can d go in this box?
+    //         let possibleLocationsJ = [];
+    //         // check each column 
+    //         for (let j = 0; j < 9; ++j)
+    //         {
+    //             // check if this is a valid position for this digit
+    //             if (pencilMarks[i][j][d-1] && board[i][j] == 0)
+    //             {
+    //                 possibleLocationsJ.push (j);
+    //             }
+    //             // ignore digit if it is already filled-in the box
+    //             if (board[i][j] == d) alreadyFilledIn = true;
+    //         }
+    //         // ignore this row if digit is already filled in
+    //         if (alreadyFilledIn) continue;
+    //         // ensure digit has valid positions
+    //         if (possibleLocationsJ.length == 0) continue;
+    //         // ensure possible locations are in a single box
+    //         let isInSameBox = true;
+    //         let boxi = Math.floor(i / 3);
+    //         let boxj = Math.floor(possibleLocationsJ[0] / 3);
+    //         for (let j = 0; j < possibleLocationsJ.length; ++j)
+    //         {
+    //             let boxjj = Math.floor(possibleLocationsJ[j] / 3);
+    //             if (boxjj != boxj)
+    //                 isInSameBox = false;
+    //         }
+    //         if (!isInSameBox) continue;
+    //         // each possible location is in the same box
+    //         // we can remove this digit from non-intersecting cells in the box
+    //         let hasReduced = false;
+    //         for (let ii = boxi*3; ii < (boxi+1)*3; ++ii)
+    //         {
+    //             for (let jj = boxj*3; jj < (boxj+1)*3; ++jj)
+    //             {
+    //                 // highlight cells from the same box
+    //                 // cellColors[ii][jj][COLOR_PURPLE-1] = 1;
+    //                 // ensure it is not an intersecting cell
+    //                 let isIntersectingCell = false;
+    //                 for (let j = 0; j < possibleLocationsJ.length; ++j)
+    //                     if (jj == possibleLocationsJ[j] && i == ii)
+    //                         isIntersectingCell = true;
+    //                 if (isIntersectingCell) continue;
+    //                 // this cell is not one of the intersecting cells
+    //                 // ensure the digit is penciled in, to highlight and remove it
+    //                 if (pencilMarks[ii][jj][d-1] != 1) continue;
+    //                 cellColors[ii][jj][COLOR_RED-1] = 1;
+    //                 // remove digit
+    //                 pencilMarks[ii][jj][d-1] = 0;
+    //                 // we removed a digit so we have reduced
+    //                 hasReduced = true;
+    //             }
+    //         }
+    //         // highlight intersecting cells that caused the reduction
+    //         // if there was a reduction
+    //         if (hasReduced)
+    //         {
+    //             // highlight row
+    //             for (let j = 0; j < 9; ++j)
+    //             {
+    //                 // ensure it isnt one of intersecting cells
+    //                 if (possibleLocationsJ.includes(j)) continue;
+    //                 cellColors[i][j][COLOR_YELLOW-1] = 1;
+    //             }
+
+    //             // highlight intersecting cells
+    //             for (let j = 0; j < possibleLocationsJ.length; ++j)
+    //             {
+    //                 // highlight cell
+    //                 editMode = MODE_COLOR;
+    //                 cellColors[i][possibleLocationsJ[j]][COLOR_GREEN-1] = 1;
+    //                 // use top digits to denote which digit
+    //                 topDigits[i][possibleLocationsJ[j]][d-1] = 1;
+    //             }
+    //         }
+    //     }
+    // }
+
+    // editMode = MODE_SOLVER;
 }
 
 //========================================================================
@@ -610,8 +1107,10 @@ function fillMustDigitInBox ()
                 }
                 // If the only possible cells for digit, d, are in a row, 
                 // then we can eliminate this digit from the other cells in this row
+                let hasReduced = false;
                 if (isInRow && !isInCol)
                 {
+                    // eliminate digit, d, from non-intersecting cells
                     for (let j = 0; j < 9; ++j)
                     {
                         // ensure we are looking at a non-intersecting cell
@@ -621,28 +1120,20 @@ function fillMustDigitInBox ()
                             if (pencilMarks[possibleLocationsI[0]][j][d-1] == 1)
                             {
                                 editMode = MODE_COLOR;
-                                selectedCells[possibleLocationsI[0]][j] = 1;
-                                inputDigit (COLOR_PURPLE);
-                                selectedCells[possibleLocationsI[0]][j] = 0;
+                                cellColors[possibleLocationsI[0]][j][COLOR_RED-1] = 1;
                                 // remove the digit
                                 editMode = MODE_PENCIL;
                                 pencilMarks[possibleLocationsI[0]][j][d-1] = 0;
+                                hasReduced = true;
                             }
                         }
-                    }
-                    // use top digits to mark where d must go
-                    for (let k = 0; k < possibleLocationsI.length; ++k)
-                    {
-                        editMode = MODE_TOP;
-                        selectedCells[possibleLocationsI[k]][possibleLocationsJ[k]] = 1;
-                        inputDigit (d);
-                        selectedCells[possibleLocationsI[k]][possibleLocationsJ[k]] = 0;
                     }
                 }
                 // If the only possible cells for digit, d, are in a col, 
                 // then we can eliminate this digit from the other cells in this col
                 if (!isInRow && isInCol) 
                 {
+                    // eliminate digit, d, from non-intersecting cells
                     for (let i = 0; i < 9; ++i)
                     {
                         // ensure we are looking at a non-intersecting cell
@@ -652,22 +1143,38 @@ function fillMustDigitInBox ()
                             if (pencilMarks[i][possibleLocationsJ[0]][d-1] == 1)
                             {
                                 editMode = MODE_COLOR;
-                                selectedCells[i][possibleLocationsJ[0]] = 1;
-                                inputDigit (COLOR_PINK);
-                                selectedCells[i][possibleLocationsJ[0]] = 0;
+                                cellColors[i][possibleLocationsJ[0]][COLOR_RED-1] = 1;
                                 // remove the digit
                                 editMode = MODE_PENCIL;
                                 pencilMarks[i][possibleLocationsJ[0]][d-1] = 0;
+                                hasReduced = true;
                             }
                         }
                     }
-                    // use top digits to mark where d must go
+                }
+                // mark where d must go and highlight it
+                // if these cells lead to a reduction
+                if (hasReduced)
+                {
+                    // highlight box
+                    for (let i = boxi*3; i < (boxi+1)*3; ++i)
+                    {
+                        for (let j = boxj*3; j < (boxj+1)*3; ++j)
+                        {
+                            // ensure it isnt the possible locations
+                            if (possibleLocationsI.includes(i) && possibleLocationsJ.includes(j)) continue;
+                            cellColors[i][j][COLOR_YELLOW-1] = 1;
+                        }
+                    }
+                    // highlight intersecting cells
                     for (let k = 0; k < possibleLocationsI.length; ++k)
                     {
                         editMode = MODE_TOP;
                         selectedCells[possibleLocationsI[k]][possibleLocationsJ[k]] = 1;
                         inputDigit (d);
                         selectedCells[possibleLocationsI[k]][possibleLocationsJ[k]] = 0;
+                        // highlight cell
+                        cellColors[possibleLocationsI[k]][possibleLocationsJ[k]][COLOR_GREEN-1] = 1;
                     }
                 }
             }
@@ -677,96 +1184,6 @@ function fillMustDigitInBox ()
     editMode = MODE_SOLVER;
 }
 
-
-//========================================================================
-
-// determines a set of cells where each digit must go in a row
-// if the only possible positions for a digit in a row lie in the same box,
-// then we know that digit must go in those cells so we call that a "must" digit for those cells
-// and we can then eliminate that digit from other cells in that box
-function fillMustDigitInRow ()
-{
-    editMode = MODE_COLOR;
-
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
-
-    // check each digit
-    for (let d = 1; d <= 9; ++d)
-    {
-        // check each row
-        for (let i = 0; i < 9; ++i)
-        {
-            let alreadyFilledIn = false;
-            // where can d go in this box?
-            let possibleLocationsJ = [];
-            // check each column 
-            for (let j = 0; j < 9; ++j)
-            {
-                // check if this is a valid position for this digit
-                if (pencilMarks[i][j][d-1] && board[i][j] == 0)
-                {
-                    possibleLocationsJ.push (j);
-                }
-                // ignore digit if it is already filled-in the box
-                if (board[i][j] == d) alreadyFilledIn = true;
-            }
-            // ignore this row if digit is already filled in
-            if (alreadyFilledIn) continue;
-            // ensure digit has valid positions
-            if (possibleLocationsJ.length == 0) continue;
-            // ensure possible locations are in a single box
-            let isInSameBox = true;
-            let boxi = Math.floor(i / 3);
-            let boxj = Math.floor(possibleLocationsJ[0] / 3);
-            for (let j = 0; j < possibleLocationsJ.length; ++j)
-            {
-                let boxjj = Math.floor(possibleLocationsJ[j] / 3);
-                if (boxjj != boxj)
-                    isInSameBox = false;
-            }
-            if (!isInSameBox) continue;
-            // each possible location is in the same box
-            // we can now highlight those cells
-            // and remove this digit from other cells in that box
-            for (let j = 0; j < possibleLocationsJ.length; ++j)
-            {
-                // highlight cell
-                editMode = MODE_COLOR;
-                cellColors[i][possibleLocationsJ[j]][COLOR_ORANGE-1] = 1;
-                // use top digits to denote which digit
-                topDigits[i][possibleLocationsJ[j]][d-1] = 1;
-                // selectedCells[i][possibleLocationsJ[j]] = 1;
-                // inputDigit (COLOR_ORANGE);
-                // selectedCells[i][possibleLocationsJ[j]] = 0;
-            }
-            // remove this digit from non-intersecting cells in the box
-            for (let ii = boxi*3; ii < (boxi+1)*3; ++ii)
-            {
-                for (let jj = boxj*3; jj < (boxj+1)*3; ++jj)
-                {
-                    // highlight cells from the same box
-                    // cellColors[ii][jj][COLOR_PURPLE-1] = 1;
-                    // ensure it is not an intersecting cell
-                    let isIntersectingCell = false;
-                    for (let j = 0; j < possibleLocationsJ.length; ++j)
-                        if (jj == possibleLocationsJ[j] && i == ii)
-                            isIntersectingCell = true;
-                    if (isIntersectingCell) continue;
-                    // this cell is not one of the intersecting cells
-                    // ensure the digit is penciled in, to highlight and remove it
-                    if (pencilMarks[ii][jj][d-1] != 1) continue;
-                    cellColors[ii][jj][COLOR_GREEN-1] = 1;
-                    // remove digit
-                    pencilMarks[ii][jj][d-1] = 0;
-                }
-            }
-        }
-    }
-
-    editMode = MODE_SOLVER;
-}
 
 
 
