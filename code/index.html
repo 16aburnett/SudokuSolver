@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="style.css">
         <script type="text/javascript" src="naiveSolver.js"></script>
         <script type="text/javascript" src="basicSolver.js"></script>
+        <script type="text/javascript" src="premadeBoards.js"></script>
         <script type="text/javascript" src="sketch.js"></script>
     </head>
     <body>
@@ -31,7 +32,7 @@
                     <div class="panelTab" id="solverTab" onclick="solverTab()"><p>Solver</p></div>
                 </div>
                 <div>
-                    <div id="digitPanel" class="buttonPanel">
+                    <div id="digitPanel" class="buttonPanel centerContents">
                         <table>
                             <tr>
                                 <td>
@@ -73,7 +74,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="topDigitPanel" class="buttonPanel" style="display: none;">
+                    <div id="topDigitPanel" class="buttonPanel centerContents" style="display: none;">
                         <table>
                             <tr>
                                 <td>
@@ -115,7 +116,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="smallDigitPanel" class="buttonPanel" style="display: none;">
+                    <div id="smallDigitPanel" class="buttonPanel centerContents" style="display: none;">
                         <table>
                             <tr>
                                 <td>
@@ -157,7 +158,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="colorPanel" class="buttonPanel" style="display: none;">
+                    <div id="colorPanel" class="buttonPanel centerContents" style="display: none;">
                         <table>
                             <tr>
                                 <td>
@@ -217,7 +218,7 @@
                             </tr>
                         </table>
                     </div>
-                    <div id="boardPanel" class="buttonPanel" style="display: none;">
+                    <div id="boardPanel" class="buttonPanel centerContents" style="display: none;">
                         <table>
                             <tr>
                                 <td class="color-foreground0" colspan="3">Board Generation coming soon</td>
@@ -226,28 +227,58 @@
                                 <td class="color-foreground0" colspan="3">(pre-made boards below)</td>
                             </tr>
                             <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" id="easyBoardButton" onclick="loadEasyBoard ()" title="Easy Board">Easy Board</button>
+                                <td colspan="1">
+                                    <button class="panelButton" id="easyBoardButton" onclick="loadEasyBoard (0)" title="Easy Board">Easy Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="easyBoardButton" onclick="loadEasyBoard (1)" title="Easy Board">Easy Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="easyBoardButton" onclick="loadEasyBoard (2)" title="Easy Board">Easy Board 2</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" id="mediumBoardButton" onclick="loadMediumBoard ()" title="Medium Board">Medium Board</button>
+                                <td colspan="1">
+                                    <button class="panelButton" id="mediumBoardButton" onclick="loadMediumBoard (0)" title="Medium Board">Medium Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="mediumBoardButton" onclick="loadMediumBoard (1)" title="Medium Board">Medium Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="mediumBoardButton" onclick="loadMediumBoard (2)" title="Medium Board">Medium Board 2</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" id="hardBoardButton" onclick="loadHardBoard ()" title="Hard Board">Hard Board</button>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hardBoardButton" onclick="loadHardBoard (0)" title="Hard Board">Hard Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hardBoardButton" onclick="loadHardBoard (1)" title="Hard Board">Hard Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hardBoardButton" onclick="loadHardBoard (2)" title="Hard Board">Hard Board 2</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" id="expertBoardButton" onclick="loadExpertBoard ()" title="Expert Board">Expert Board</button>
+                                <td colspan="1">
+                                    <button class="panelButton" id="expertBoardButton" onclick="loadExpertBoard (0)" title="Expert Board">Expert Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="expertBoardButton" onclick="loadExpertBoard (1)" title="Expert Board">Expert Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="expertBoardButton" onclick="loadExpertBoard (2)" title="Expert Board">Expert Board 2</button>
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" id="evilBoardButton" onclick="loadEvilBoard ()" title="Evil Board">Evil Board</button>
+                                <td colspan="1">
+                                    <button class="panelButton" id="evilBoardButton" onclick="loadEvilBoard (0)" title="Evil Board">Evil Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="evilBoardButton" onclick="loadEvilBoard (1)" title="Evil Board">Evil Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="evilBoardButton" onclick="loadEvilBoard (2)" title="Evil Board">Evil Board 2</button>
                                 </td>
                             </tr>
                         </table>
@@ -285,35 +316,46 @@
                             </tr>
                             <tr>
                                 <td colspan="1">
-                                    <button class="panelButton" id="reduceRowsBtn" onclick="reduceRows ()" title="Reduce Rows">Reduce Rows</button>
+                                    <button class="panelButton" id="reduceRowsBtn" onclick="reduceRows ()" title="Reduce Singles in Rows">Reduce Singles in Rows</button>
                                 </td>
                                 <td colspan="1">
-                                    <button class="panelButton" id="reduceColumnsBtn" onclick="reduceColumns ()" title="Reduce Columns">Reduce Columns</button>
+                                    <button class="panelButton" id="reduceColumnsBtn" onclick="reduceColumns ()" title="Reduce Singles in Columns">Reduce Singles in Columns</button>
                                 </td>
                                 <td colspan="1">
-                                    <button class="panelButton" id="reduceBoxesBtn" onclick="reduceBoxes ()" title="Reduce Boxes">Reduce Boxes</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="1">
-                                    <button class="panelButton" id="isolatePairsInRowsBtn" onclick="isolatePairsInRows ()" title="Isolate Pairs in Rows">Isolate Pairs in Rows</button>
-                                </td>
-                                <td colspan="1">
-                                    <button class="panelButton" id="isolatePairsInColumnsBtn" onclick="isolatePairsInColumns ()" title="Isolate Pairs in Columns">Isolate Pairs in Columns</button>
-                                </td>
-                                <td colspan="1">
-                                    <button class="panelButton" id="isolatePairsInBoxesBtn" onclick="isolatePairsInBoxes ()" title="Isolate Pairs in Boxes">Isolate Pairs in Boxes</button>
+                                    <button class="panelButton" id="reduceBoxesBtn" onclick="reduceBoxes ()" title="Reduce Singles in Boxes">Reduce Singles in Boxes</button>
                                 </td>
                             </tr>
                             <tr>
                                 <td colspan="1">
-                                    <button class="panelButton" id="fillMustDigitInBoxBtn" onclick="fillMustDigitInBox ()" title="">Fill Must Digit In Box</button>
+                                    <button class="panelButton" id="isolatePairsInRowsBtn" onclick="isolatePairsInRows ()" title="Isolate Naked Pairs in Rows">Isolate Naked Pairs in Rows</button>
                                 </td>
                                 <td colspan="1">
-                                    <button class="panelButton" id="isolatePairsInColumnsBtn" onclick="isolatePairsInColumns ()" title="Isolate Pairs in Columns"></button>
+                                    <button class="panelButton" id="isolatePairsInColumnsBtn" onclick="isolatePairsInColumns ()" title="Isolate Naked Pairs in Columns">Isolate Naked Pairs in Columns</button>
                                 </td>
                                 <td colspan="1">
-                                    <button class="panelButton" id="isolatePairsInBoxesBtn" onclick="isolatePairsInBoxes ()" title="Isolate Pairs in Boxes"></button>
+                                    <button class="panelButton" id="isolatePairsInBoxesBtn" onclick="isolatePairsInBoxes ()" title="Isolate Naked Pairs in Boxes">Isolate Naked Pairs in Boxes</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="1">
+                                    <button class="panelButton" id="isolateHiddenPairsInRowsBtn" onclick="isolateHiddenPairsInRows ()" title="Isolate Hidden Pairs in Rows">Isolate Hidden Pairs in Rows</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="isolateHiddenPairsInColumnsBtn" onclick="isolateHiddenPairsInColumns ()" title="Isolate Hidden Pairs in Columns">Isolate Hidden Pairs in Columns</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="isolateHiddenPairsInBoxesBtn" onclick="isolateHiddenPairsInBoxes ()" title="Isolate Hidden Pairs in Boxes">Isolate Hidden Pairs in Boxes</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="1">
+                                    <button class="panelButton" id="fillMustDigitInRow" onclick="fillMustDigitInRow ()" title="Fill Must Digit In Row">Fill Must Digit In Row</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="" onclick="" title=""></button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="fillMustDigitInBox" onclick="fillMustDigitInBox ()" title="Fill Must Digit In Box">Fill Must Digit In Box</button>
                                 </td>
                             </tr>
                         </table>

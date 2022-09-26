@@ -11,6 +11,24 @@
 - hidden pairs
 [[4512], [6312], 345, 5643, ...]
 
+- FEATURE: shift mechanic for touchscreen (make a btn that doesnt clear selected when clicking)
+
+
+To Solve Evil Board
+- need XY-Wing
+- coloring
+    - lookahead on a pair to see if a common cell cannot be a digit no matter which digit is there
+    - I kinda hate this one because it seems very close to guessing perhaps without being guessing
+- Nishio technique
+    - but this literally is random guessing?? but like limited random guessing? just lookahead.
+    - lookahead, if one path results in a conflicting digit in X amount of moves, then we can elim that candidate
+    - this is literally random guessing -__-
+
+must digits
+- aka locked candidates
+
+- FEATURE: larger grids that use A-F for hexadecimel
+
 - hotkeys for tabs (zxcvbnm)
 
 - board generation
