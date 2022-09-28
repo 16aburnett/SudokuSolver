@@ -353,6 +353,13 @@ function isolatePairsInRows ()
                         // found a pair!
                         cellColors[i][j][COLOR_GREEN-1] = 1;
                         cellColors[i][k][COLOR_GREEN-1] = 1;
+                        // highlight this row
+                        for (let jj = 0; jj < 9; ++jj)
+                        {
+                            // ensure it is not one of the pair cells
+                            if (jj == j || jj == k) continue;
+                            cellColors[i][jj][COLOR_YELLOW-1] = 1;
+                        }
                         // since this pair exists, we know that neither of these digits
                         // can appear in other cells in this row
                         // so lets remove any pencilmarks
@@ -368,7 +375,7 @@ function isolatePairsInRows ()
                                     if (penciledDigitsijj.includes (penciledDigitsj[x]))
                                     {
                                         pencilMarks[i][jj][penciledDigitsj[x]-1] = 0;
-                                        // highlight this cell to be sure
+                                        // highlight this cell to denote that it was reduced
                                         cellColors[i][jj][COLOR_RED-1] = 1;
                                     }
                                 }
@@ -394,7 +401,6 @@ function isolatePairsInColumns ()
     clearColors ();
 
     // column pairs
-    // blue
     for (let j = 0; j < 9; ++j)
     {
         // first, look for a cell with only two penciled in digits
@@ -414,6 +420,13 @@ function isolatePairsInColumns ()
                         // found a pair!
                         cellColors[i][j][COLOR_GREEN-1] = 1;
                         cellColors[k][j][COLOR_GREEN-1] = 1;
+                        // highlight this column
+                        for (let ii = 0; ii < 9; ++ii)
+                        {
+                            // ensure it is not one of the pair cells
+                            if (ii == i || ii == k) continue;
+                            cellColors[ii][j][COLOR_YELLOW-1] = 1;
+                        }
                         // since this pair exists, we know that neither of these digits
                         // can appear in other cells in this column
                         // so lets remove any pencilmarks
@@ -454,8 +467,7 @@ function isolatePairsInBoxes ()
     clearTopDigits ();
     clearColors ();
 
-    // box pairs
-    // pink
+    // for each box
     for (let boxi = 0; boxi < 3; ++boxi)
     {
         for (let boxj = 0; boxj < 3; ++boxj)
@@ -480,8 +492,6 @@ function isolatePairsInBoxes ()
                                 if (!(i==k&&j==l) && penciledDigitskl.length == 2 && penciledDigitsij[0] == penciledDigitskl[0] && penciledDigitsij[1] == penciledDigitskl[1])
                                 {
                                     // found a pair!
-                                    cellColors[i][j][COLOR_GREEN-1] = 1;
-                                    cellColors[k][l][COLOR_GREEN-1] = 1;
                                     // since this pair exists, we know that neither of these digits
                                     // can appear in other cells in this box
                                     // so lets remove any pencilmarks
@@ -493,16 +503,29 @@ function isolatePairsInBoxes ()
                                             if (!(i==ii&&j==jj) && !(k==ii&&l==jj))
                                             {
                                                 // remove pair's digits if it exists
+                                                let hasReduced = false;
                                                 let penciledDigitsiijj = getPenciledDigits (ii, jj);
                                                 for (let x = 0; x < penciledDigitsij.length; ++x)
                                                 {
+                                                    // includes pair's digits
                                                     if (penciledDigitsiijj.includes (penciledDigitsij[x]))
                                                     {
                                                         pencilMarks[ii][jj][penciledDigitsij[x]-1] = 0;
                                                         // highlight this cell to be sure
                                                         cellColors[ii][jj][COLOR_RED-1] = 1;
+                                                        hasReduced = true;
                                                     }
                                                 }
+                                                // if we didnt reduce a digit, then color the cell yellow
+                                                if (!hasReduced)
+                                                {
+                                                    cellColors[ii][jj][COLOR_YELLOW-1] = 1;
+                                                }
+                                            }
+                                            // this cell is one of the pairs
+                                            else
+                                            {
+                                                cellColors[ii][jj][COLOR_GREEN-1] = 1;
                                             }
                                         }
                                     }
@@ -739,100 +762,121 @@ function isolateHiddenPairsInColumns ()
 // by removing other penciled digits from the pair's cells
 function isolateHiddenPairsInBoxes ()
 {
-    // editMode = MODE_PENCIL;
+    editMode = MODE_PENCIL;
 
-    // clearSelectedCells ();
-    // clearTopDigits ();
-    // clearColors ();
+    clearSelectedCells ();
+    clearTopDigits ();
+    clearColors ();
 
-    // for each column
-    // for (let j = 0; j < 9; ++j)
-    // {
-    //     // we need two digits that mutually occupy the same two cells in the same column
-    //     // lets start with finding a digit that occupies only two cells
-    //     for (let d0 = 1; d0 <= 9; ++d0)
-    //     {
-    //         // find possible positions of this digit in this column
-    //         let isAlreadyFilledIn = false;
-    //         let possibleLocationsI = [];
-    //         for (let i = 0; i < 9; ++i)
-    //         {
-    //             // this is a possible location
-    //             // if d0 is penciled here
-    //             if (pencilMarks[i][j][d0-1] == 1 && board[i][j] == 0)
-    //                 possibleLocationsI.push (i);
+    // for each box
+    for (let boxi = 0; boxi < 3; ++boxi)
+    {
+        for (let boxj = 0; boxj < 3; ++boxj)
+        {
+            // we need two digits that mutually occupy the same two cells in the same box
+            // lets start with finding a digit that occupies only two cells
+            for (let d0 = 1; d0 <= 9; ++d0)
+            {
+                // find possible positions of this digit in this box
+                let isAlreadyFilledIn = false;
+                let possibleLocationsI = [];
+                let possibleLocationsJ = [];
+                for (let i = boxi*3; i < (boxi+1)*3; ++i)
+                {
+                    for (let j = boxj*3; j < (boxj+1)*3; ++j)
+                    {
+                        // this is a possible location
+                        // if d0 is penciled here
+                        if (pencilMarks[i][j][d0-1] == 1 && board[i][j] == 0)
+                        {
+                            possibleLocationsI.push (i);
+                            possibleLocationsJ.push (j);
+                        }
 
-    //             // we can also ignore if d0 was already filled in this column
-    //             if (board[i][j] == d0) 
-    //             {
-    //                 isAlreadyFilledIn = true;
-    //                 break;
-    //             }
-    //         }
-    //         // ensure digit wasnt already filled in
-    //         if (isAlreadyFilledIn) continue;
-    //         // ensure this digit has exactly 2 valid locations (to make a pair)
-    //         if (possibleLocationsI.length != 2) continue;
-    //         // reaches here if this digit can only go in 2 locations in this column
-    //         // highlight those two positions
-    //         // cellColors[possibleLocationsI[0]][j][COLOR_BLUE-1] = 1;
-    //         // cellColors[possibleLocationsI[1]][j][COLOR_BLUE-1] = 1;
-    //         // mark the digit
-    //         topDigits[possibleLocationsI[0]][j][d0-1] = 1;
-    //         topDigits[possibleLocationsI[1]][j][d0-1] = 1;
-    //         // we will use the digit marks to determine if two digits occupy the same two cells
-    //     }
-    //     // search for two cells with the same digit pair
-    //     for (let i = 0; i < 9; ++i)
-    //     {
-    //         // ignore if cell is already filled in
-    //         if (board[i][j] != 0) continue;
+                        // we can also ignore if d0 was already filled in this box
+                        if (board[i][j] == d0) 
+                        {
+                            isAlreadyFilledIn = true;
+                            break;
+                        }
+                    }
+                    if (isAlreadyFilledIn) break;
+                }
+                // ensure digit wasnt already filled in
+                if (isAlreadyFilledIn) continue;
+                // ensure this digit has exactly 2 valid locations (to make a pair)
+                if (possibleLocationsI.length != 2) continue;
+                // reaches here if this digit can only go in 2 locations in this box
+                // highlight those two positions
+                // cellColors[possibleLocationsI[0]][possibleLocationsJ[0]][COLOR_BLUE-1] = 1;
+                // cellColors[possibleLocationsI[1]][possibleLocationsJ[1]][COLOR_BLUE-1] = 1;
+                // mark the digit
+                topDigits[possibleLocationsI[0]][possibleLocationsJ[0]][d0-1] = 1;
+                topDigits[possibleLocationsI[1]][possibleLocationsJ[1]][d0-1] = 1;
+                // we will use the digit marks to determine if two digits occupy the same two cells
+            }
+            // search for two cells with the same digit pair
+            for (let i = boxi*3; i < (boxi+1)*3; ++i)
+            {
+                for (let j = boxj*3; j < (boxj+1)*3; ++j)
+                {
+                    // ignore if cell is already filled in
+                    if (board[i][j] != 0) continue;
 
-    //         let digits0 = getTopDigits (i,j);
-    //         // ignore if not a pair
-    //         if (digits0.length != 2) continue;
-    //         // look for another pair that matches
-    //         for (let ii = i+1; ii < 9; ++ii)
-    //         {
-    //             // ignore if cell is already filled in
-    //             if (board[ii][j] != 0) continue;
+                    let digits0 = getTopDigits (i,j);
+                    // ignore if not a pair
+                    if (digits0.length != 2) continue;
+                    // look for another pair that matches
+                    for (let ii = boxi*3; ii < (boxi+1)*3; ++ii)
+                    {
+                        for (let jj = boxj*3; jj < (boxj+1)*3; ++jj)
+                        {
+                            // ignore if cell is already filled in
+                            if (board[ii][jj] != 0) continue;
 
-    //             let digits1 = getTopDigits (ii,j);
-    //             // ignore if not a pair
-    //             if (digits1.length != 2) continue;
-    //             // ensure pairs match
-    //             if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
-    //             // reaches here if pairs match
+                            let digits1 = getTopDigits (ii,jj);
+                            // ignore if not a pair
+                            if (digits1.length != 2) continue;
+                            // ensure pairs match
+                            if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
+                            // reaches here if pairs match
 
-    //             // ignore if cells are naked pairs already
-    //             // this is not necessary
-    //             // this is just so we only color the cells if there is a change to note
-    //             if (getPenciledDigits(i,j).length == 2 && getPenciledDigits(ii,j).length == 2) break;
+                            // ignore if cells are naked pairs already
+                            // this is not necessary
+                            // this is just so we only color the cells if there is a change to note
+                            if (getPenciledDigits(i,j).length == 2 && getPenciledDigits(ii,jj).length == 2) break;
 
-    //             // pairs match so isolate them
-    //             // aka remove other penciled digits from these cells
+                            // pairs match so isolate them
+                            // aka remove other penciled digits from these cells
 
-    //             // clear all pencil marks
-    //             for (let d = 1; d <= 9; ++d)
-    //             {
-    //                 pencilMarks[i ][j][d-1] = 0;
-    //                 pencilMarks[ii][j][d-1] = 0;
-    //             }
+                            // clear all pencil marks
+                            for (let d = 1; d <= 9; ++d)
+                            {
+                                pencilMarks[i ][j ][d-1] = 0;
+                                pencilMarks[ii][jj][d-1] = 0;
+                            }
 
-    //             // pencil only the pair digits
-    //             pencilMarks[i ][j][digits0[0]-1] = 1;
-    //             pencilMarks[ii][j][digits0[0]-1] = 1;
-    //             pencilMarks[i ][j][digits1[1]-1] = 1;
-    //             pencilMarks[ii][j][digits1[1]-1] = 1;
+                            // pencil only the pair digits
+                            pencilMarks[i ][j ][digits0[0]-1] = 1;
+                            pencilMarks[ii][jj][digits0[0]-1] = 1;
+                            pencilMarks[i ][j ][digits1[1]-1] = 1;
+                            pencilMarks[ii][jj][digits1[1]-1] = 1;
 
-    //             // highlight isolated cells
-    //             cellColors[i ][j][COLOR_GREEN-1] = 1;
-    //             cellColors[ii][j][COLOR_GREEN-1] = 1;
-    //         } 
-    //     }
-    // }
+                            // highlight isolated cells
+                            cellColors[i ][j ][COLOR_GREEN-1] = 1;
+                            cellColors[ii][jj][COLOR_GREEN-1] = 1;
+                        }
+                    } 
+                }
+            }
+            
+        }
+    }
 
-    // editMode = MODE_SOLVER;
+        
+
+
+    editMode = MODE_SOLVER;
     return true;
 }
 
