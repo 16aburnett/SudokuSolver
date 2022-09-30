@@ -831,6 +831,8 @@ function isolateHiddenPairsInBoxes ()
                     {
                         for (let jj = boxj*3; jj < (boxj+1)*3; ++jj)
                         {
+                            // ignore if we are looking at the same cell
+                            if (i == ii && j == jj) continue;
                             // ignore if cell is already filled in
                             if (board[ii][jj] != 0) continue;
 

@@ -6,9 +6,9 @@
 
 function naiveSolverHelper (board)
 {
-    for (let i = 0; i < 9; ++i)
-        console.log (board[i]);
-    console.log("==================");
+    // for (let i = 0; i < 9; ++i)
+    //     console.log (board[i]);
+    // console.log("==================");
     let isSolved = true;
     let canPlacedDigit = false;
 

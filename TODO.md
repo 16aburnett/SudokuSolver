@@ -24,6 +24,11 @@ To Solve Evil Board
     - lookahead, if one path results in a conflicting digit in X amount of moves, then we can elim that candidate
     - this is literally random guessing -__-
 
+virtual pairs????
+
+
+https://hodoku.sourceforge.net/en/tech_hidden.php 
+
 must digits
 - aka locked candidates
 
