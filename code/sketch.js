@@ -35,12 +35,81 @@ let givenDigits = [
 
 // a set of cages
 // a cage is a set of cells that must add up to the cage's sum and must not repeat
-let cages = [
-    [10, [[1,1], [2,1]]],
-    [1+9+7+2, [[6,7], [5,6], [5,7], [5,8]]]
-];
+// let cages = [
+//     [10, [[1,1], [2,1]]],
+//     [1+9+7+2, [[6,7], [5,6], [5,7], [5,8]]]
+// ];
 let cageBorderColor;
 let cageSumColor;
+let cageTextSize = 12;
+let cageTextFont = "Sans";
+
+let cages = [
+    [
+        9,
+        [[0,1],[0,2],[1,1]]
+    ],
+    [
+        9,
+        [[1,2],[1,3],[1,4]]
+    ],
+    [
+        9,
+        [[0,4],[0,5],[0,6]]
+    ],
+    [
+        9,
+        [[2,4],[2,5],[2,6]]
+    ],
+    [
+        9,
+        [[1,7],[2,7],[3,7]]
+    ],
+    [
+        9,
+        [[3,8],[4,8],[5,8]]
+    ],
+    [
+        9,
+        [[4,5],[4,6]]
+    ],
+    [
+        9,
+        [[3,4],[3,5]]
+    ],
+    [
+        9,
+        [[4,2],[4,3]]
+    ],
+    [
+        9,
+        [[5,3],[5,4]]
+    ],
+    [
+        9,
+        [[5,0],[5,1],[6,1]]
+    ],
+    [
+        9,
+        [[6,2],[6,3],[6,4]]
+    ],
+    [
+        9,
+        [[7,4],[7,5],[7,6]]
+    ],
+    [
+        9,
+        [[6,7],[7,7],[7,8]]
+    ],
+    [
+        9,
+        [[8,2],[8,3],[8,4]]
+    ],
+    [
+        10,
+        [[8,0],[8,1]]
+    ]
+];
 
 // Cell structure
 let boardX;
@@ -52,9 +121,11 @@ let boxHeight;
 let cellWidth;
 let cellHeight;
 let cellBorderWidth = 1;
-let boxBorderWidth = 4;
+let boxBorderWidth = 3;
 let selectBorderWidth = 6;
 let selectBorderPadding = 3;
+
+let globalTextFont = "Courier";
 
 // Color Theme
 let isDarkMode = false;
@@ -409,7 +480,7 @@ function draw ()
             {
                 noStroke ();
                 fill (digitColor);
-                textFont ("Courier");
+                textFont (globalTextFont);
                 textAlign (CENTER, CENTER);
                 textSize (cellHeight);
                 text (board[i][j], cellCenterX, cellCenterY + 5);
@@ -430,7 +501,7 @@ function draw ()
                 {
                     noStroke ();
                     fill (digitColor);
-                    textFont ("Courier");
+                    textFont (globalTextFont);
                     textAlign (CENTER, CENTER);
                     // iteratively decrease size until it fits
                     let strHeight = (cellHeight - 10) / 2;
@@ -455,7 +526,7 @@ function draw ()
                     stroke (digitColor);
                     strokeWeight (1);
                     fill (digitColor);
-                    textFont ("Courier");
+                    textFont (globalTextFont);
                     textAlign (CENTER, CENTER);
                     // iteratively decrease size until it fits
                     let strHeight = (cellHeight - 10) / 2;
@@ -573,13 +644,12 @@ function drawCages ()
         }
 
         // write cage num
-        // for now just write over first cell
-        stroke (cageSumColor);
-        strokeWeight (1);
         fill (cageSumColor);
-        let cageTextSize = 14;
+        noStroke ();
+        textFont (cageTextFont);
         textSize (cageTextSize);
-        text (cageSum, boardX + leftj * cellWidth + (cellWidth / 3), boardY + topi * cellHeight + (cageTextSize / 2))
+        let topPadding = 3;
+        text (cageSum, boardX + leftj * cellWidth + (cellWidth / 3), boardY + topi * cellHeight + (cageTextSize / 2) + topPadding)
         // console.warn (cage[0]);
 
         // draw cage outline
@@ -593,8 +663,8 @@ function drawCages ()
             let y = boardY + celli * cellHeight;
             let x = boardX + cellj * cellWidth;
             stroke (cageBorderColor);
-            strokeWeight (1);
-            drawingContext.setLineDash([5, 12]);
+            strokeWeight (2);
+            drawingContext.setLineDash([5]);
             let cageBorderPadding = 5;
 
             // ensure cage doesnt continue to the north
