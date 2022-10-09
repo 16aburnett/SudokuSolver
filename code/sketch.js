@@ -674,10 +674,10 @@ function cageSelectedCells ()
         // visit cell
         dfsBoard[i][j] = 0;
         // visit neighbors if they were selected
-        if (dfsBoard[i-1][j  ] == 1) frontier.push ([i-1,j  ]);
-        if (dfsBoard[i  ][j+1] == 1) frontier.push ([i  ,j+1]);
-        if (dfsBoard[i+1][j  ] == 1) frontier.push ([i+1,j  ]);
-        if (dfsBoard[i  ][j-1] == 1) frontier.push ([i  ,j-1]);
+        if (i-1 >= 0 && dfsBoard[i-1][j  ] == 1) frontier.push ([i-1,j  ]);
+        if (j+1 <  9 && dfsBoard[i  ][j+1] == 1) frontier.push ([i  ,j+1]);
+        if (i+1 <  9 && dfsBoard[i+1][j  ] == 1) frontier.push ([i+1,j  ]);
+        if (j-1 >= 0 && dfsBoard[i  ][j-1] == 1) frontier.push ([i  ,j-1]);
     }
     // first assume that all selected cells were in floodfill reach
     let areCellsOrthogonal = true;
@@ -729,7 +729,7 @@ function cageSelectedCells ()
         return;
 
     // create cage
-    alert (`Making cage with sum ${sum}`);
+    console.log (`Making cage with sum ${sum}`);
     let cells = [];
     for (let i = 0; i < 9; ++i)
     {
@@ -1039,7 +1039,8 @@ function keyPressed ()
 // digit, then the digit is instead removed from all of the selected cells
 function inputDigit (digit)
 {
-
+    let prevEditMode = editMode;
+    if (editMode == MODE_BOARD_MAKER && boardMakerMode == BOARD_MAKER_MODE_DIGIT) editMode = MODE_DIGIT;
     // 1. given digit is 0 - should clear all info from selected
     //   for the given mode
     if (digit == 0)
@@ -1144,6 +1145,9 @@ function inputDigit (digit)
             }
         }
     }
+
+    editMode = prevEditMode;
+
 }
 
 //========================================================================
@@ -1513,9 +1517,9 @@ function solverTab ()
 
 // board maker tabs
 
-const BOARD_MAKER_MODE_DIGIT = 0;
-const BOARD_MAKER_MODE_CAGES = 1;
-const BOARD_MAKER_MODE_DOMINOES = 2;
+const BOARD_MAKER_MODE_DIGIT    = 50;
+const BOARD_MAKER_MODE_CAGES    = 51;
+const BOARD_MAKER_MODE_DOMINOES = 52;
 const BOARD_MAKER_NUM_MODES = 3;
 let boardMakerMode = BOARD_MAKER_MODE_DIGIT;
 
@@ -1523,11 +1527,11 @@ function cycleBoardMakerMode ()
 {
     boardMakerMode = (boardMakerMode + 1) % BOARD_MAKER_NUM_MODES;
     if (boardMakerMode == BOARD_MAKER_MODE_DIGIT)
-        boardMakerDigitTab ();
+        boardMakerPanelDigitTab ();
     else if (boardMakerMode == BOARD_MAKER_MODE_CAGES)
-        topDigitTab ();
+        boardMakerPanelCagesTab ();
     else if (boardMakerMode == BOARD_MAKER_MODE_DOMINOES)
-        smallDigitTab ();
+        boardMakerPanelDominoesTab ();
     else
         console.warn ("Unknown board maker mode", boardMakerMode);
 }
@@ -1557,7 +1561,7 @@ function boardMakerPanelDigitTab ()
     
     if (isDarkMode) setDarkMode (); else setLightMode ();
 
-    editMode = BOARD_MAKER_MODE_DIGIT;
+    boardMakerMode = BOARD_MAKER_MODE_DIGIT;
 }
 
 //========================================================================
@@ -1572,7 +1576,7 @@ function boardMakerPanelCagesTab ()
     
     if (isDarkMode) setDarkMode (); else setLightMode ();
 
-    editMode = BOARD_MAKER_MODE_CAGES;
+    boardMakerMode = BOARD_MAKER_MODE_CAGES;
 }
 
 //========================================================================
@@ -1587,5 +1591,5 @@ function boardMakerPanelDominoesTab ()
     
     if (isDarkMode) setDarkMode (); else setLightMode ();
 
-    editMode = BOARD_MAKER_MODE_DOMINOES;
+    boardMakerMode = BOARD_MAKER_MODE_DOMINOES;
 }
