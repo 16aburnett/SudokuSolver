@@ -13,6 +13,32 @@
 
 - FEATURE: shift mechanic for touchscreen (make a btn that doesnt clear selected when clicking)
 
+- refactor solving tools into one tab
+    - spacebar should only cycle between penciling tools
+
+
+BOARD MAKER
+- board size - I want hexadecimal sudokus ya nerd!
+- series of buttons for adding different constraints like given digits, cages, lines, arrows, colors
+- Killer cages
+    - button for cage mode
+    - graphics
+- X, V, black/white dot dominoes
+- Boolean settings
+    - Example: all white dots are given, meaning if a white dot is not present between two cells, 
+    then those two cells are NOT consecutive
+    - Example: a digit must NOT repeat in a cage.
+- Settings for normal sudoku rules (we could turn off the box uniqueness requirement for example)
+- asynchronous mechanic that checks if the solution is unique (use naive solver and count different solutions?)
+- button to randomly generate digits that make a valid sudoku solution (so we can backtrack and delete digits)
+- board created digits should not be able to be changed during solving
+    - maybe add a different layer for given digits that takes precedence over board digits
+    - should also be different so we can differentiate (given digits == black, user digits == blue?)
+
+- While in playing mode, the rules should be present
+- Each rule should also add to the conflict checking jawns
+- maybe add a Rule class to inherit from and each rule must implement a correctness checker
+
 
 To Solve Evil Board
 - need XY-Wing

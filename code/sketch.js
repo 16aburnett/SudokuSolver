@@ -18,6 +18,29 @@ let board = [
     [0, 6, 0,  0, 4, 9,  8, 0, 0]  // 8
 ];
 
+let givenDigits = [
+//   0  1  2   3  4  5   6  7  8
+    [0, 0, 0,  0, 0, 0,  0, 0, 0], // 0
+    [0, 0, 0,  0, 0, 0,  0, 0, 0], // 1
+    [0, 0, 0,  0, 0, 0,  0, 0, 0], // 2
+
+    [0, 0, 0,  0, 0, 0,  0, 0, 0], // 3
+    [0, 0, 0,  0, 0, 0,  0, 0, 0], // 4
+    [0, 0, 0,  0, 0, 0,  0, 0, 0], // 5
+
+    [0, 0, 0,  0, 0, 0,  0, 0, 0], // 6
+    [0, 0, 0,  0, 0, 0,  0, 0, 0], // 7
+    [0, 0, 0,  0, 0, 0,  0, 0, 0]  // 8
+];
+
+// a set of cages
+// a cage is a set of cells that must add up to the cage's sum and must not repeat
+let cages = [
+    [10, [[1,1], [2,1]]],
+    [1+9+7+2, [[6,7], [5,6], [5,7], [5,8]]]
+];
+let cageBorderColor;
+let cageSumColor;
 
 // Cell structure
 let boardX;
@@ -89,13 +112,14 @@ const RGBA_COLORS = [
     [ 75,  75,  75, 175], // BLACK 
 ];
 
-const MODE_DIGIT  = 0;
-const MODE_TOP    = 1;
-const MODE_PENCIL = 2;
-const MODE_COLOR  = 3;
-const MODE_BOARD  = 4;
-const MODE_SOLVER = 5;
-const NUM_MODES   = 6;
+const MODE_DIGIT       = 0;
+const MODE_TOP         = 1;
+const MODE_PENCIL      = 2;
+const MODE_COLOR       = 3;
+const MODE_BOARD_MAKER = 4;
+const MODE_BOARD       = 5;
+const MODE_SOLVER      = 6;
+const NUM_MODES        = 7;
 let editMode = MODE_DIGIT;
 
 let isSolved = false;
@@ -119,6 +143,8 @@ function setDarkMode ()
     boardBackgroundColor = DARKMODE_BACKGROUND0;
     digitColor = DARKMODE_FOREGROUND0;
     borderColor = DARKMODE_FOREGROUND0;
+    cageBorderColor = DARKMODE_FOREGROUND0;
+    cageSumColor = DARKMODE_FOREGROUND0;
     select ("body").style ("background-color", DARKMODE_BACKGROUND0);
     select ("body").style ("color", DARKMODE_FOREGROUND0);
     select ("button").style ("color", DARKMODE_FOREGROUND0);
@@ -145,6 +171,18 @@ function setDarkMode ()
         element.style ("color", DARKMODE_FOREGROUND0);
     }
 
+    // subtabs
+    for (let tab of selectAll (".boardMakerPanelLeftTab"))
+    {
+        tab.style ("background-color", DARKMODE_BACKGROUND0);
+        tab.style ("color", DARKMODE_FOREGROUND0);
+        tab.style ("border", `2px solid ${DARKMODE_FOREGROUND0}`);
+    }
+    for (let tab of selectAll (".boardMakerPanelSelectedTab"))
+    {
+        tab.style ("background-color", DARKMODE_BACKGROUND2);
+    }
+
     selectionBorderColor = [50, 255, 255, 220];
     cursorBorderColor =    [250, 255, 50, 220];
     
@@ -168,6 +206,8 @@ function setLightMode ()
     boardBackgroundColor = LIGHTMODE_BACKGROUND0;
     digitColor = LIGHTMODE_FOREGROUND0;
     borderColor = LIGHTMODE_FOREGROUND0;
+    cageBorderColor = LIGHTMODE_FOREGROUND0;
+    cageSumColor = LIGHTMODE_FOREGROUND0;
     select ("body").style ("background-color", LIGHTMODE_BACKGROUND0);
     select ("body").style ("color", LIGHTMODE_FOREGROUND0);
     select ("button").style ("color", LIGHTMODE_FOREGROUND0);
@@ -192,6 +232,18 @@ function setLightMode ()
     for (let element of selectAll (".color-foreground0"))
     {
         element.style ("color", LIGHTMODE_FOREGROUND0);
+    }
+
+    // subtabs
+    for (let tab of selectAll (".boardMakerPanelLeftTab"))
+    {
+        tab.style ("background-color", LIGHTMODE_BACKGROUND0);
+        tab.style ("color", LIGHTMODE_FOREGROUND0);
+        tab.style ("border", `2px solid ${LIGHTMODE_FOREGROUND0}`);
+    }
+    for (let tab of selectAll (".boardMakerPanelSelectedTab"))
+    {
+        tab.style ("background-color", LIGHTMODE_BACKGROUND2);
     }
 
     selectionBorderColor = [50, 50, 200, 220];
@@ -430,6 +482,8 @@ function draw ()
         }
     }
 
+    drawCages ();
+
     // highlight selected tiles
     for (let i = 0; i < 9; ++i)
     {
@@ -485,6 +539,238 @@ function draw ()
     //     isSolved = true;
     // }
 
+}
+
+//========================================================================
+
+// draws cages onto the board if there are any
+function drawCages ()
+{
+    for (let c = 0; c < cages.length; ++c)
+    {
+        let cageSum = cages[c][0];
+        let cageCells = cages[c][1];
+        // find top left cell
+        // aka the most left cell in the top row
+        let topi = cageCells[0][0];
+        for (let i = 0; i < cageCells.length; ++i)
+        {
+            if (cageCells[i][0] < topi)
+            {
+                topi = cageCells[i][0];
+            }
+        }
+        let leftj = cageCells[0][1];
+        for (let i = 0; i < cageCells.length; ++i)
+        {
+            if (cageCells[i][0] == topi)
+            {
+                if (cageCells[i][1] < leftj)
+                {
+                    leftj = cageCells[i][1];
+                }
+            }
+        }
+
+        // write cage num
+        // for now just write over first cell
+        stroke (cageSumColor);
+        strokeWeight (1);
+        fill (cageSumColor);
+        let cageTextSize = 14;
+        textSize (cageTextSize);
+        text (cageSum, boardX + leftj * cellWidth + (cellWidth / 3), boardY + topi * cellHeight + (cageTextSize / 2))
+        // console.warn (cage[0]);
+
+        // draw cage outline
+        for (let i = 0 ; i < cageCells.length; ++i)
+        {
+            let celli = cageCells[i][0];
+            let cellj = cageCells[i][1];
+            let isTopLeftCell = false;
+            if (celli == topi && cellj == leftj) isTopLeftCell = true;
+
+            let y = boardY + celli * cellHeight;
+            let x = boardX + cellj * cellWidth;
+            stroke (cageBorderColor);
+            strokeWeight (1);
+            drawingContext.setLineDash([5, 12]);
+            let cageBorderPadding = 5;
+
+            // ensure cage doesnt continue to the north
+            let hasNorthCell = false;
+            let hasEastCell  = false;
+            let hasSouthCell = false;
+            let hasWestCell  = false;
+            for (let j = 0; j < cageCells.length; ++j)
+            {
+                if (i == j) continue;
+                let cellii = cageCells[j][0];
+                let celljj = cageCells[j][1];
+                if (cellii == celli-1 && celljj == cellj) hasNorthCell = true;
+                if (celljj == cellj+1 && cellii == celli) hasEastCell  = true;
+                if (cellii == celli+1 && celljj == cellj) hasSouthCell = true;
+                if (celljj == cellj-1 && cellii == celli) hasWestCell  = true;
+            }
+            if (!hasNorthCell)
+                if (isTopLeftCell)
+                    line (x+(cellWidth / 2)+cageBorderPadding, y+cageBorderPadding, x+cellWidth-cageBorderPadding, y+cageBorderPadding);
+                else
+                    line (x+cageBorderPadding, y+cageBorderPadding, x+cellWidth-cageBorderPadding, y+cageBorderPadding);
+            if (!hasEastCell)
+                line (x+cellWidth-cageBorderPadding, y+cageBorderPadding, x+cellWidth-cageBorderPadding, y+cellHeight-cageBorderPadding);
+            if (!hasSouthCell)
+                line (x+cageBorderPadding, y+cellHeight-cageBorderPadding, x+cellWidth-cageBorderPadding, y+cellHeight-cageBorderPadding);
+            if (!hasWestCell)
+                line (x+cageBorderPadding, y+cageBorderPadding, x+cageBorderPadding, y+cellHeight-cageBorderPadding);
+            drawingContext.setLineDash([]);
+        }
+    }
+}
+
+//========================================================================
+
+// turns the selected cells into a cage and prompts for the desired sum
+// if selected cells are already a cage, then it removes the cage
+// if selected cells are not orthogonally connected, then a cage cannot be made
+function cageSelectedCells ()
+{
+    // ensure selected cells are orthogonally connected
+    let dfsBoard = [
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0],
+    ];
+    let firsti = -1;
+    let firstj = -1;
+    for (let i = 0; i < 9; ++i)
+    {
+        for (let j = 0; j < 9; ++j)
+        {
+            if (firsti == -1 && selectedCells[i][j])
+            {
+                firsti = i; firstj = j;
+            }
+            dfsBoard[i][j] = selectedCells[i][j];
+        }
+    }
+    // ensure there was at least one selected cell
+    if (firsti == -1)
+    {
+        console.error ("Error: Nothing selected. Cage creation failed");
+        return;
+    }
+    // floodfill on first selectedCell
+    let frontier = [[firsti,firstj]];
+    while (frontier.length > 0)
+    {
+        [i, j] = frontier.pop ();
+        // visit cell
+        dfsBoard[i][j] = 0;
+        // visit neighbors if they were selected
+        if (dfsBoard[i-1][j  ] == 1) frontier.push ([i-1,j  ]);
+        if (dfsBoard[i  ][j+1] == 1) frontier.push ([i  ,j+1]);
+        if (dfsBoard[i+1][j  ] == 1) frontier.push ([i+1,j  ]);
+        if (dfsBoard[i  ][j-1] == 1) frontier.push ([i  ,j-1]);
+    }
+    // first assume that all selected cells were in floodfill reach
+    let areCellsOrthogonal = true;
+    // now look for a contradictory case
+    for (let i = 0; i < 9; ++i)
+    {
+        for (let j = 0; j < 9; ++j)
+        {
+            if (dfsBoard[i][j] == 1)
+                // found a cell that wasnt orthogonal
+                areCellsOrthogonal = false;
+        }
+    }
+    if (!areCellsOrthogonal) 
+    {
+        console.error ("Error: Selected Cells are not orthogonal. Cage creation failed");
+        return;
+    }
+
+    // ensure cells are not already a cage
+    for (let i = 0; i < 9; ++i)
+    {
+        for (let j = 0; j < 9; ++j)
+        {
+            if (selectedCells[i][j])
+            {
+                for (let cg = 0; cg < cages.length; ++cg)
+                {
+                    let cage = cages[cg];
+                    for (let c = 0; c < cage[1].length; ++c)
+                    {
+                        let [celli, cellj] = cage[1][c];
+                        if (i == celli && j == cellj)
+                        {
+                            console.error ("Error: Overlapping cages. Cage creation failed");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // prompt user for the cage's sum
+    let sum = parseInt (prompt ("Enter the desired cage sum"));
+
+    // ensure valid sum provided
+    if (isNaN (sum))
+        return;
+
+    // create cage
+    alert (`Making cage with sum ${sum}`);
+    let cells = [];
+    for (let i = 0; i < 9; ++i)
+    {
+        for (let j = 0; j < 9; ++j)
+        {
+            if (selectedCells[i][j])
+                cells.push ([i,j]);
+        }
+    }
+    let cage = [sum, cells];
+    cages.push (cage);
+    
+}
+
+//========================================================================
+
+// removes any cages that have intersecting cells with the current selected cells
+function uncageSelectedCells ()
+{
+    for (let i = 0; i < 9; ++i)
+    {
+        for (let j = 0; j < 9; ++j)
+        {
+            if (selectedCells[i][j])
+            {
+                for (let cg = cages.length-1; cg >= 0; --cg)
+                {
+                    let cage = cages[cg];
+                    for (let c = 0; c < cage[1].length; ++c)
+                    {
+                        let [celli, cellj] = cage[1][c];
+                        if (i == celli && j == cellj)
+                        {
+                            // remove the whole cage at this cell
+                            cages.splice (cg, 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 //========================================================================
@@ -1089,6 +1375,8 @@ function cycleMode ()
         smallDigitTab ();
     else if (editMode == MODE_COLOR)
         colorTab ();
+    else if (editMode == MODE_BOARD_MAKER)
+        boardMakerTab ();
     else if (editMode == MODE_BOARD)
         boardTab ();
     else if (editMode == MODE_SOLVER)
@@ -1103,6 +1391,7 @@ function hideTabs ()
     select ("#topDigitPanel")  .style ("display", "none");
     select ("#smallDigitPanel").style ("display", "none");
     select ("#colorPanel")     .style ("display", "none");
+    select ("#boardMakerPanel").style ("display", "none");
     select ("#boardPanel")     .style ("display", "none");
     select ("#solverPanel")    .style ("display", "none");
 
@@ -1110,6 +1399,7 @@ function hideTabs ()
     select ("#topDigitTab")  .removeClass ("selectedTab");
     select ("#smallDigitTab").removeClass ("selectedTab");
     select ("#colorTab")     .removeClass ("selectedTab");
+    select ("#boardMakerTab").removeClass ("selectedTab");
     select ("#boardTab")     .removeClass ("selectedTab");
     select ("#solverTab")    .removeClass ("selectedTab");
 }
@@ -1165,13 +1455,28 @@ function colorTab ()
 {
     hideTabs ();
     
-    select ("#colorPanel")     .style ("display", "flex");
+    select ("#colorPanel").style ("display", "flex");
 
-    select ("#colorTab")     .addClass ("selectedTab");
+    select ("#colorTab").addClass ("selectedTab");
     
     if (isDarkMode) setDarkMode (); else setLightMode ();
 
     editMode = MODE_COLOR;
+}
+
+//========================================================================
+
+function boardMakerTab ()
+{
+    hideTabs ();
+    
+    select ("#boardMakerPanel").style ("display", "flex");
+
+    select ("#boardMakerTab").addClass ("selectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
+    editMode = MODE_BOARD_MAKER;
 }
 
 //========================================================================
@@ -1202,4 +1507,85 @@ function solverTab ()
     if (isDarkMode) setDarkMode (); else setLightMode ();
 
     editMode = MODE_SOLVER;
+}
+
+//========================================================================
+
+// board maker tabs
+
+const BOARD_MAKER_MODE_DIGIT = 0;
+const BOARD_MAKER_MODE_CAGES = 1;
+const BOARD_MAKER_MODE_DOMINOES = 2;
+const BOARD_MAKER_NUM_MODES = 3;
+let boardMakerMode = BOARD_MAKER_MODE_DIGIT;
+
+function cycleBoardMakerMode ()
+{
+    boardMakerMode = (boardMakerMode + 1) % BOARD_MAKER_NUM_MODES;
+    if (boardMakerMode == BOARD_MAKER_MODE_DIGIT)
+        boardMakerDigitTab ();
+    else if (boardMakerMode == BOARD_MAKER_MODE_CAGES)
+        topDigitTab ();
+    else if (boardMakerMode == BOARD_MAKER_MODE_DOMINOES)
+        smallDigitTab ();
+    else
+        console.warn ("Unknown board maker mode", boardMakerMode);
+}
+
+//========================================================================
+
+function hideBoardMakerTabs ()
+{
+    select ("#boardMakerPanelDigitPanel")   .style ("display", "none");
+    select ("#boardMakerPanelCagesPanel")   .style ("display", "none");
+    select ("#boardMakerPanelDominoesPanel").style ("display", "none");
+
+    select ("#boardMakerPanelDigitTab")   .removeClass ("boardMakerPanelSelectedTab");
+    select ("#boardMakerPanelCagesTab")   .removeClass ("boardMakerPanelSelectedTab");
+    select ("#boardMakerPanelDominoesTab").removeClass ("boardMakerPanelSelectedTab");
+}
+
+//========================================================================
+
+function boardMakerPanelDigitTab ()
+{
+    hideBoardMakerTabs ();
+    
+    select ("#boardMakerPanelDigitPanel")    .style ("display", "flex");
+
+    select ("#boardMakerPanelDigitTab")    .addClass ("boardMakerPanelSelectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
+    editMode = BOARD_MAKER_MODE_DIGIT;
+}
+
+//========================================================================
+
+function boardMakerPanelCagesTab ()
+{
+    hideBoardMakerTabs ();
+    
+    select ("#boardMakerPanelCagesPanel")    .style ("display", "flex");
+
+    select ("#boardMakerPanelCagesTab")    .addClass ("boardMakerPanelSelectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
+    editMode = BOARD_MAKER_MODE_CAGES;
+}
+
+//========================================================================
+
+function boardMakerPanelDominoesTab ()
+{
+    hideBoardMakerTabs ();
+    
+    select ("#boardMakerPanelDominoesPanel")    .style ("display", "flex");
+
+    select ("#boardMakerPanelDominoesTab")    .addClass ("boardMakerPanelSelectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
+    editMode = BOARD_MAKER_MODE_DOMINOES;
 }

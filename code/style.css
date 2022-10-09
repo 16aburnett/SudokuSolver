@@ -167,6 +167,72 @@ button {
 }
 
 
+
+
+
+
+#boardMakerPanelTabContainer {
+    /* background-color: #ddd; */
+    /* background-color: yellow; */
+    width: 25%;
+    height: 100%;
+    padding-top: 5px;
+    position: relative;
+    border-right: solid 2px black;
+    margin-top: 5px;
+    /* display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center; */
+    /* border-bottom: 2px solid #222; */
+}
+
+#boardMakerPanelTabContents {
+    width: 75%;
+    height: 100%;
+    margin:0;
+    margin-top: 5px;
+    position: relative;
+    /* background-color:lime; */
+}
+
+.boardMakerPanelLeftTab {
+    background-color: #ddd;
+    /* background-color: #555; */
+    width: 90%;
+    height: 50px;
+    font-size: 12;
+    /* color: #222; */
+    font-weight: bold;
+    margin-left: 3px;
+    /* margin-right: -2px; */
+    border-radius: 10px;
+    border: 2px solid #222;
+    cursor: pointer;
+    float: left;
+    /* center text horizontally and vertically */
+    text-align: center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.boardMakerPanelSelectedTab {
+    background-color: #888;
+    /* background-color: #777; */
+    /* border-bottom: 2px solid #eee; */
+    /* border-bottom: 2px solid #777; */
+}
+
+#boardMakerPanelTabContents div table {
+    height: fit-content;
+}
+
+
+
+
+
+
 #pageFooter {
     width: 100%;
     font-size: 18;
