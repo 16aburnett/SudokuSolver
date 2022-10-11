@@ -44,72 +44,9 @@ let cageSumColor;
 let cageTextSize = 12;
 let cageTextFont = "Sans";
 
-let cages = [
-    [
-        9,
-        [[0,1],[0,2],[1,1]]
-    ],
-    [
-        9,
-        [[1,2],[1,3],[1,4]]
-    ],
-    [
-        9,
-        [[0,4],[0,5],[0,6]]
-    ],
-    [
-        9,
-        [[2,4],[2,5],[2,6]]
-    ],
-    [
-        9,
-        [[1,7],[2,7],[3,7]]
-    ],
-    [
-        9,
-        [[3,8],[4,8],[5,8]]
-    ],
-    [
-        9,
-        [[4,5],[4,6]]
-    ],
-    [
-        9,
-        [[3,4],[3,5]]
-    ],
-    [
-        9,
-        [[4,2],[4,3]]
-    ],
-    [
-        9,
-        [[5,3],[5,4]]
-    ],
-    [
-        9,
-        [[5,0],[5,1],[6,1]]
-    ],
-    [
-        9,
-        [[6,2],[6,3],[6,4]]
-    ],
-    [
-        9,
-        [[7,4],[7,5],[7,6]]
-    ],
-    [
-        9,
-        [[6,7],[7,7],[7,8]]
-    ],
-    [
-        9,
-        [[8,2],[8,3],[8,4]]
-    ],
-    [
-        10,
-        [[8,0],[8,1]]
-    ]
-];
+// list of cages
+// a cage consists of a cage sum and a list of cells that define the caged region
+let cages = [];
 
 // Cell structure
 let boardX;
@@ -183,15 +120,31 @@ const RGBA_COLORS = [
     [ 75,  75,  75, 175], // BLACK 
 ];
 
-const MODE_DIGIT       = 0;
-const MODE_TOP         = 1;
-const MODE_PENCIL      = 2;
-const MODE_COLOR       = 3;
-const MODE_BOARD_MAKER = 4;
-const MODE_BOARD       = 5;
-const MODE_SOLVER      = 6;
-const NUM_MODES        = 7;
-let editMode = MODE_DIGIT;
+const MODE_PLAY        = 0;
+const MODE_DIGIT       = 1;
+const MODE_TOP         = 2;
+const MODE_PENCIL      = 3;
+const MODE_COLOR       = 4;
+const MODE_BOARD_MAKER = 5;
+const MODE_BOARD       = 6;
+const MODE_SOLVER      = 7;
+const NUM_MODES        = 8;
+let editMode = MODE_PLAY;
+
+const PLAY_MODE_BASE   = 20;
+const PLAY_MODE_DIGIT  = PLAY_MODE_BASE + 0;
+const PLAY_MODE_TOP    = PLAY_MODE_BASE + 1;
+const PLAY_MODE_SMALL  = PLAY_MODE_BASE + 2;
+const PLAY_MODE_COLOR  = PLAY_MODE_BASE + 3;
+const PLAY_MODE_END    = PLAY_MODE_BASE + 4;
+let playMode = PLAY_MODE_BASE;
+
+const BOARD_MAKER_MODE_BASE     = 50;
+const BOARD_MAKER_MODE_DIGIT    = BOARD_MAKER_MODE_BASE + 0;
+const BOARD_MAKER_MODE_CAGES    = BOARD_MAKER_MODE_BASE + 1;
+const BOARD_MAKER_MODE_DOMINOES = BOARD_MAKER_MODE_BASE + 2;
+const BOARD_MAKER_MODE_END      = BOARD_MAKER_MODE_BASE + 3;
+let boardMakerMode = BOARD_MAKER_MODE_BASE;
 
 let isSolved = false;
 
@@ -253,6 +206,20 @@ function setDarkMode ()
     {
         tab.style ("background-color", DARKMODE_BACKGROUND2);
     }
+    select ("#boardMakerPanelTabContainer").style ("border-right", `solid 2px ${DARKMODE_FOREGROUND0}`);
+
+    // play panel
+    for (let tab of selectAll (".playPanelLeftTab"))
+    {
+        tab.style ("background-color", DARKMODE_BACKGROUND0);
+        tab.style ("color", DARKMODE_FOREGROUND0);
+        tab.style ("border", `2px solid ${DARKMODE_FOREGROUND0}`);
+    }
+    for (let tab of selectAll (".playPanelSelectedTab"))
+    {
+        tab.style ("background-color", DARKMODE_BACKGROUND2);
+    }
+    select ("#playPanelTabContainer").style ("border-right", `solid 2px ${DARKMODE_FOREGROUND0}`);
 
     selectionBorderColor = [50, 255, 255, 220];
     cursorBorderColor =    [250, 255, 50, 220];
@@ -316,6 +283,20 @@ function setLightMode ()
     {
         tab.style ("background-color", LIGHTMODE_BACKGROUND2);
     }
+    select ("#boardMakerPanelTabContainer").style ("border-right", `solid 2px ${LIGHTMODE_FOREGROUND0}`);
+
+    // play panel
+    for (let tab of selectAll (".playPanelLeftTab"))
+    {
+        tab.style ("background-color", LIGHTMODE_BACKGROUND0);
+        tab.style ("color", LIGHTMODE_FOREGROUND0);
+        tab.style ("border", `2px solid ${LIGHTMODE_FOREGROUND0}`);
+    }
+    for (let tab of selectAll (".playPanelSelectedTab"))
+    {
+        tab.style ("background-color", LIGHTMODE_BACKGROUND2);
+    }
+    select ("#playPanelTabContainer").style ("border-right", `solid 2px ${LIGHTMODE_FOREGROUND0}`);
 
     selectionBorderColor = [50, 50, 200, 220];
     cursorBorderColor =    [50, 255, 50, 220];
@@ -482,7 +463,7 @@ function draw ()
                 fill (digitColor);
                 textFont (globalTextFont);
                 textAlign (CENTER, CENTER);
-                textSize (cellHeight);
+                textSize (cellHeight-10);
                 text (board[i][j], cellCenterX, cellCenterY + 5);
             }
             // if digit is not filled in, draw any penciled-in digits
@@ -928,11 +909,31 @@ function isDigitValid (board, i, j, digit)
 
 //========================================================================
 
+function clearEverything ()
+{
+    clearSelectedCells ();
+    clearAllMarks ();
+    clearCages ();
+}
+
+function clearCages ()
+{
+    cages = [];
+}
+
 function clearSelectedCells ()
 {
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
             selectedCells[i][j] = 0;
+}
+
+function clearAllMarks ()
+{
+    clearBoard ();
+    clearTopDigits ();
+    clearPencilMarks ();
+    clearColors ();
 }
 
 function clearBoard ()
@@ -1025,10 +1026,19 @@ function keyPressed ()
         }
     }
 
-    // switch mode
+    // switch mode - spacebar
     if (key == " ")
     {
-        cycleMode ();
+        // play tab
+        if (editMode == MODE_PLAY)
+        {
+            cyclePlayMode ();
+        }
+        // board maker
+        else if (editMode == MODE_BOARD_MAKER)
+        {
+            cycleBoardMakerMode ();
+        }
     }
 
     // delete from selected
@@ -1109,8 +1119,13 @@ function keyPressed ()
 // digit, then the digit is instead removed from all of the selected cells
 function inputDigit (digit)
 {
+    // ** temporarily treat board maker digits as play digits
     let prevEditMode = editMode;
-    if (editMode == MODE_BOARD_MAKER && boardMakerMode == BOARD_MAKER_MODE_DIGIT) editMode = MODE_DIGIT;
+    if (editMode == MODE_BOARD_MAKER && boardMakerMode == BOARD_MAKER_MODE_DIGIT) 
+    {
+        editMode = MODE_PLAY;
+        playMode = PLAY_MODE_DIGIT;
+    }
     // 1. given digit is 0 - should clear all info from selected
     //   for the given mode
     if (digit == 0)
@@ -1122,25 +1137,25 @@ function inputDigit (digit)
                 // delete if cell is selected
                 if (selectedCells[i][j])
                 {
-                    if (editMode == MODE_DIGIT)
+                    if (editMode == MODE_PLAY && playMode == PLAY_MODE_DIGIT)
                     {
                         board[i][j] = 0;
                     }
-                    else if (editMode == MODE_TOP && board[i][j] == 0)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && board[i][j] == 0)
                     {
                         for (let k = 0; k < 9; ++k)
                         {
                             topDigits[i][j][k] = 0;
                         }
                     }
-                    else if (editMode == MODE_PENCIL && board[i][j] == 0)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && board[i][j] == 0)
                     {
                         for (let k = 0; k < 9; ++k)
                         {
                             pencilMarks[i][j][k] = 0;
                         }
                     }
-                    else if (editMode == MODE_COLOR)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_COLOR)
                     {
                         for (let k = 0; k < 9; ++k)
                         {
@@ -1160,22 +1175,22 @@ function inputDigit (digit)
             // delete if cell is selected
             if (selectedCells[i][j])
             {
-                if (editMode == MODE_DIGIT && board[i][j] != digit)
+                if (editMode == MODE_PLAY && playMode == PLAY_MODE_DIGIT && board[i][j] != digit)
                 {
                     board[i][j] = digit;
                     wasChanged = true;
                 }
-                else if (editMode == MODE_TOP && board[i][j] == 0 && topDigits[i][j][digit-1] == 0)
+                else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && board[i][j] == 0 && topDigits[i][j][digit-1] == 0)
                 {
                     topDigits[i][j][digit-1] = 1;
                     wasChanged = true;
                 }
-                else if (editMode == MODE_PENCIL && board[i][j] == 0 && pencilMarks[i][j][digit-1] == 0)
+                else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && board[i][j] == 0 && pencilMarks[i][j][digit-1] == 0)
                 {
                     pencilMarks[i][j][digit-1] = 1;
                     wasChanged = true;
                 }
-                else if (editMode == MODE_COLOR && cellColors[i][j][digit-1] == 0)
+                else if (editMode == MODE_PLAY && playMode == PLAY_MODE_COLOR && cellColors[i][j][digit-1] == 0)
                 {
                     cellColors[i][j][digit-1] = 1;
                     wasChanged = true;
@@ -1194,19 +1209,19 @@ function inputDigit (digit)
                 // delete if cell is selected
                 if (selectedCells[i][j])
                 {
-                    if (editMode == MODE_DIGIT)
+                    if (editMode == MODE_PLAY && playMode == PLAY_MODE_DIGIT)
                     {
                         board[i][j] = 0;
                     }
-                    else if (editMode == MODE_TOP && board[i][j] == 0)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && board[i][j] == 0)
                     {
                         topDigits[i][j][digit-1] = 0;
                     }
-                    else if (editMode == MODE_PENCIL && board[i][j] == 0)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && board[i][j] == 0)
                     {
                         pencilMarks[i][j][digit-1] = 0;
                     }
-                    else if (editMode == MODE_COLOR)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_COLOR)
                     {
                         cellColors[i][j][digit-1] = 0;
                         wasChanged = true;
@@ -1216,6 +1231,7 @@ function inputDigit (digit)
         }
     }
 
+    // ** temporary
     editMode = prevEditMode;
 
 }
@@ -1365,59 +1381,44 @@ function mousePositionToCell ()
 
 function loadEasyBoard (boardIndex)
 {
+    clearEverything ();
+
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
             board[i][j] = easyBoards[boardIndex][i][j];
-    
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearPencilMarks ();
-    clearColors ();
-    
 }
 
 //========================================================================
 
 function loadMediumBoard (boardIndex)
 {
+    clearEverything ();
+
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
             board[i][j] = mediumBoards[boardIndex][i][j];
-    
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearPencilMarks ();
-    clearColors ();
-    
 }
 
 //========================================================================
 
 function loadHardBoard (boardIndex)
 {
+    clearEverything ();
+
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
             board[i][j] = hardBoards[boardIndex][i][j];
-    
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearPencilMarks ();
-    clearColors ();
-    
 }
 
 //========================================================================
 
 function loadExpertBoard (boardIndex)
 {
+    clearEverything ();
+
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
             board[i][j] = expertBoards[boardIndex][i][j];
-    
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearPencilMarks ();
-    clearColors ();
     
 }
 
@@ -1425,54 +1426,39 @@ function loadExpertBoard (boardIndex)
 
 function loadEvilBoard (boardIndex)
 {
+    clearEverything ();
+
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
             board[i][j] = evilBoards[boardIndex][i][j];
-    
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearPencilMarks ();
-    clearColors ();
-    
 }
 
 //========================================================================
 
-function cycleMode ()
+function loadCageBoard (boardIndex)
 {
-    editMode = (editMode + 1) % NUM_MODES;
-    if (editMode == MODE_DIGIT)
-        digitTab ();
-    else if (editMode == MODE_TOP)
-        topDigitTab ();
-    else if (editMode == MODE_PENCIL)
-        smallDigitTab ();
-    else if (editMode == MODE_COLOR)
-        colorTab ();
-    else if (editMode == MODE_BOARD_MAKER)
-        boardMakerTab ();
-    else if (editMode == MODE_BOARD)
-        boardTab ();
-    else if (editMode == MODE_SOLVER)
-        solverTab ();
+    clearEverything ();
+
+    for (let i = 0; i < 9; ++i)
+        for (let j = 0; j < 9; ++j)
+            board[i][j] = cagesBoards[boardIndex].board[i][j];
+    // add cages
+    for (let cagei = 0; cagei < cagesBoards[boardIndex].cages.length; ++cagei)
+    {
+        cages.push (cagesBoards[boardIndex].cages[cagei]);
+    }
 }
 
 //========================================================================
 
 function hideTabs ()
 {
-    select ("#digitPanel")     .style ("display", "none");
-    select ("#topDigitPanel")  .style ("display", "none");
-    select ("#smallDigitPanel").style ("display", "none");
-    select ("#colorPanel")     .style ("display", "none");
+    select ("#playPanel")      .style ("display", "none");
     select ("#boardMakerPanel").style ("display", "none");
     select ("#boardPanel")     .style ("display", "none");
     select ("#solverPanel")    .style ("display", "none");
 
-    select ("#digitTab")     .removeClass ("selectedTab");
-    select ("#topDigitTab")  .removeClass ("selectedTab");
-    select ("#smallDigitTab").removeClass ("selectedTab");
-    select ("#colorTab")     .removeClass ("selectedTab");
+    select ("#playTab")      .removeClass ("selectedTab");
     select ("#boardMakerTab").removeClass ("selectedTab");
     select ("#boardTab")     .removeClass ("selectedTab");
     select ("#solverTab")    .removeClass ("selectedTab");
@@ -1480,62 +1466,17 @@ function hideTabs ()
 
 //========================================================================
 
-function digitTab ()
+function playTab ()
 {
     hideTabs ();
 
-    select ("#digitPanel")     .style ("display", "flex");
+    select ("#playPanel")     .style ("display", "flex");
 
-    select ("#digitTab")     .addClass ("selectedTab");
+    select ("#playTab")     .addClass ("selectedTab");
 
     if (isDarkMode) setDarkMode (); else setLightMode ();
 
-    editMode = MODE_DIGIT;
-}
-
-//========================================================================
-
-function topDigitTab ()
-{
-    hideTabs ();
-    
-    select ("#topDigitPanel").style ("display", "flex");
-
-    select ("#topDigitTab").addClass ("selectedTab");
-    
-    if (isDarkMode) setDarkMode (); else setLightMode ();
-
-    editMode = MODE_TOP;
-}
-
-//========================================================================
-
-function smallDigitTab ()
-{
-    hideTabs ();
-    
-    select ("#smallDigitPanel").style ("display", "flex");
-
-    select ("#smallDigitTab").addClass ("selectedTab");
-    
-    if (isDarkMode) setDarkMode (); else setLightMode ();
-
-    editMode = MODE_PENCIL;
-}
-
-//========================================================================
-
-function colorTab ()
-{
-    hideTabs ();
-    
-    select ("#colorPanel").style ("display", "flex");
-
-    select ("#colorTab").addClass ("selectedTab");
-    
-    if (isDarkMode) setDarkMode (); else setLightMode ();
-
-    editMode = MODE_COLOR;
+    editMode = MODE_PLAY;
 }
 
 //========================================================================
@@ -1585,17 +1526,110 @@ function solverTab ()
 
 //========================================================================
 
+// play tab
+
+function cyclePlayMode ()
+{
+    ++playMode;
+    if (playMode >= PLAY_MODE_END) playMode = PLAY_MODE_BASE;
+
+    if (playMode == PLAY_MODE_DIGIT)
+        playPanelDigitTab ();
+    else if (playMode == PLAY_MODE_TOP)
+        playPanelTopDigitTab ();
+    else if (playMode == PLAY_MODE_SMALL)
+        playPanelSmallDigitTab ();
+    else if (playMode == PLAY_MODE_COLOR)
+        playPanelColorTab ();
+    else
+        console.warn ("Unknown play mode ", playMode);
+}
+
+//========================================================================
+
+function hidePlayTabs ()
+{
+    select ("#playPanelDigitPanel")     .style ("display", "none");
+    select ("#playPanelTopDigitPanel")  .style ("display", "none");
+    select ("#playPanelSmallDigitPanel").style ("display", "none");
+    select ("#playPanelColorPanel")     .style ("display", "none");
+
+    select ("#playPanelDigitTab")     .removeClass ("playPanelSelectedTab");
+    select ("#playPanelTopDigitTab")  .removeClass ("playPanelSelectedTab");
+    select ("#playPanelSmallDigitTab").removeClass ("playPanelSelectedTab");
+    select ("#playPanelColorTab")     .removeClass ("playPanelSelectedTab");
+}
+
+//========================================================================
+
+function playPanelDigitTab ()
+{
+    hidePlayTabs ();
+    
+    select ("#playPanelDigitPanel")    .style ("display", "flex");
+
+    select ("#playPanelDigitTab")    .addClass ("playPanelSelectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
+    playMode = PLAY_MODE_DIGIT;
+}
+
+//========================================================================
+
+function playPanelTopDigitTab ()
+{
+    hidePlayTabs ();
+    
+    select ("#playPanelTopDigitPanel")    .style ("display", "flex");
+
+    select ("#playPanelTopDigitTab")    .addClass ("playPanelSelectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
+    playMode = PLAY_MODE_TOP;
+}
+
+//========================================================================
+
+function playPanelSmallDigitTab ()
+{
+    hidePlayTabs ();
+    
+    select ("#playPanelSmallDigitPanel")    .style ("display", "flex");
+
+    select ("#playPanelSmallDigitTab")    .addClass ("playPanelSelectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
+    playMode = PLAY_MODE_SMALL;
+}
+
+//========================================================================
+
+function playPanelColorTab ()
+{
+    hidePlayTabs ();
+    
+    select ("#playPanelColorPanel")    .style ("display", "flex");
+
+    select ("#playPanelColorTab")    .addClass ("playPanelSelectedTab");
+    
+    if (isDarkMode) setDarkMode (); else setLightMode ();
+
+    playMode = PLAY_MODE_COLOR;
+}
+
+//========================================================================
+
 // board maker tabs
 
-const BOARD_MAKER_MODE_DIGIT    = 50;
-const BOARD_MAKER_MODE_CAGES    = 51;
-const BOARD_MAKER_MODE_DOMINOES = 52;
-const BOARD_MAKER_NUM_MODES = 3;
-let boardMakerMode = BOARD_MAKER_MODE_DIGIT;
 
 function cycleBoardMakerMode ()
 {
-    boardMakerMode = (boardMakerMode + 1) % BOARD_MAKER_NUM_MODES;
+    ++boardMakerMode;
+    if (boardMakerMode >= BOARD_MAKER_MODE_END) boardMakerMode = BOARD_MAKER_MODE_BASE;
+
     if (boardMakerMode == BOARD_MAKER_MODE_DIGIT)
         boardMakerPanelDigitTab ();
     else if (boardMakerMode == BOARD_MAKER_MODE_CAGES)
@@ -1603,7 +1637,7 @@ function cycleBoardMakerMode ()
     else if (boardMakerMode == BOARD_MAKER_MODE_DOMINOES)
         boardMakerPanelDominoesTab ();
     else
-        console.warn ("Unknown board maker mode", boardMakerMode);
+        console.warn ("Unknown board maker mode ", boardMakerMode);
 }
 
 //========================================================================

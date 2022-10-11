@@ -17,6 +17,17 @@
     - spacebar should only cycle between penciling tools
 
 
+- rules description above the tabs 
+
+Premade Boards Tab
+- normal sudokus
+- advanced sudokus with killer cages etc
+
+Board Generation Tab
+- difficulty
+- techniques
+- integration with board maker? or keep as separate
+
 BOARD MAKER
 - board size - I want hexadecimal sudokus ya nerd!
 - series of buttons for adding different constraints like given digits, cages, lines, arrows, colors

@@ -55,7 +55,8 @@ function basicSolverSolve ()
 
 function basicSolverPencilDigits ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
     // clear previous selections
     clearSelectedCells ();
     clearTopDigits ();
@@ -115,7 +116,8 @@ function basicSolverReducePenciledDigits ()
 
 function basicSolverFillDigits ()
 {
-    editMode = MODE_DIGIT;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_DIGIT;
     // clear previous selections
     clearSelectedCells ();
     clearTopDigits ();
@@ -158,7 +160,8 @@ function basicSolverFillDigits ()
 // this covers naked singles and hidden singles
 function hiddenSinglesInRow ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -206,7 +209,8 @@ function hiddenSinglesInRow ()
 // this covers naked singles and hidden singles
 function hiddenSinglesInCol ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -254,7 +258,8 @@ function hiddenSinglesInCol ()
 // this covers naked singles and hidden singles
 function hiddenSinglesInBox ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -312,7 +317,8 @@ function hiddenSinglesInBox ()
 // and removes their digits from elsewhere in the row
 function nakedPairsInRow ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -379,7 +385,8 @@ function nakedPairsInRow ()
 
 function nakedPairsInCol ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -446,7 +453,8 @@ function nakedPairsInCol ()
 
 function nakedPairsInBox ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -532,7 +540,8 @@ function nakedPairsInBox ()
 // by removing other penciled digits from the pair's cells
 function hiddenPairsInRow ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -635,7 +644,8 @@ function hiddenPairsInRow ()
 // by removing other penciled digits from the pair's cells
 function hiddenPairsInCol ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -738,7 +748,8 @@ function hiddenPairsInCol ()
 // by removing other penciled digits from the pair's cells
 function hiddenPairsInBox ()
 {
-    editMode = MODE_PENCIL;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -867,7 +878,8 @@ function hiddenPairsInBox ()
 // ** i believe this is referred to as locked candidates
 function lockedDigitInRow ()
 {
-    editMode = MODE_COLOR;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_COLOR;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -969,7 +981,8 @@ function lockedDigitInRow ()
 // and we can then eliminate that digit from other cells in that box
 function lockedDigitInCol ()
 {
-    editMode = MODE_COLOR;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_COLOR;
 
     clearSelectedCells ();
     clearTopDigits ();
@@ -1070,7 +1083,8 @@ function lockedDigitInCol ()
 // so that we can eliminate the digit from the rest of the cells from that row or col
 function lockedDigitInBox ()
 {
-    editMode = MODE_COLOR;
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_COLOR;
 
     clearSelectedCells ();
     clearTopDigits ();

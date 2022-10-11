@@ -24,211 +24,23 @@
             </div>
             <div id="rightPanel">
                 <div id="panelTabs">
-                    <div class="panelTab selectedTab" id="digitTab" onclick="digitTab()"><p>Digits</p></div>
-                    <div class="panelTab" id="topDigitTab" onclick="topDigitTab()"><p>Top Digits</p></div>
-                    <div class="panelTab" id="smallDigitTab" onclick="smallDigitTab()"><p>Small Digits</p></div>
-                    <div class="panelTab" id="colorTab" onclick="colorTab()"><p>Colors</p></div>
-                    <div class="panelTab" id="boardMakerTab" onclick="boardMakerTab()"><p>Board Maker</p></div>
-                    <div class="panelTab" id="boardTab" onclick="boardTab()"><p>Board Gen</p></div>
-                    <div class="panelTab" id="solverTab" onclick="solverTab()"><p>Solver</p></div>
+                    <div class="panelTab selectedTab" id="playTab"       onclick="playTab()"><p>Play</p></div>
+                    <div class="panelTab"             id="boardMakerTab" onclick="boardMakerTab()"><p>Board Maker</p></div>
+                    <div class="panelTab"             id="boardTab"      onclick="boardTab()"><p>Board Gen</p></div>
+                    <div class="panelTab"             id="solverTab"     onclick="solverTab()"><p>Solver</p></div>
                 </div>
                 <div>
-                    <div id="digitPanel" class="buttonPanel centerContents">
-                        <table>
-                            <tr>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(1)">1</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(2)">2</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(3)">3</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(4)">4</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(5)">5</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(6)">6</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(7)">7</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(8)">8</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton digitButtonLabel" onclick="inputDigit(9)">9</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div id="topDigitPanel" class="buttonPanel centerContents" style="display: none;">
-                        <table>
-                            <tr>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(1)"><div class="topDigitButtonLabel">1</div></button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(2)"><div class="topDigitButtonLabel">2</div></button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(3)"><div class="topDigitButtonLabel">3</div></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(4)"><div class="topDigitButtonLabel">4</div></button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(5)"><div class="topDigitButtonLabel">5</div></button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(6)"><div class="topDigitButtonLabel">6</div></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(7)"><div class="topDigitButtonLabel">7</div></button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(8)"><div class="topDigitButtonLabel">8</div></button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(9)"><div class="topDigitButtonLabel">9</div></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div id="smallDigitPanel" class="buttonPanel centerContents" style="display: none;">
-                        <table>
-                            <tr>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(1)">1</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(2)">2</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(3)">3</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(4)">4</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(5)">5</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(6)">6</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(7)">7</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(8)">8</button>
-                                </td>
-                                <td>
-                                    <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(9)">9</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div id="colorPanel" class="buttonPanel centerContents" style="display: none;">
-                        <table>
-                            <tr>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(1)" title="Red">
-                                        <div class="colorButtonLabel" id="RED_BUTTON"></div>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(2)" title="Orange">
-                                        <div class="colorButtonLabel" id="ORANGE_BUTTON"></div>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(3)" title="Yellow">
-                                        <div class="colorButtonLabel" id="YELLOW_BUTTON"></div>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(4)" title="Green">
-                                        <div class="colorButtonLabel" id="GREEN_BUTTON"></div>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(5)" title="Blue">
-                                        <div class="colorButtonLabel" id="BLUE_BUTTON"></div>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(6)" title="Purple">
-                                        <div class="colorButtonLabel" id="PURPLE_BUTTON"></div>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(7)" title="Pink">
-                                        <div class="colorButtonLabel" id="PINK_BUTTON"></div>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(8)" title="Gray">
-                                        <div class="colorButtonLabel" id="GRAY_BUTTON"></div>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="panelButton" onclick="inputDigit(9)" title="Black">
-                                        <div class="colorButtonLabel" id="BLACK_BUTTON"></div>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div id="boardMakerPanel" class="buttonPanel centerContents" style="display: none;">
+                    <div id="playPanel" class="buttonPanel" style="">
                         <!-- left tabs -->
-                        <div id="boardMakerPanelTabContainer">
-                            <div class="boardMakerPanelLeftTab boardMakerPanelSelectedTab" id="boardMakerPanelDigitTab" onclick="boardMakerPanelDigitTab()">Digit</div>
-                            <div class="boardMakerPanelLeftTab" id="boardMakerPanelCagesTab" onclick="boardMakerPanelCagesTab()">Cages</div>
-                            <div class="boardMakerPanelLeftTab" id="boardMakerPanelDominoesTab" onclick="boardMakerPanelDominoesTab()">Dominoes</div>
+                        <div id="playPanelTabContainer">
+                            <div class="playPanelLeftTab playPanelSelectedTab" id="playPanelDigitTab" onclick="playPanelDigitTab()">Digits</div>
+                            <div class="playPanelLeftTab" id="playPanelTopDigitTab"                   onclick="playPanelTopDigitTab()">Top Digits</div>
+                            <div class="playPanelLeftTab" id="playPanelSmallDigitTab"                 onclick="playPanelSmallDigitTab()">Small Digits</div>
+                            <div class="playPanelLeftTab" id="playPanelColorTab"                      onclick="playPanelColorTab()">Colors</div>
                         </div>
                         <!-- left tab's content -->
-                        <div id="boardMakerPanelTabContents">
-                            <div id="boardMakerPanelDigitPanel" class="buttonPanel" style="overflow:hidden">
+                        <div id="playPanelTabContents">
+                            <div id="playPanelDigitPanel" class="" style="overflow:hidden">
                                 <table>
                                     <tr>
                                         <th class="color-foreground0" colspan="3">
@@ -275,7 +87,224 @@
                                     </tr>
                                 </table>
                             </div>
-                            <div id="boardMakerPanelCagesPanel" class="buttonPanel" style="display:none;overflow:hidden;">
+                            <div id="playPanelTopDigitPanel" class="" style="display:none;overflow:hidden;">
+                                <table>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="3">
+                                            Top Digits
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(1)"><div class="topDigitButtonLabel">1</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(2)"><div class="topDigitButtonLabel">2</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(3)"><div class="topDigitButtonLabel">3</div></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(4)"><div class="topDigitButtonLabel">4</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(5)"><div class="topDigitButtonLabel">5</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(6)"><div class="topDigitButtonLabel">6</div></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(7)"><div class="topDigitButtonLabel">7</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(8)"><div class="topDigitButtonLabel">8</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(9)"><div class="topDigitButtonLabel">9</div></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id="playPanelSmallDigitPanel" class="" style="display:none;overflow:hidden;">
+                                <table>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="3">
+                                            Small Digits
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(1)">1</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(2)">2</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(3)">3</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(4)">4</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(5)">5</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(6)">6</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(7)">7</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(8)">8</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="inputDigit(9)">9</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id="playPanelColorPanel" class="" style="display:none;overflow:hidden;">
+                                <table>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="3">
+                                            Coloring Tool
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(1)" title="Red">
+                                                <div class="colorButtonLabel" id="RED_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(2)" title="Orange">
+                                                <div class="colorButtonLabel" id="ORANGE_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(3)" title="Yellow">
+                                                <div class="colorButtonLabel" id="YELLOW_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(4)" title="Green">
+                                                <div class="colorButtonLabel" id="GREEN_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(5)" title="Blue">
+                                                <div class="colorButtonLabel" id="BLUE_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(6)" title="Purple">
+                                                <div class="colorButtonLabel" id="PURPLE_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(7)" title="Pink">
+                                                <div class="colorButtonLabel" id="PINK_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(8)" title="Gray">
+                                                <div class="colorButtonLabel" id="GRAY_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="inputDigit(9)" title="Black">
+                                                <div class="colorButtonLabel" id="BLACK_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="boardMakerPanel" class="buttonPanel" style="display: none;">
+                        <!-- left tabs -->
+                        <div id="boardMakerPanelTabContainer">
+                            <div class="boardMakerPanelLeftTab boardMakerPanelSelectedTab" id="boardMakerPanelDigitTab" onclick="boardMakerPanelDigitTab()">Digit</div>
+                            <div class="boardMakerPanelLeftTab" id="boardMakerPanelCagesTab" onclick="boardMakerPanelCagesTab()">Cages</div>
+                            <div class="boardMakerPanelLeftTab" id="boardMakerPanelDominoesTab" onclick="boardMakerPanelDominoesTab()">Dominoes</div>
+                        </div>
+                        <!-- left tab's content -->
+                        <div id="boardMakerPanelTabContents">
+                            <div id="boardMakerPanelDigitPanel" class="" style="overflow:hidden">
+                                <table>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="3">
+                                            Digits
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(1)">1</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(2)">2</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(3)">3</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(4)">4</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(5)">5</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(6)">6</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(7)">7</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(8)">8</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="inputDigit(9)">9</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <button class="panelButton" onclick="inputDigit(0)">CLEAR</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id="boardMakerPanelCagesPanel" class="" style="display:none;overflow:hidden;">
                                 <table>
                                     <tr>
                                         <th class="color-foreground0" colspan="3">
@@ -299,7 +328,15 @@
                                     </tr>
                                 </table>
                             </div>
-                            <div id="boardMakerPanelDominoesPanel" class="buttonPanel centerContents" style="display:none;overflow:hidden;">Dominoes Panel</div>
+                            <div id="boardMakerPanelDominoesPanel" class="" style="display:none;overflow:hidden;">
+                                <table>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="3">
+                                            Dominoes
+                                        </th>
+                                    </tr>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div id="boardPanel" class="buttonPanel centerContents" style="display: none;">
@@ -363,6 +400,14 @@
                                 </td>
                                 <td colspan="1">
                                     <button class="panelButton" id="evilBoardButton" onclick="loadEvilBoard (2)" title="Evil Board">Evil Board 2</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="color-foreground0" colspan="3">Killer Cage Sudokus</th>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (0)" title="Cage Board">Cage Board 0</button>
                                 </td>
                             </tr>
                         </table>
