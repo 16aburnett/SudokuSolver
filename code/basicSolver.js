@@ -29,7 +29,7 @@ function basicSolverSolve ()
             prevBoard.push ([]);
             for (let j = 0; j < 9; ++j)
             {
-                prevBoard[i].push (board[i][j]);
+                prevBoard[i].push (sudokuBoard.board[i][j]);
             }
         }
 
@@ -44,7 +44,7 @@ function basicSolverSolve ()
         let hasChanged = false;
         for (let i = 0; i < 9; ++i)
             for (let j = 0; j < 9; ++j)
-                if (prevBoard[i][j] != board[i][j])
+                if (prevBoard[i][j] != sudokuBoard.board[i][j])
                     hasChanged = true;
         if (!hasChanged) break;
     }
@@ -58,30 +58,30 @@ function basicSolverPencilDigits ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
     // clear previous selections
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     for (let i = 0; i < 9; ++i)
     {
         for (let j = 0; j < 9; ++j)
         {
             // ensure cell isn't already filled in
-            if (board[i][j] == 0)
+            if (sudokuBoard.board[i][j] == 0)
             {
                 // clear previous pencil marks
-                selectedCells[i][j] = 1;
-                inputDigit (0);
+                sudokuBoard.selectedCells[i][j] = 1;
+                sudokuBoard.inputDigit (0);
                 for (let d = 1; d <= 9; ++d)
                 {
-                    if (isDigitValid (board, i, j, d))
+                    if (sudokuBoard.isDigitValid (i, j, d))
                     {
                         // pencil in digit
-                        inputDigit (d);
+                        sudokuBoard.inputDigit (d);
                     }
                 }
                 // deselect cell
-                selectedCells[i][j] = 0;
+                sudokuBoard.selectedCells[i][j] = 0;
             }
         }
     }
@@ -94,7 +94,7 @@ function basicSolverPencilDigits ()
 function basicSolverReducePenciledDigits ()
 {
     // clear previous selections
-    clearSelectedCells ();
+    sudokuBoard.clearSelectedCells ();
 
     hiddenSinglesInRow ();
     hiddenSinglesInCol ();
@@ -119,23 +119,23 @@ function basicSolverFillDigits ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_DIGIT;
     // clear previous selections
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     for (let i = 0; i < 9; ++i)
     {
         for (let j = 0; j < 9; ++j)
         {
             // ensure cell isn't already filled in
-            if (board[i][j] == 0)
+            if (sudokuBoard.board[i][j] == 0)
             {
                 // ensure cell only has one penciled in digit
                 let numPenciledInDigits = 0;
                 let penciledInDigit = 0;
                 for (let p = 0; p < 9; ++p)
                 {
-                    if (pencilMarks[i][j][p] == 1)
+                    if (sudokuBoard.centerDigits[i][j][p] == 1)
                     {
                         numPenciledInDigits++;
                         penciledInDigit = p+1;
@@ -143,9 +143,9 @@ function basicSolverFillDigits ()
                 }
                 if (numPenciledInDigits == 1)
                 {
-                    selectedCells[i][j] = 1;
-                    inputDigit (penciledInDigit);
-                    selectedCells[i][j] = 0;
+                    sudokuBoard.selectedCells[i][j] = 1;
+                    sudokuBoard.inputDigit (penciledInDigit);
+                    sudokuBoard.selectedCells[i][j] = 0;
                 }
             }
         }
@@ -163,9 +163,9 @@ function hiddenSinglesInRow ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     let hasChanged = false;
     for (let i = 0; i < 9; ++i)
@@ -177,10 +177,10 @@ function hiddenSinglesInRow ()
             for (let j = 0; j < 9; ++j)
             {
                 // ensure cell isn't already filled in
-                if (board[i][j] == 0 && isDigitValid (board, i, j, d))
+                if (sudokuBoard.board[i][j] == 0 && sudokuBoard.isDigitValid (i, j, d))
                 {
                     // check to see if digit is penciled in
-                    if (pencilMarks[i][j][d-1] == 1)
+                    if (sudokuBoard.centerDigits[i][j][d-1] == 1)
                     {
                         possibleLocations++;
                         possibleLocation = j;
@@ -190,11 +190,11 @@ function hiddenSinglesInRow ()
             if (possibleLocations == 1)
             {
                 // theres only one place that d can go, so place it here
-                selectedCells[i][possibleLocation] = 1;
+                sudokuBoard.selectedCells[i][possibleLocation] = 1;
                 // clear other pencil marks
-                inputDigit (0);
-                inputDigit (d);
-                selectedCells[i][possibleLocation] = 0;
+                sudokuBoard.inputDigit (0);
+                sudokuBoard.inputDigit (d);
+                sudokuBoard.selectedCells[i][possibleLocation] = 0;
                 hasChanged = true;
             }
         }
@@ -212,9 +212,9 @@ function hiddenSinglesInCol ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     let hasChanged = false;
     for (let j = 0; j < 9; ++j)
@@ -226,10 +226,10 @@ function hiddenSinglesInCol ()
             for (let i = 0; i < 9; ++i)
             {
                 // ensure cell isn't already filled in
-                if (board[i][j] == 0 && isDigitValid (board, i, j, d))
+                if (sudokuBoard.board[i][j] == 0 && sudokuBoard.isDigitValid (i, j, d))
                 {
                     // check to see if digit is penciled in
-                    if (pencilMarks[i][j][d-1] == 1)
+                    if (sudokuBoard.centerDigits[i][j][d-1] == 1)
                     {
                         possibleLocations++;
                         possibleLocation = i;
@@ -239,11 +239,11 @@ function hiddenSinglesInCol ()
             if (possibleLocations == 1)
             {
                 // theres only one place that d can go, so place it here
-                selectedCells[possibleLocation][j] = 1;
+                sudokuBoard.selectedCells[possibleLocation][j] = 1;
                 // clear other pencil marks
-                inputDigit (0);
-                inputDigit (d);
-                selectedCells[possibleLocation][j] = 0;
+                sudokuBoard.inputDigit (0);
+                sudokuBoard.inputDigit (d);
+                sudokuBoard.selectedCells[possibleLocation][j] = 0;
                 hasChanged = true;
             }
         }
@@ -261,9 +261,9 @@ function hiddenSinglesInBox ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     let hasChanged = false;
 
@@ -282,10 +282,10 @@ function hiddenSinglesInBox ()
                     {
                         // ensure cell isn't already filled in
                         // and that this digit is valid here
-                        if (board[i][j] == 0 && isDigitValid (board, i, j, d))
+                        if (sudokuBoard.board[i][j] == 0 && sudokuBoard.isDigitValid (i, j, d))
                         {
                             // check to see if digit is penciled in
-                            if (pencilMarks[i][j][d-1] == 1)
+                            if (sudokuBoard.centerDigits[i][j][d-1] == 1)
                             {
                                 possibleLocations++;
                                 possiblei = i;
@@ -297,11 +297,11 @@ function hiddenSinglesInBox ()
                 if (possibleLocations == 1)
                 {
                     // theres only one place that d can go, so place it here
-                    selectedCells[possiblei][possiblej] = 1;
+                    sudokuBoard.selectedCells[possiblei][possiblej] = 1;
                     // clear other pencil marks
-                    inputDigit (0);
-                    inputDigit (d);
-                    selectedCells[possiblei][possiblej] = 0;
+                    sudokuBoard.inputDigit (0);
+                    sudokuBoard.inputDigit (d);
+                    sudokuBoard.selectedCells[possiblei][possiblej] = 0;
                     hasChanged = true;
                 }
             }
@@ -320,9 +320,9 @@ function nakedPairsInRow ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     // row pairs
     for (let i = 0; i < 9; ++i)
@@ -330,26 +330,26 @@ function nakedPairsInRow ()
         // first, look for a cell with only two penciled in digits
         for (let j = 0; j < 9; ++j)
         {
-            let penciledDigitsj = getPenciledDigits (i, j);
+            let penciledDigitsj = sudokuBoard.getCenterDigits (i, j);
             // ensure it has two digits
             if (penciledDigitsj.length == 2)
             {
                 // then find a matching cell with the same two penciled in digits
                 for (let k = j+1; k < 9; ++k)
                 {
-                    let penciledDigitsk = getPenciledDigits (i, k);
+                    let penciledDigitsk = sudokuBoard.getCenterDigits (i, k);
                     // ensure it has two digits and matching digits
                     if (penciledDigitsk.length == 2 && penciledDigitsj[0] == penciledDigitsk[0] && penciledDigitsj[1] == penciledDigitsk[1])
                     {
                         // found a pair!
-                        cellColors[i][j][COLOR_GREEN-1] = 1;
-                        cellColors[i][k][COLOR_GREEN-1] = 1;
+                        sudokuBoard.cellColors[i][j][COLOR_GREEN-1] = 1;
+                        sudokuBoard.cellColors[i][k][COLOR_GREEN-1] = 1;
                         // highlight this row
                         for (let jj = 0; jj < 9; ++jj)
                         {
                             // ensure it is not one of the pair cells
                             if (jj == j || jj == k) continue;
-                            cellColors[i][jj][COLOR_YELLOW-1] = 1;
+                            sudokuBoard.cellColors[i][jj][COLOR_YELLOW-1] = 1;
                         }
                         // since this pair exists, we know that neither of these digits
                         // can appear in other cells in this row
@@ -360,14 +360,14 @@ function nakedPairsInRow ()
                             if (j != jj && k != jj)
                             {
                                 // remove pair's digits if it exists
-                                let penciledDigitsijj = getPenciledDigits (i, jj);
+                                let penciledDigitsijj = sudokuBoard.getCenterDigits (i, jj);
                                 for (let x = 0; x < penciledDigitsj.length; ++x)
                                 {
                                     if (penciledDigitsijj.includes (penciledDigitsj[x]))
                                     {
-                                        pencilMarks[i][jj][penciledDigitsj[x]-1] = 0;
+                                        sudokuBoard.centerDigits[i][jj][penciledDigitsj[x]-1] = 0;
                                         // highlight this cell to denote that it was reduced
-                                        cellColors[i][jj][COLOR_RED-1] = 1;
+                                        sudokuBoard.cellColors[i][jj][COLOR_RED-1] = 1;
                                     }
                                 }
                             }
@@ -388,9 +388,9 @@ function nakedPairsInCol ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     // column pairs
     for (let j = 0; j < 9; ++j)
@@ -398,26 +398,26 @@ function nakedPairsInCol ()
         // first, look for a cell with only two penciled in digits
         for (let i = 0; i < 9; ++i)
         {
-            let penciledDigitsi = getPenciledDigits (i, j);
+            let penciledDigitsi = sudokuBoard.getCenterDigits (i, j);
             // ensure it has two digits
             if (penciledDigitsi.length == 2)
             {
                 // then find a matching cell with the same two penciled in digits
                 for (let k = i+1; k < 9; ++k)
                 {
-                    let penciledDigitsk = getPenciledDigits (k, j);
+                    let penciledDigitsk = sudokuBoard.getCenterDigits (k, j);
                     // ensure it has two digits and matching digits
                     if (penciledDigitsk.length == 2 && penciledDigitsi[0] == penciledDigitsk[0] && penciledDigitsi[1] == penciledDigitsk[1])
                     {
                         // found a pair!
-                        cellColors[i][j][COLOR_GREEN-1] = 1;
-                        cellColors[k][j][COLOR_GREEN-1] = 1;
+                        sudokuBoard.cellColors[i][j][COLOR_GREEN-1] = 1;
+                        sudokuBoard.cellColors[k][j][COLOR_GREEN-1] = 1;
                         // highlight this column
                         for (let ii = 0; ii < 9; ++ii)
                         {
                             // ensure it is not one of the pair cells
                             if (ii == i || ii == k) continue;
-                            cellColors[ii][j][COLOR_YELLOW-1] = 1;
+                            sudokuBoard.cellColors[ii][j][COLOR_YELLOW-1] = 1;
                         }
                         // since this pair exists, we know that neither of these digits
                         // can appear in other cells in this column
@@ -428,14 +428,14 @@ function nakedPairsInCol ()
                             if (i != ii && k != ii)
                             {
                                 // remove pair's digits if it exists
-                                let penciledDigitsiij = getPenciledDigits (ii, j);
+                                let penciledDigitsiij = sudokuBoard.getCenterDigits (ii, j);
                                 for (let x = 0; x < penciledDigitsi.length; ++x)
                                 {
                                     if (penciledDigitsiij.includes (penciledDigitsi[x]))
                                     {
-                                        pencilMarks[ii][j][penciledDigitsi[x]-1] = 0;
+                                        sudokuBoard.centerDigits[ii][j][penciledDigitsi[x]-1] = 0;
                                         // highlight this cell to be sure
-                                        cellColors[ii][j][COLOR_RED-1] = 1;
+                                        sudokuBoard.cellColors[ii][j][COLOR_RED-1] = 1;
                                     }
                                 }
                             }
@@ -456,9 +456,9 @@ function nakedPairsInBox ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     // for each box
     for (let boxi = 0; boxi < 3; ++boxi)
@@ -470,7 +470,7 @@ function nakedPairsInBox ()
             {
                 for (let j = boxj*3; j < (boxj+1)*3; ++j)
                 {
-                    let penciledDigitsij = getPenciledDigits (i, j);
+                    let penciledDigitsij = sudokuBoard.getCenterDigits (i, j);
                     // ensure it has two digits
                     if (penciledDigitsij.length == 2)
                     {
@@ -479,7 +479,7 @@ function nakedPairsInBox ()
                         {
                             for (let l = boxj*3; l < (boxj+1)*3; ++l)
                             {
-                                let penciledDigitskl = getPenciledDigits (k, l);
+                                let penciledDigitskl = sudokuBoard.getCenterDigits (k, l);
                                 // ensure it has two digits and matching digits
                                 // and ensure it is not the same cell
                                 if (!(i==k&&j==l) && penciledDigitskl.length == 2 && penciledDigitsij[0] == penciledDigitskl[0] && penciledDigitsij[1] == penciledDigitskl[1])
@@ -497,28 +497,28 @@ function nakedPairsInBox ()
                                             {
                                                 // remove pair's digits if it exists
                                                 let hasReduced = false;
-                                                let penciledDigitsiijj = getPenciledDigits (ii, jj);
+                                                let penciledDigitsiijj = sudokuBoard.getCenterDigits (ii, jj);
                                                 for (let x = 0; x < penciledDigitsij.length; ++x)
                                                 {
                                                     // includes pair's digits
                                                     if (penciledDigitsiijj.includes (penciledDigitsij[x]))
                                                     {
-                                                        pencilMarks[ii][jj][penciledDigitsij[x]-1] = 0;
+                                                        sudokuBoard.centerDigits[ii][jj][penciledDigitsij[x]-1] = 0;
                                                         // highlight this cell to be sure
-                                                        cellColors[ii][jj][COLOR_RED-1] = 1;
+                                                        sudokuBoard.cellColors[ii][jj][COLOR_RED-1] = 1;
                                                         hasReduced = true;
                                                     }
                                                 }
                                                 // if we didnt reduce a digit, then color the cell yellow
                                                 if (!hasReduced)
                                                 {
-                                                    cellColors[ii][jj][COLOR_YELLOW-1] = 1;
+                                                    sudokuBoard.cellColors[ii][jj][COLOR_YELLOW-1] = 1;
                                                 }
                                             }
                                             // this cell is one of the pairs
                                             else
                                             {
-                                                cellColors[ii][jj][COLOR_GREEN-1] = 1;
+                                                sudokuBoard.cellColors[ii][jj][COLOR_GREEN-1] = 1;
                                             }
                                         }
                                     }
@@ -543,9 +543,9 @@ function hiddenPairsInRow ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     // for each row
     for (let i = 0; i < 9; ++i)
@@ -561,11 +561,11 @@ function hiddenPairsInRow ()
             {
                 // this is a possible location
                 // if d0 is penciled here
-                if (pencilMarks[i][j][d0-1] == 1 && board[i][j] == 0)
+                if (sudokuBoard.centerDigits[i][j][d0-1] == 1 && sudokuBoard.board[i][j] == 0)
                     possibleLocationsJ.push (j);
 
                 // we can also ignore if d0 was already filled in this row
-                if (board[i][j] == d0) 
+                if (sudokuBoard.board[i][j] == d0) 
                 {
                     isAlreadyFilledIn = true;
                     break;
@@ -577,29 +577,29 @@ function hiddenPairsInRow ()
             if (possibleLocationsJ.length != 2) continue;
             // reaches here if this digit can only go in 2 locations in this row
             // highlight those two positions
-            // cellColors[i][possibleLocationsJ[0]][COLOR_BLUE-1] = 1;
-            // cellColors[i][possibleLocationsJ[1]][COLOR_BLUE-1] = 1;
+            // sudokuBoard.cellColors[i][possibleLocationsJ[0]][COLOR_BLUE-1] = 1;
+            // sudokuBoard.cellColors[i][possibleLocationsJ[1]][COLOR_BLUE-1] = 1;
             // mark the digit
-            topDigits[i][possibleLocationsJ[0]][d0-1] = 1;
-            topDigits[i][possibleLocationsJ[1]][d0-1] = 1;
+            sudokuBoard.topDigits[i][possibleLocationsJ[0]][d0-1] = 1;
+            sudokuBoard.topDigits[i][possibleLocationsJ[1]][d0-1] = 1;
             // we will use the digit marks to determine if two digits occupy the same two cells
         }
         // search for two cells with the same digit pair
         for (let j = 0; j < 9; ++j)
         {
             // ignore if cell is already filled in
-            if (board[i][j] != 0) continue;
+            if (sudokuBoard.board[i][j] != 0) continue;
 
-            let digits0 = getTopDigits (i,j);
+            let digits0 = sudokuBoard.getTopDigits (i,j);
             // ignore if not a pair
             if (digits0.length != 2) continue;
             // look for another pair that matches
             for (let jj = j+1; jj < 9; ++jj)
             {
                 // ignore if cell is alread filled in
-                if (board[i][jj] != 0) continue;
+                if (sudokuBoard.board[i][jj] != 0) continue;
 
-                let digits1 = getTopDigits (i,jj);
+                let digits1 = sudokuBoard.getTopDigits (i,jj);
                 // ignore if not a pair
                 if (digits1.length != 2) continue;
                 // ensure pairs match
@@ -609,7 +609,7 @@ function hiddenPairsInRow ()
                 // ignore if cells are naked pairs already
                 // this is not necessary
                 // this is just so we only color the cells if there is a change to note
-                if (getPenciledDigits(i,j).length == 2 && getPenciledDigits(i,jj).length == 2) break;
+                if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(i,jj).length == 2) break;
 
                 // pairs match and are not naked pairs so make them naked pairs
                 // aka remove other penciled digits from these cells
@@ -617,19 +617,19 @@ function hiddenPairsInRow ()
                 // clear all pencil marks
                 for (let d = 1; d <= 9; ++d)
                 {
-                    pencilMarks[i][j ][d-1] = 0;
-                    pencilMarks[i][jj][d-1] = 0;
+                    sudokuBoard.centerDigits[i][j ][d-1] = 0;
+                    sudokuBoard.centerDigits[i][jj][d-1] = 0;
                 }
 
                 // pencil only the pair digits
-                pencilMarks[i][j ][digits0[0]-1] = 1;
-                pencilMarks[i][jj][digits0[0]-1] = 1;
-                pencilMarks[i][j ][digits1[1]-1] = 1;
-                pencilMarks[i][jj][digits1[1]-1] = 1;
+                sudokuBoard.centerDigits[i][j ][digits0[0]-1] = 1;
+                sudokuBoard.centerDigits[i][jj][digits0[0]-1] = 1;
+                sudokuBoard.centerDigits[i][j ][digits1[1]-1] = 1;
+                sudokuBoard.centerDigits[i][jj][digits1[1]-1] = 1;
 
                 // highlight isolated cells
-                cellColors[i][j ][COLOR_GREEN-1] = 1;
-                cellColors[i][jj][COLOR_GREEN-1] = 1;
+                sudokuBoard.cellColors[i][j ][COLOR_GREEN-1] = 1;
+                sudokuBoard.cellColors[i][jj][COLOR_GREEN-1] = 1;
             } 
         }
     }
@@ -647,9 +647,9 @@ function hiddenPairsInCol ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     // for each column
     for (let j = 0; j < 9; ++j)
@@ -665,11 +665,11 @@ function hiddenPairsInCol ()
             {
                 // this is a possible location
                 // if d0 is penciled here
-                if (pencilMarks[i][j][d0-1] == 1 && board[i][j] == 0)
+                if (sudokuBoard.centerDigits[i][j][d0-1] == 1 && sudokuBoard.board[i][j] == 0)
                     possibleLocationsI.push (i);
 
                 // we can also ignore if d0 was already filled in this column
-                if (board[i][j] == d0) 
+                if (sudokuBoard.board[i][j] == d0) 
                 {
                     isAlreadyFilledIn = true;
                     break;
@@ -681,29 +681,29 @@ function hiddenPairsInCol ()
             if (possibleLocationsI.length != 2) continue;
             // reaches here if this digit can only go in 2 locations in this column
             // highlight those two positions
-            // cellColors[possibleLocationsI[0]][j][COLOR_BLUE-1] = 1;
-            // cellColors[possibleLocationsI[1]][j][COLOR_BLUE-1] = 1;
+            // sudokuBoard.cellColors[possibleLocationsI[0]][j][COLOR_BLUE-1] = 1;
+            // sudokuBoard.cellColors[possibleLocationsI[1]][j][COLOR_BLUE-1] = 1;
             // mark the digit
-            topDigits[possibleLocationsI[0]][j][d0-1] = 1;
-            topDigits[possibleLocationsI[1]][j][d0-1] = 1;
+            sudokuBoard.topDigits[possibleLocationsI[0]][j][d0-1] = 1;
+            sudokuBoard.topDigits[possibleLocationsI[1]][j][d0-1] = 1;
             // we will use the digit marks to determine if two digits occupy the same two cells
         }
         // search for two cells with the same digit pair
         for (let i = 0; i < 9; ++i)
         {
             // ignore if cell is already filled in
-            if (board[i][j] != 0) continue;
+            if (sudokuBoard.board[i][j] != 0) continue;
 
-            let digits0 = getTopDigits (i,j);
+            let digits0 = sudokuBoard.getTopDigits (i,j);
             // ignore if not a pair
             if (digits0.length != 2) continue;
             // look for another pair that matches
             for (let ii = i+1; ii < 9; ++ii)
             {
                 // ignore if cell is already filled in
-                if (board[ii][j] != 0) continue;
+                if (sudokuBoard.board[ii][j] != 0) continue;
 
-                let digits1 = getTopDigits (ii,j);
+                let digits1 = sudokuBoard.getTopDigits (ii,j);
                 // ignore if not a pair
                 if (digits1.length != 2) continue;
                 // ensure pairs match
@@ -713,7 +713,7 @@ function hiddenPairsInCol ()
                 // ignore if cells are naked pairs already
                 // this is not necessary
                 // this is just so we only color the cells if there is a change to note
-                if (getPenciledDigits(i,j).length == 2 && getPenciledDigits(ii,j).length == 2) break;
+                if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(ii,j).length == 2) break;
 
                 // pairs match so isolate them
                 // aka remove other penciled digits from these cells
@@ -721,19 +721,19 @@ function hiddenPairsInCol ()
                 // clear all pencil marks
                 for (let d = 1; d <= 9; ++d)
                 {
-                    pencilMarks[i ][j][d-1] = 0;
-                    pencilMarks[ii][j][d-1] = 0;
+                    sudokuBoard.centerDigits[i ][j][d-1] = 0;
+                    sudokuBoard.centerDigits[ii][j][d-1] = 0;
                 }
 
                 // pencil only the pair digits
-                pencilMarks[i ][j][digits0[0]-1] = 1;
-                pencilMarks[ii][j][digits0[0]-1] = 1;
-                pencilMarks[i ][j][digits1[1]-1] = 1;
-                pencilMarks[ii][j][digits1[1]-1] = 1;
+                sudokuBoard.centerDigits[i ][j][digits0[0]-1] = 1;
+                sudokuBoard.centerDigits[ii][j][digits0[0]-1] = 1;
+                sudokuBoard.centerDigits[i ][j][digits1[1]-1] = 1;
+                sudokuBoard.centerDigits[ii][j][digits1[1]-1] = 1;
 
                 // highlight isolated cells
-                cellColors[i ][j][COLOR_GREEN-1] = 1;
-                cellColors[ii][j][COLOR_GREEN-1] = 1;
+                sudokuBoard.cellColors[i ][j][COLOR_GREEN-1] = 1;
+                sudokuBoard.cellColors[ii][j][COLOR_GREEN-1] = 1;
             } 
         }
     }
@@ -751,9 +751,9 @@ function hiddenPairsInBox ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     // for each box
     for (let boxi = 0; boxi < 3; ++boxi)
@@ -774,14 +774,14 @@ function hiddenPairsInBox ()
                     {
                         // this is a possible location
                         // if d0 is penciled here
-                        if (pencilMarks[i][j][d0-1] == 1 && board[i][j] == 0)
+                        if (sudokuBoard.centerDigits[i][j][d0-1] == 1 && sudokuBoard.board[i][j] == 0)
                         {
                             possibleLocationsI.push (i);
                             possibleLocationsJ.push (j);
                         }
 
                         // we can also ignore if d0 was already filled in this box
-                        if (board[i][j] == d0) 
+                        if (sudokuBoard.board[i][j] == d0) 
                         {
                             isAlreadyFilledIn = true;
                             break;
@@ -795,11 +795,11 @@ function hiddenPairsInBox ()
                 if (possibleLocationsI.length != 2) continue;
                 // reaches here if this digit can only go in 2 locations in this box
                 // highlight those two positions
-                // cellColors[possibleLocationsI[0]][possibleLocationsJ[0]][COLOR_BLUE-1] = 1;
-                // cellColors[possibleLocationsI[1]][possibleLocationsJ[1]][COLOR_BLUE-1] = 1;
+                // sudokuBoard.cellColors[possibleLocationsI[0]][possibleLocationsJ[0]][COLOR_BLUE-1] = 1;
+                // sudokuBoard.cellColors[possibleLocationsI[1]][possibleLocationsJ[1]][COLOR_BLUE-1] = 1;
                 // mark the digit
-                topDigits[possibleLocationsI[0]][possibleLocationsJ[0]][d0-1] = 1;
-                topDigits[possibleLocationsI[1]][possibleLocationsJ[1]][d0-1] = 1;
+                sudokuBoard.topDigits[possibleLocationsI[0]][possibleLocationsJ[0]][d0-1] = 1;
+                sudokuBoard.topDigits[possibleLocationsI[1]][possibleLocationsJ[1]][d0-1] = 1;
                 // we will use the digit marks to determine if two digits occupy the same two cells
             }
             // search for two cells with the same digit pair
@@ -808,9 +808,9 @@ function hiddenPairsInBox ()
                 for (let j = boxj*3; j < (boxj+1)*3; ++j)
                 {
                     // ignore if cell is already filled in
-                    if (board[i][j] != 0) continue;
+                    if (sudokuBoard.board[i][j] != 0) continue;
 
-                    let digits0 = getTopDigits (i,j);
+                    let digits0 = sudokuBoard.getTopDigits (i,j);
                     // ignore if not a pair
                     if (digits0.length != 2) continue;
                     // look for another pair that matches
@@ -821,9 +821,9 @@ function hiddenPairsInBox ()
                             // ignore if we are looking at the same cell
                             if (i == ii && j == jj) continue;
                             // ignore if cell is already filled in
-                            if (board[ii][jj] != 0) continue;
+                            if (sudokuBoard.board[ii][jj] != 0) continue;
 
-                            let digits1 = getTopDigits (ii,jj);
+                            let digits1 = sudokuBoard.getTopDigits (ii,jj);
                             // ignore if not a pair
                             if (digits1.length != 2) continue;
                             // ensure pairs match
@@ -833,7 +833,7 @@ function hiddenPairsInBox ()
                             // ignore if cells are naked pairs already
                             // this is not necessary
                             // this is just so we only color the cells if there is a change to note
-                            if (getPenciledDigits(i,j).length == 2 && getPenciledDigits(ii,jj).length == 2) break;
+                            if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(ii,jj).length == 2) break;
 
                             // pairs match so isolate them
                             // aka remove other penciled digits from these cells
@@ -841,19 +841,19 @@ function hiddenPairsInBox ()
                             // clear all pencil marks
                             for (let d = 1; d <= 9; ++d)
                             {
-                                pencilMarks[i ][j ][d-1] = 0;
-                                pencilMarks[ii][jj][d-1] = 0;
+                                sudokuBoard.centerDigits[i ][j ][d-1] = 0;
+                                sudokuBoard.centerDigits[ii][jj][d-1] = 0;
                             }
 
                             // pencil only the pair digits
-                            pencilMarks[i ][j ][digits0[0]-1] = 1;
-                            pencilMarks[ii][jj][digits0[0]-1] = 1;
-                            pencilMarks[i ][j ][digits1[1]-1] = 1;
-                            pencilMarks[ii][jj][digits1[1]-1] = 1;
+                            sudokuBoard.centerDigits[i ][j ][digits0[0]-1] = 1;
+                            sudokuBoard.centerDigits[ii][jj][digits0[0]-1] = 1;
+                            sudokuBoard.centerDigits[i ][j ][digits1[1]-1] = 1;
+                            sudokuBoard.centerDigits[ii][jj][digits1[1]-1] = 1;
 
                             // highlight isolated cells
-                            cellColors[i ][j ][COLOR_GREEN-1] = 1;
-                            cellColors[ii][jj][COLOR_GREEN-1] = 1;
+                            sudokuBoard.cellColors[i ][j ][COLOR_GREEN-1] = 1;
+                            sudokuBoard.cellColors[ii][jj][COLOR_GREEN-1] = 1;
                         }
                     } 
                 }
@@ -881,9 +881,9 @@ function lockedDigitInRow ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_COLOR;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     // check each digit
     for (let d = 1; d <= 9; ++d)
@@ -898,12 +898,12 @@ function lockedDigitInRow ()
             for (let j = 0; j < 9; ++j)
             {
                 // check if this is a valid position for this digit
-                if (pencilMarks[i][j][d-1] && board[i][j] == 0)
+                if (sudokuBoard.centerDigits[i][j][d-1] && sudokuBoard.board[i][j] == 0)
                 {
                     possibleLocationsJ.push (j);
                 }
                 // ignore digit if it is already filled-in the box
-                if (board[i][j] == d) alreadyFilledIn = true;
+                if (sudokuBoard.board[i][j] == d) alreadyFilledIn = true;
             }
             // ignore this row if digit is already filled in
             if (alreadyFilledIn) continue;
@@ -928,7 +928,7 @@ function lockedDigitInRow ()
                 for (let jj = boxj*3; jj < (boxj+1)*3; ++jj)
                 {
                     // highlight cells from the same box
-                    // cellColors[ii][jj][COLOR_PURPLE-1] = 1;
+                    // sudokuBoard.cellColors[ii][jj][COLOR_PURPLE-1] = 1;
                     // ensure it is not an intersecting cell
                     let isIntersectingCell = false;
                     for (let j = 0; j < possibleLocationsJ.length; ++j)
@@ -937,10 +937,10 @@ function lockedDigitInRow ()
                     if (isIntersectingCell) continue;
                     // this cell is not one of the intersecting cells
                     // ensure the digit is penciled in, to highlight and remove it
-                    if (pencilMarks[ii][jj][d-1] != 1) continue;
-                    cellColors[ii][jj][COLOR_RED-1] = 1;
+                    if (sudokuBoard.centerDigits[ii][jj][d-1] != 1) continue;
+                    sudokuBoard.cellColors[ii][jj][COLOR_RED-1] = 1;
                     // remove digit
-                    pencilMarks[ii][jj][d-1] = 0;
+                    sudokuBoard.centerDigits[ii][jj][d-1] = 0;
                     // we removed a digit so we have reduced
                     hasReduced = true;
                 }
@@ -954,7 +954,7 @@ function lockedDigitInRow ()
                 {
                     // ensure it isnt one of intersecting cells
                     if (possibleLocationsJ.includes(j)) continue;
-                    cellColors[i][j][COLOR_YELLOW-1] = 1;
+                    sudokuBoard.cellColors[i][j][COLOR_YELLOW-1] = 1;
                 }
 
                 // highlight intersecting cells
@@ -962,9 +962,9 @@ function lockedDigitInRow ()
                 {
                     // highlight cell
                     editMode = MODE_COLOR;
-                    cellColors[i][possibleLocationsJ[j]][COLOR_GREEN-1] = 1;
+                    sudokuBoard.cellColors[i][possibleLocationsJ[j]][COLOR_GREEN-1] = 1;
                     // use top digits to denote which digit
-                    topDigits[i][possibleLocationsJ[j]][d-1] = 1;
+                    sudokuBoard.topDigits[i][possibleLocationsJ[j]][d-1] = 1;
                 }
             }
         }
@@ -984,9 +984,9 @@ function lockedDigitInCol ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_COLOR;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
 
     // check each digit
     for (let d = 1; d <= 9; ++d)
@@ -1001,12 +1001,12 @@ function lockedDigitInCol ()
             for (let i = 0; i < 9; ++i)
             {
                 // check if this is a valid position for this digit
-                if (pencilMarks[i][j][d-1] && board[i][j] == 0)
+                if (sudokuBoard.centerDigits[i][j][d-1] && sudokuBoard.board[i][j] == 0)
                 {
                     possibleLocationsI.push (i);
                 }
                 // ignore digit if it is already filled-in the box
-                if (board[i][j] == d) alreadyFilledIn = true;
+                if (sudokuBoard.board[i][j] == d) alreadyFilledIn = true;
             }
             // ignore this row if digit is already filled in
             if (alreadyFilledIn) continue;
@@ -1031,7 +1031,7 @@ function lockedDigitInCol ()
                 for (let jj = boxj*3; jj < (boxj+1)*3; ++jj)
                 {
                     // highlight cells from the same box
-                    // cellColors[ii][jj][COLOR_PURPLE-1] = 1;
+                    // sudokuBoard.cellColors[ii][jj][COLOR_PURPLE-1] = 1;
                     // ensure it is not an intersecting cell
                     let isIntersectingCell = false;
                     for (let i = 0; i < possibleLocationsI.length; ++i)
@@ -1040,10 +1040,10 @@ function lockedDigitInCol ()
                     if (isIntersectingCell) continue;
                     // this cell is not one of the intersecting cells
                     // ensure the digit is penciled in, to highlight and remove it
-                    if (pencilMarks[ii][jj][d-1] != 1) continue;
-                    cellColors[ii][jj][COLOR_RED-1] = 1;
+                    if (sudokuBoard.centerDigits[ii][jj][d-1] != 1) continue;
+                    sudokuBoard.cellColors[ii][jj][COLOR_RED-1] = 1;
                     // remove digit
-                    pencilMarks[ii][jj][d-1] = 0;
+                    sudokuBoard.centerDigits[ii][jj][d-1] = 0;
                     // we removed a digit so we have reduced
                     hasReduced = true;
                 }
@@ -1057,7 +1057,7 @@ function lockedDigitInCol ()
                 {
                     // ensure it isnt one of intersecting cells
                     if (possibleLocationsI.includes(i)) continue;
-                    cellColors[i][j][COLOR_YELLOW-1] = 1;
+                    sudokuBoard.cellColors[i][j][COLOR_YELLOW-1] = 1;
                 }
 
                 // highlight intersecting cells
@@ -1065,9 +1065,9 @@ function lockedDigitInCol ()
                 {
                     // highlight cell
                     editMode = MODE_COLOR;
-                    cellColors[possibleLocationsI[i]][j][COLOR_GREEN-1] = 1;
+                    sudokuBoard.cellColors[possibleLocationsI[i]][j][COLOR_GREEN-1] = 1;
                     // use top digits to denote which digit
-                    topDigits[possibleLocationsI[i]][j][d-1] = 1;
+                    sudokuBoard.topDigits[possibleLocationsI[i]][j][d-1] = 1;
                 }
             }
         }
@@ -1086,9 +1086,9 @@ function lockedDigitInBox ()
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_COLOR;
 
-    clearSelectedCells ();
-    clearTopDigits ();
-    clearColors ();
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
     
     for (let boxi = 0; boxi < 3; ++boxi)
     {
@@ -1106,13 +1106,13 @@ function lockedDigitInBox ()
                     {
                         // check if this digit is possible
                         // and ensure it is not filled in already
-                        if (pencilMarks[i][j][d-1] && board[i][j] == 0) 
+                        if (sudokuBoard.centerDigits[i][j][d-1] && sudokuBoard.board[i][j] == 0) 
                         {
                             possibleLocationsI.push (i);
                             possibleLocationsJ.push (j);
                         }
                         // ignore digit if it is already filled-in the box
-                        if (board[i][j] == d) alreadyFilledIn = true;
+                        if (sudokuBoard.board[i][j] == d) alreadyFilledIn = true;
                     }
                 }
                 // ensure digit isnt already filled in
@@ -1145,13 +1145,13 @@ function lockedDigitInBox ()
                         if (!possibleLocationsJ.includes (j))
                         {
                             // check if this other cell contains d
-                            if (board[possibleLocationsI[0]][j] == 0 && pencilMarks[possibleLocationsI[0]][j][d-1] == 1)
+                            if (sudokuBoard.board[possibleLocationsI[0]][j] == 0 && sudokuBoard.centerDigits[possibleLocationsI[0]][j][d-1] == 1)
                             {
                                 editMode = MODE_COLOR;
-                                cellColors[possibleLocationsI[0]][j][COLOR_RED-1] = 1;
+                                sudokuBoard.cellColors[possibleLocationsI[0]][j][COLOR_RED-1] = 1;
                                 // remove the digit
                                 editMode = MODE_PENCIL;
-                                pencilMarks[possibleLocationsI[0]][j][d-1] = 0;
+                                sudokuBoard.centerDigits[possibleLocationsI[0]][j][d-1] = 0;
                                 hasReduced = true;
                             }
                         }
@@ -1168,13 +1168,13 @@ function lockedDigitInBox ()
                         if (!possibleLocationsI.includes (i))
                         {
                             // check if this other cell contains d
-                            if (board[i][possibleLocationsJ[0]] == 0 && pencilMarks[i][possibleLocationsJ[0]][d-1] == 1)
+                            if (sudokuBoard.board[i][possibleLocationsJ[0]] == 0 && sudokuBoard.centerDigits[i][possibleLocationsJ[0]][d-1] == 1)
                             {
                                 editMode = MODE_COLOR;
-                                cellColors[i][possibleLocationsJ[0]][COLOR_RED-1] = 1;
+                                sudokuBoard.cellColors[i][possibleLocationsJ[0]][COLOR_RED-1] = 1;
                                 // remove the digit
                                 editMode = MODE_PENCIL;
-                                pencilMarks[i][possibleLocationsJ[0]][d-1] = 0;
+                                sudokuBoard.centerDigits[i][possibleLocationsJ[0]][d-1] = 0;
                                 hasReduced = true;
                             }
                         }
@@ -1191,18 +1191,18 @@ function lockedDigitInBox ()
                         {
                             // ensure it isnt the possible locations
                             if (possibleLocationsI.includes(i) && possibleLocationsJ.includes(j)) continue;
-                            cellColors[i][j][COLOR_YELLOW-1] = 1;
+                            sudokuBoard.cellColors[i][j][COLOR_YELLOW-1] = 1;
                         }
                     }
                     // highlight intersecting cells
                     for (let k = 0; k < possibleLocationsI.length; ++k)
                     {
                         editMode = MODE_TOP;
-                        selectedCells[possibleLocationsI[k]][possibleLocationsJ[k]] = 1;
-                        inputDigit (d);
-                        selectedCells[possibleLocationsI[k]][possibleLocationsJ[k]] = 0;
+                        sudokuBoard.selectedCells[possibleLocationsI[k]][possibleLocationsJ[k]] = 1;
+                        sudokuBoard.inputDigit (d);
+                        sudokuBoard.selectedCells[possibleLocationsI[k]][possibleLocationsJ[k]] = 0;
                         // highlight cell
-                        cellColors[possibleLocationsI[k]][possibleLocationsJ[k]][COLOR_GREEN-1] = 1;
+                        sudokuBoard.cellColors[possibleLocationsI[k]][possibleLocationsJ[k]][COLOR_GREEN-1] = 1;
                     }
                 }
             }

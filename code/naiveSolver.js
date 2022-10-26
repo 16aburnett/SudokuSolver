@@ -18,7 +18,7 @@ function naiveSolverHelper (board)
         for (let j = 0; j < 9; ++j)
         {
             // Ensure cell doesnt already have a digit
-            if (board[i][j] == 0) 
+            if (board.board[i][j] == 0) 
             {
                 // since this cell doesnt have a digit,
                 // then we know the board isn't solved yet
@@ -26,9 +26,9 @@ function naiveSolverHelper (board)
                 // find a valid digit to place in this cell
                 for (let d = 1; d <= 9; ++d)
                 {
-                    board[i][j] = d;
+                    board.board[i][j] = d;
                     // ensure d is not conflicting (aka valid)
-                    if (!isCellConflicting (board, i, j)) 
+                    if (!board.isCellConflicting (i, j)) 
                     {
                         canPlacedDigit = true;
                         
@@ -46,7 +46,7 @@ function naiveSolverHelper (board)
                     }
                     // reaches here if digit cannot be placed in cell
                     // reset digit
-                    board[i][j] = 0;
+                    board.board[i][j] = 0;
                 }
                 // reaches here if no digit can be placed in this empty cell
                 // we know that a digit must be placed here to solve the puzzle
@@ -78,20 +78,19 @@ function naiveSolverSolve ()
 
     // copy board so we dont mess it up
     // [not sure if this is needed]
-    let boardCopy = [];
+    let boardCopy = new SudokuBoard();
     for (let i = 0; i < 9; ++i)
     {
-        boardCopy.push ([]);
         for (let j = 0; j < 9; ++j)
         {
-            boardCopy[i].push (board[i][j]);
+            boardCopy.board[i][j] = sudokuBoard.board[i][j];
         }
     }
 
     // first ensure that the puzzle doesn't already have conflicts
     for (let i = 0; i < 9; ++i)
         for (let j = 0; j < 9; ++j)
-            if (isCellConflicting (board, i, j))
+            if (boardCopy.isCellConflicting (i, j))
                 return false;
 
     let isSolved = naiveSolverHelper (boardCopy);
@@ -99,7 +98,7 @@ function naiveSolverSolve ()
     if (isSolved)
         for (let i = 0; i < 9; ++i)
             for (let j = 0; j < 9; ++j)
-                board[i][j] = boardCopy[i][j];
+                sudokuBoard.board[i][j] = boardCopy.board[i][j];
 
     // only make 1 move
     // if (isSolved)

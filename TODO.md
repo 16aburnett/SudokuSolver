@@ -35,6 +35,8 @@ BOARD MAKER
     - button for cage mode
     - graphics
 - X, V, black/white dot dominoes
+- palindrome lines
+
 - Boolean settings
     - Example: all white dots are given, meaning if a white dot is not present between two cells, 
     then those two cells are NOT consecutive
