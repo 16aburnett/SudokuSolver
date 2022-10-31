@@ -17,6 +17,24 @@
     - spacebar should only cycle between penciling tools
 
 
+- select all cells of a kind
+    - using double click
+    - or long press
+
+- undo button!!
+    - naive impl - save previous states
+    - smart impl - save space efficient code representing what changed
+
+- board play tab
+    - button for selecting all cells
+    - button to clear all pencil marks
+    - button to check if board is solved (maybe this should be automatic?)
+
+*** Digit layers
+    - only shows pencil marks depending on tab selected
+    - maybe not too useful?
+
+
 - rules description above the tabs 
 
 Premade Boards Tab

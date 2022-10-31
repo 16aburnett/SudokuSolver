@@ -5,100 +5,16 @@
 
 let sudokuBoard;
 
-// let board = [
-// //   0  1  2   3  4  5   6  7  8
-//     [4, 9, 7,  0, 3, 0,  6, 0, 0], // 0
-//     [1, 0, 6,  5, 9, 0,  7, 3, 0], // 1
-//     [5, 0, 3,  0, 0, 4,  0, 1, 0], // 2
-
-//     [9, 3, 1,  0, 0, 0,  0, 0, 0], // 3
-//     [0, 0, 0,  0, 1, 5,  3, 4, 2], // 4
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 5
-
-//     [0, 5, 4,  8, 0, 1,  9, 0, 6], // 6
-//     [0, 1, 0,  2, 0, 6,  0, 7, 3], // 7
-//     [0, 6, 0,  0, 4, 9,  8, 0, 0]  // 8
-// ];
-
-// let givenDigits = [
-// //   0  1  2   3  4  5   6  7  8
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 0
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 1
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 2
-
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 3
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 4
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 5
-
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 6
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 7
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0]  // 8
-// ];
-
-// a set of cages
-// a cage is a set of cells that must add up to the cage's sum and must not repeat
-// let cages = [
-//     [10, [[1,1], [2,1]]],
-//     [1+9+7+2, [[6,7], [5,6], [5,7], [5,8]]]
-// ];
-// let cageBorderColor;
-// let cageSumColor;
-// let cageTextSize = 12;
-// let cageTextFont = "Sans";
-
-// list of cages
-// a cage consists of a cage sum and a list of cells that define the caged region
-// let cages = [];
-
-// Cell structure
-// let boardX;
-// let boardY;
-// let boardWidth;
-// let boardHeight;
-// let boxWidth;
-// let boxHeight;
-// let cellWidth;
-// let cellHeight;
-// let cellBorderWidth = 1;
-// let boxBorderWidth = 3;
-// let selectBorderWidth = 6;
-// let selectBorderPadding = 3;
-
 let globalTextFont = "Courier";
 
 // Color Theme
 let isDarkMode = false;
-// let boardBackgroundColor;
-// let digitColor;
-// let borderColor;
-// // let selectionColor = [50, 50, 200, 220];
-// let selectionBorderColor = [50, 255, 255, 220];
-// let cursorBorderColor =    [250, 255, 50, 220];
 
-// let selectedCells = [
-// //   0  1  2   3  4  5   6  7  8
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 0
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 1
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 2
-
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 3
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 4
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 5
-
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 6
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0], // 7
-//     [0, 0, 0,  0, 0, 0,  0, 0, 0]  // 8
-// ];
 let isDragging = false;
 let isSelecting = false;
 let isShifting = false;
 let cursorPosition = [0, 0];
 
-// let topDigits = [];
-
-// let pencilMarks = [];
-
-// let cellColors = [];
 const COLOR_WHITE  = 0;
 const COLOR_RED    = 1; 
 const COLOR_ORANGE = 2;
@@ -337,6 +253,7 @@ function setup ()
     select ("#PINK_BUTTON")  .style ("background-color", `rgba(${RGBA_COLORS[COLOR_PINK][0]}, ${RGBA_COLORS[COLOR_PINK][1]}, ${RGBA_COLORS[COLOR_PINK][2]}, ${RGBA_COLORS[COLOR_PINK][3]})`)
     select ("#GRAY_BUTTON")  .style ("background-color", `rgba(${RGBA_COLORS[COLOR_GRAY][0]}, ${RGBA_COLORS[COLOR_GRAY][1]}, ${RGBA_COLORS[COLOR_GRAY][2]}, ${RGBA_COLORS[COLOR_GRAY][3]})`)
     select ("#BLACK_BUTTON") .style ("background-color", `rgba(${RGBA_COLORS[COLOR_BLACK][0]}, ${RGBA_COLORS[COLOR_BLACK][1]}, ${RGBA_COLORS[COLOR_BLACK][2]}, ${RGBA_COLORS[COLOR_BLACK][3]})`)
+    select ("#WHITE_BUTTON") .style ("background-color", `rgba(${RGBA_COLORS[COLOR_WHITE][0]}, ${RGBA_COLORS[COLOR_WHITE][1]}, ${RGBA_COLORS[COLOR_WHITE][2]}, ${RGBA_COLORS[COLOR_WHITE][3]})`)
 
 }
 
@@ -358,8 +275,8 @@ function keyPressed ()
     {
         isShifting = true;
     }
-    // select all
-    if (key == "a")
+    // select all - SHIFT+A
+    if (isShifting && (key == "A" || key == 'a'))
     {
         if (!sudokuBoard.isAllCellsSelected ())
         {
@@ -374,22 +291,23 @@ function keyPressed ()
     // switch mode - spacebar
     if (key == " ")
     {
+        let direction = isShifting;
         // play tab
         if (editMode == MODE_PLAY)
         {
-            cyclePlayMode ();
+            cyclePlayMode (direction);
         }
         // board maker
         else if (editMode == MODE_BOARD_MAKER)
         {
-            cycleBoardMakerMode ();
+            cycleBoardMakerMode (direction);
         }
     }
 
     // delete from selected
     if (keyCode == DELETE || keyCode == BACKSPACE)
     {
-        sudokuBoard.inputDigit (0);
+        sudokuBoard.inputDigit (EMPTY_CELL);
     }
 
     // cursor movement
@@ -402,7 +320,7 @@ function keyPressed ()
         // 2. Shift key down
         //  do not clear selected cells (do nothing)
 
-        cursorPosition[0] = cursorPosition[0] != 0 ? cursorPosition[0] - 1 : 8;
+        cursorPosition[0] = cursorPosition[0] != 0 ? cursorPosition[0] - 1 : sudokuBoard.rows-1;
         
         // mark new cursor position as selected
         sudokuBoard.selectedCells[cursorPosition[0]][cursorPosition[1]] = 1;
@@ -416,7 +334,7 @@ function keyPressed ()
         // 2. Shift key down
         //  do not clear selected cells (do nothing)
 
-        cursorPosition[1] = cursorPosition[1] < 8 ? cursorPosition[1] + 1 : 0;
+        cursorPosition[1] = cursorPosition[1] < sudokuBoard.cols-1 ? cursorPosition[1] + 1 : 0;
         
         // mark new cursor position as selected
         sudokuBoard.selectedCells[cursorPosition[0]][cursorPosition[1]] = 1;
@@ -430,7 +348,7 @@ function keyPressed ()
         // 2. Shift key down
         //  do not clear selected cells (do nothing)
 
-        cursorPosition[0] = cursorPosition[0] < 8 ? cursorPosition[0] + 1 : 0;
+        cursorPosition[0] = cursorPosition[0] < sudokuBoard.rows-1 ? cursorPosition[0] + 1 : 0;
         
         // mark new cursor position as selected
         sudokuBoard.selectedCells[cursorPosition[0]][cursorPosition[1]] = 1;
@@ -444,16 +362,18 @@ function keyPressed ()
         // 2. Shift key down
         //  do not clear selected cells (do nothing)
 
-        cursorPosition[1] = cursorPosition[1] != 0 ? cursorPosition[1] - 1 : 8;
+        cursorPosition[1] = cursorPosition[1] != 0 ? cursorPosition[1] - 1 : sudokuBoard.cols-1;
         
         // mark new cursor position as selected
         sudokuBoard.selectedCells[cursorPosition[0]][cursorPosition[1]] = 1;
     }
 
     // number is pressed
-    if ("0123456789".includes(key))
+    const validInputDigits = "0123456789abcdef";
+    if (validInputDigits.includes(key))
     {
-        sudokuBoard.inputDigit (parseInt(key));
+        // input the digit to all currently selected cells
+        sudokuBoard.inputDigit (validInputDigits.indexOf(key));
     }
 }
 
@@ -476,7 +396,7 @@ function mousePressed ()
 
     isDragging = true;
 
-    let cellPos = mousePositionToCell ();
+    let cellPos = sudokuBoard.mousePositionToCell ();
 
     // Ensure mouse clicked on board
     if (cellPos == null)
@@ -528,7 +448,7 @@ function mouseDragged ()
 {
     if (isDragging)
     {
-        let cellPos = mousePositionToCell ();
+        let cellPos = sudokuBoard.mousePositionToCell ();
 
         // Ensure user is over the board
         if (cellPos == null) return;
@@ -563,36 +483,12 @@ function mouseDragged ()
 
 //========================================================================
 
-function mousePositionToCell ()
-{
-    for (let i = 0; i < 9; ++i)
-    {
-        let y = sudokuBoard.y + i * sudokuBoard.cellHeight;
-        for (let j = 0; j < 9; ++j)
-        {
-            let x = sudokuBoard.x + j * sudokuBoard.cellWidth;
-
-            // check if mouse is in this cell's bounds
-            if (x < mouseX && mouseX < (x + sudokuBoard.cellWidth) &&
-                y < mouseY && mouseY < (y + sudokuBoard.cellHeight))
-            {
-                return [i, j];
-            }
-        }
-    }
-    
-    // Mouse is not over any cell
-    return null;
-}
-
-//========================================================================
-
 function loadEasyBoard (boardIndex)
 {
-    sudokuBoard.clearEverything ();
+    createDecimalBoard ();
 
-    for (let i = 0; i < 9; ++i)
-        for (let j = 0; j < 9; ++j)
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
             sudokuBoard.board[i][j] = easyBoards[boardIndex][i][j];
 }
 
@@ -600,10 +496,10 @@ function loadEasyBoard (boardIndex)
 
 function loadMediumBoard (boardIndex)
 {
-    sudokuBoard.clearEverything ();
+    createDecimalBoard ();
 
-    for (let i = 0; i < 9; ++i)
-        for (let j = 0; j < 9; ++j)
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
             sudokuBoard.board[i][j] = mediumBoards[boardIndex][i][j];
 }
 
@@ -611,10 +507,10 @@ function loadMediumBoard (boardIndex)
 
 function loadHardBoard (boardIndex)
 {
-    sudokuBoard.clearEverything ();
+    createDecimalBoard ();
 
-    for (let i = 0; i < 9; ++i)
-        for (let j = 0; j < 9; ++j)
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
             sudokuBoard.board[i][j] = hardBoards[boardIndex][i][j];
 }
 
@@ -622,10 +518,10 @@ function loadHardBoard (boardIndex)
 
 function loadExpertBoard (boardIndex)
 {
-    sudokuBoard.clearEverything ();
+    createDecimalBoard ();
 
-    for (let i = 0; i < 9; ++i)
-        for (let j = 0; j < 9; ++j)
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
             sudokuBoard.board[i][j] = expertBoards[boardIndex][i][j];
     
 }
@@ -634,26 +530,95 @@ function loadExpertBoard (boardIndex)
 
 function loadEvilBoard (boardIndex)
 {
-    sudokuBoard.clearEverything ();
+    createDecimalBoard ();
 
-    for (let i = 0; i < 9; ++i)
-        for (let j = 0; j < 9; ++j)
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
             sudokuBoard.board[i][j] = evilBoards[boardIndex][i][j];
+}
+
+//========================================================================
+
+function loadIntermediateHexadecimalBoard (boardIndex)
+{
+    createHexadecimalBoard ();
+
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
+            sudokuBoard.board[i][j] = intermediateHexadecimalBoards[boardIndex][i][j];
+}
+
+//========================================================================
+
+function loadChallengingHexadecimalBoard (boardIndex)
+{
+    createHexadecimalBoard ();
+
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
+            sudokuBoard.board[i][j] = challengingHexadecimalBoards[boardIndex][i][j];
+}
+
+//========================================================================
+
+function loadToughHexadecimalBoard (boardIndex)
+{
+    createHexadecimalBoard ();
+
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
+            sudokuBoard.board[i][j] = toughHexadecimalBoards[boardIndex][i][j];
 }
 
 //========================================================================
 
 function loadCageBoard (boardIndex)
 {
-    sudokuBoard.clearEverything ();
+    createDecimalBoard ();
 
-    for (let i = 0; i < 9; ++i)
-        for (let j = 0; j < 9; ++j)
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+        for (let j = 0; j < sudokuBoard.cols; ++j)
             sudokuBoard.board[i][j] = cagesBoards[boardIndex].board[i][j];
     // add cages
     for (let cagei = 0; cagei < cagesBoards[boardIndex].cages.length; ++cagei)
     {
         sudokuBoard.cages.push (cagesBoards[boardIndex].cages[cagei]);
+    }
+}
+
+//========================================================================
+
+function createDecimalBoard ()
+{
+    sudokuBoard = new SudokuBoard (9);
+
+    // darkmode setup
+    if (isDarkMode)
+    {
+        setDarkMode ();
+    }
+    // lightmode setup
+    else
+    {
+        setLightMode ();
+    }
+}
+
+//========================================================================
+
+function createHexadecimalBoard ()
+{
+    sudokuBoard = new SudokuBoard (16);
+
+    // darkmode setup
+    if (isDarkMode)
+    {
+        setDarkMode ();
+    }
+    // lightmode setup
+    else
+    {
+        setLightMode ();
     }
 }
 
@@ -736,10 +701,20 @@ function solverTab ()
 
 // play tab
 
-function cyclePlayMode ()
+function cyclePlayMode (direction)
 {
-    ++playMode;
-    if (playMode >= PLAY_MODE_END) playMode = PLAY_MODE_BASE;
+    // cycle forward
+    if (direction == 0) 
+    {
+        ++playMode;
+        if (playMode >= PLAY_MODE_END) playMode = PLAY_MODE_BASE;
+    }
+    // cycle backwards
+    else // direction == 1
+    {
+        --playMode;
+        if (playMode < PLAY_MODE_BASE) playMode = PLAY_MODE_END-1; 
+    }
 
     if (playMode == PLAY_MODE_DIGIT)
         playPanelDigitTab ();
@@ -833,10 +808,20 @@ function playPanelColorTab ()
 // board maker tabs
 
 
-function cycleBoardMakerMode ()
+function cycleBoardMakerMode (direction)
 {
-    ++boardMakerMode;
-    if (boardMakerMode >= BOARD_MAKER_MODE_END) boardMakerMode = BOARD_MAKER_MODE_BASE;
+    // cycle forward
+    if (direction == 0) 
+    {
+        ++boardMakerMode;
+        if (boardMakerMode >= BOARD_MAKER_MODE_END) boardMakerMode = BOARD_MAKER_MODE_BASE;
+    }
+    // cycle backwards
+    else // direction == 1
+    {
+        --boardMakerMode;
+        if (boardMakerMode < BOARD_MAKER_MODE_BASE) boardMakerMode = BOARD_MAKER_MODE_END-1; 
+    }
 
     if (boardMakerMode == BOARD_MAKER_MODE_BOARD)
         boardMakerPanelBoardTab ();

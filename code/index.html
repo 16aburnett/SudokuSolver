@@ -82,8 +82,33 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3">
-                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(0)">CLEAR</button>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(10)">a</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(11)">b</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(12)">c</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(13)">d</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(14)">e</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(15)">f</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(0)">0</button>
+                                        </td>
+                                        <td colspan="2">
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(-1)">CLEAR</button>
                                         </td>
                                     </tr>
                                 </table>
@@ -129,8 +154,33 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3">
-                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(0)">CLEAR</button>
+                                        <td>
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(10)"><div class="topDigitButtonLabel">a</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(11)"><div class="topDigitButtonLabel">b</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(12)"><div class="topDigitButtonLabel">c</div></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(13)"><div class="topDigitButtonLabel">d</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(14)"><div class="topDigitButtonLabel">e</div></button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(15)"><div class="topDigitButtonLabel">f</div></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(0)"><div class="topDigitButtonLabel">0</div></button>
+                                        </td>
+                                        <td colspan="2">
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(-1)">CLEAR</button>
                                         </td>
                                     </tr>
                                 </table>
@@ -176,8 +226,33 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3">
-                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(0)">CLEAR</button>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="sudokuBoard.inputDigit(10)">a</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="sudokuBoard.inputDigit(11)">b</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="sudokuBoard.inputDigit(12)">c</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="sudokuBoard.inputDigit(13)">d</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="sudokuBoard.inputDigit(14)">e</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="sudokuBoard.inputDigit(15)">f</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton smallDigitButtonLabel" onclick="sudokuBoard.inputDigit(0)">0</button>
+                                        </td>
+                                        <td colspan="2">
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(-1)">CLEAR</button>
                                         </td>
                                     </tr>
                                 </table>
@@ -241,8 +316,13 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3">
-                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(0)">CLEAR</button>
+                                        <td>
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(0)" title="White">
+                                                <div class="colorButtonLabel" id="WHITE_BUTTON"></div>
+                                            </button>
+                                        </td>
+                                        <td colspan="2">
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(-1)">CLEAR</button>
                                         </td>
                                     </tr>
                                 </table>
@@ -269,6 +349,19 @@
                                     <tr>
                                         <td colspan="3">
                                             <button class="panelButton" onclick="sudokuBoard.clearEverything()">Clear Board</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="3">
+                                            Board Size
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1">
+                                            <button class="panelButton" onclick="createDecimalBoard()">Decimal Board</button>
+                                        </td>
+                                        <td colspan="1">
+                                            <button class="panelButton" onclick="createHexadecimalBoard()">Hexadecimal Board</button>
                                         </td>
                                     </tr>
                                 </table>
@@ -314,8 +407,33 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3">
-                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(0)">CLEAR</button>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(10)">a</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(11)">b</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(12)">c</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(13)">d</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(14)">e</button>
+                                        </td>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(15)">f</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <button class="panelButton digitButtonLabel" onclick="sudokuBoard.inputDigit(0)">0</button>
+                                        </td>
+                                        <td colspan="2">
+                                            <button class="panelButton" onclick="sudokuBoard.inputDigit(-1)">CLEAR</button>
                                         </td>
                                     </tr>
                                 </table>
@@ -355,13 +473,16 @@
                             </div>
                         </div>
                     </div>
-                    <div id="boardPanel" class="buttonPanel centerContents" style="display: none;">
+                    <div id="boardPanel" class="buttonPanel" style="display: none;">
                         <table>
                             <tr>
                                 <td class="color-foreground0" colspan="3">Board Generation coming soon</td>
                             </tr>
                             <tr>
                                 <td class="color-foreground0" colspan="3">(pre-made boards below)</td>
+                            </tr>
+                            <tr>
+                                <th class="color-foreground0" colspan="3">Regular Sudokus</th>
                             </tr>
                             <tr>
                                 <td colspan="1">
@@ -416,6 +537,42 @@
                                 </td>
                                 <td colspan="1">
                                     <button class="panelButton" id="evilBoardButton" onclick="loadEvilBoard (2)" title="Evil Board">Evil Board 2</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="color-foreground0" colspan="3">Hexadecimal Sudokus</th>
+                            </tr>
+                            <tr>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadIntermediateHexadecimalBoard (0)" title="Intermediate Board">Intermediate Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadIntermediateHexadecimalBoard (1)" title="Intermediate Board">Intermediate Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadIntermediateHexadecimalBoard (2)" title="Intermediate Board">Intermediate Board 2</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadChallengingHexadecimalBoard (0)" title="Challenging Board">Challenging Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadChallengingHexadecimalBoard (1)" title="Challenging Board">Challenging Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadChallengingHexadecimalBoard (2)" title="Challenging Board">Challenging Board 2</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadToughHexadecimalBoard (0)" title="Tough Board">Tough Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadToughHexadecimalBoard (1)" title="Tough Board">Tough Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="hexadecimalBoardButton" onclick="loadToughHexadecimalBoard (2)" title="Tough Board">Tough Board 2</button>
                                 </td>
                             </tr>
                             <tr>

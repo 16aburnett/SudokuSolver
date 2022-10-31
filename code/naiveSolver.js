@@ -6,25 +6,34 @@
 
 function naiveSolverHelper (board)
 {
-    // for (let i = 0; i < 9; ++i)
-    //     console.log (board[i]);
-    // console.log("==================");
+
+    let newBoard = [];
+    for (let i = 0; i < board.rows; ++i)
+    {
+        newBoard.push([]);
+        for (let j = 0; j < board.cols; ++j)
+        {
+            newBoard[i].push (board.board[i][j]);
+        }
+    }
+    print (newBoard);
+
     let isSolved = true;
     let canPlacedDigit = false;
 
     // find a place to put a digit
-    for (let i = 0; i < 9; ++i)
+    for (let i = 0; i < board.rows; ++i)
     {
-        for (let j = 0; j < 9; ++j)
+        for (let j = 0; j < board.cols; ++j)
         {
             // Ensure cell doesnt already have a digit
-            if (board.board[i][j] == 0) 
+            if (board.board[i][j] == EMPTY_CELL) 
             {
                 // since this cell doesnt have a digit,
                 // then we know the board isn't solved yet
                 isSolved = false;
                 // find a valid digit to place in this cell
-                for (let d = 1; d <= 9; ++d)
+                for (let d = board.low; d < board.high; ++d)
                 {
                     board.board[i][j] = d;
                     // ensure d is not conflicting (aka valid)
@@ -36,6 +45,9 @@ function naiveSolverHelper (board)
                         // so place it and see if we can solve the board from this state
                         let result = naiveSolverHelper (board);
 
+                        // print (result);
+                        // print (board.board);
+
                         // if successful (puzzle solved), 
                         // then pass the solution backwards
                         if (result) return true;
@@ -46,7 +58,7 @@ function naiveSolverHelper (board)
                     }
                     // reaches here if digit cannot be placed in cell
                     // reset digit
-                    board.board[i][j] = 0;
+                    board.board[i][j] = EMPTY_CELL;
                 }
                 // reaches here if no digit can be placed in this empty cell
                 // we know that a digit must be placed here to solve the puzzle
@@ -78,54 +90,31 @@ function naiveSolverSolve ()
 
     // copy board so we dont mess it up
     // [not sure if this is needed]
-    let boardCopy = new SudokuBoard();
-    for (let i = 0; i < 9; ++i)
+    let boardCopy = new SudokuBoard(sudokuBoard.numDigits);
+    for (let i = 0; i < boardCopy.rows; ++i)
     {
-        for (let j = 0; j < 9; ++j)
+        for (let j = 0; j < boardCopy.cols; ++j)
         {
             boardCopy.board[i][j] = sudokuBoard.board[i][j];
         }
     }
+    boardCopy.cages = sudokuBoard.cages;
 
     // first ensure that the puzzle doesn't already have conflicts
-    for (let i = 0; i < 9; ++i)
-        for (let j = 0; j < 9; ++j)
+    for (let i = 0; i < boardCopy.rows; ++i)
+        for (let j = 0; j < boardCopy.cols; ++j)
             if (boardCopy.isCellConflicting (i, j))
                 return false;
 
     let isSolved = naiveSolverHelper (boardCopy);
 
+    console.log (isSolved);
+
     if (isSolved)
-        for (let i = 0; i < 9; ++i)
-            for (let j = 0; j < 9; ++j)
+        for (let i = 0; i < sudokuBoard.rows; ++i)
+            for (let j = 0; j < sudokuBoard.cols; ++j)
                 sudokuBoard.board[i][j] = boardCopy.board[i][j];
 
-    // only make 1 move
-    // if (isSolved)
-    // {
-    //     let hasPlacedDigit = false;
-    //     for (let i = 0; i < 9; ++i)
-    //     {
-    //         for (let j = 0; j < 9; ++j)
-    //         {
-    //             if (board[i][j] == 0)
-    //             {
-    //                 editMode = MODE_DIGIT;
-    //                 clearSelectedCells ();
-    //                 selectedCells[i][j] = 1;
-    //                 inputDigit (boardCopy[i][j]);
-    //                 clearSelectedCells ();
-    //                 editMode = MODE_SOLVER;
-    //                 hasPlacedDigit = true;
-    //                 break;
-    //             }
-    //         }
-    //         if (hasPlacedDigit) break;
-    //     }
-    // }
-
-    // Enable button
-    // select("#naiveSolverSolveButton").removeClass ("disabledButton");
 }
 
 

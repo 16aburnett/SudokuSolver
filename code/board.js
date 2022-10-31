@@ -1,15 +1,30 @@
 
+const EMPTY_CELL = -1;
 
 class SudokuBoard 
 {
-    constructor ()
+    constructor (base=9)
     {
         // Board structure
-        this.numDigits = 9;
-        this.rows = 9;
-        this.cols = 9;
-        this.boxRows = 3;
-        this.boxCols = 3;
+        // options are decimal [1,9] or hexadecimal [0,F]
+        this.numDigits = base;
+        this.rows = this.numDigits;
+        this.cols = this.numDigits;
+        this.numColors = 10;
+        if (this.numDigits == 9)
+        {
+            this.boxRows = 3;
+            this.boxCols = 3;
+            this.low = 1;
+            this.high = 10;
+        }
+        else if (this.numDigits == 16)
+        {
+            this.boxRows = 4;
+            this.boxCols = 4;
+            this.low = 0;
+            this.high = 16;
+        }
 
         // Board state/data
         // the board stores the filled in digits for each cell
@@ -43,16 +58,20 @@ class SudokuBoard
             this.cellColors   .push ([]);
             for (let j = 0; j < this.cols; ++j)
             {
-                this.board[i]        .push (0);
-                this.givenDigits[i]  .push (0);
+                this.board[i]        .push (EMPTY_CELL);
+                this.givenDigits[i]  .push (EMPTY_CELL);
                 this.selectedCells[i].push (0);
                 this.topDigits[i]    .push ([]);
                 this.centerDigits[i] .push ([]);
                 this.cellColors[i]   .push ([]);
-                for (let k = 0; k < this.numDigits; ++k)
+                // this starts at 0 because we include 0 even if this.low starts at 1
+                for (let k = 0; k < this.high; ++k)
                 {
                     this.topDigits[i][j]   .push (0);
                     this.centerDigits[i][j].push (0);
+                }
+                for (let k = 0; k < this.numColors; ++k)
+                {
                     this.cellColors[i][j]  .push (0);
                 }
             }
@@ -70,8 +89,8 @@ class SudokuBoard
     
         let rowsPerBox = this.rows / this.boxRows;
         let colsPerBox = this.cols / this.boxCols;
-        this.cellWidth = this.boxWidth / rowsPerBox;
-        this.cellHeight = this.boxHeight / colsPerBox;
+        this.cellWidth = this.boxWidth / colsPerBox;
+        this.cellHeight = this.boxHeight / rowsPerBox;
 
         this.cellBorderWidth = 1;
         this.boxBorderWidth = 3;
@@ -94,12 +113,36 @@ class SudokuBoard
 
     //========================================================================
     
+    mousePositionToCell ()
+    {
+        for (let i = 0; i < this.rows; ++i)
+        {
+            let y = this.y + i * this.cellHeight;
+            for (let j = 0; j < this.cols; ++j)
+            {
+                let x = this.x + j * this.cellWidth;
+    
+                // check if mouse is in this cell's bounds
+                if (x < mouseX && mouseX < (x + this.cellWidth) &&
+                    y < mouseY && mouseY < (y + this.cellHeight))
+                {
+                    return [i, j];
+                }
+            }
+        }
+        
+        // Mouse is not over any cell
+        return null;
+    }
+
+    //========================================================================
+    
     // returns true if the current board state is solved
     // returns false if it is not solved or incomplete
     isBoardSolved ()
     {
-        for (let i = 0; i < 9; ++i)
-            for (let j = 0; j < 9; ++j)
+        for (let i = 0; i < this.rows; ++i)
+            for (let j = 0; j < this.cols; ++j)
                 if (this.board[i][j] == 0 || this.isCellConflicting (i, j))
                     return false;
         
@@ -129,9 +172,9 @@ class SudokuBoard
     
     isAllCellsSelected ()
     {
-        for (let i = 0; i < 9; ++i)
+        for (let i = 0; i < this.rows; ++i)
         {
-            for (let j = 0; j < 9; ++j)
+            for (let j = 0; j < this.cols; ++j)
             {
                 if (sudokuBoard.selectedCells[i][j] == 0)
                 {
@@ -187,7 +230,7 @@ class SudokuBoard
     {
         for (let i = 0; i < this.rows; ++i)
             for (let j = 0; j < this.cols; ++j)
-                for (let k = 0; k < this.numDigits; ++k)
+                for (let k = this.low; k < this.high; ++k)
                     sudokuBoard.topDigits[i][j][k] = 0;
     }
     
@@ -197,7 +240,7 @@ class SudokuBoard
     {
         for (let i = 0; i < this.rows; ++i)
             for (let j = 0; j < this.cols; ++j)
-                for (let k = 0; k < this.numDigits; ++k)
+                for (let k = this.low; k < this.high; ++k)
                     sudokuBoard.centerDigits[i][j][k] = 0;
     }
     
@@ -207,7 +250,7 @@ class SudokuBoard
     {
         for (let i = 0; i < this.rows; ++i)
             for (let j = 0; j < this.cols; ++j)
-                for (let k = 0; k < this.numDigits; ++k)
+                for (let k = this.low; k < this.high; ++k)
                     sudokuBoard.cellColors[i][j][k] = 0;
     }
     
@@ -216,9 +259,9 @@ class SudokuBoard
     getCenterDigits (i, j)
     {
         let penciledDigits = [];
-        for (let p = 0; p < 9; ++p)
+        for (let p = this.low; p < this.high; ++p)
             if (this.centerDigits[i][j][p] == 1)
-                penciledDigits.push (p+1);
+                penciledDigits.push (p);
         return penciledDigits;
     }
     
@@ -227,9 +270,9 @@ class SudokuBoard
     getTopDigits (i, j)
     {
         let topDigits_ = [];
-        for (let p = 0; p < 9; ++p)
+        for (let p = this.low; p < this.high; ++p)
             if (this.topDigits[i][j][p] == 1)
-                topDigits_.push (p+1);
+                topDigits_.push (p);
         return topDigits_;
     }
 
@@ -243,25 +286,73 @@ class SudokuBoard
         // check row
         for (let jj = 0; jj < this.cols; ++jj)
         {
-            if (jj != j && this.board[i][jj] == this.board[i][j] && this.board[i][jj] != 0)
+            if (jj != j && this.board[i][jj] == this.board[i][j] && this.board[i][jj] != EMPTY_CELL)
                 return true;
         }
         // check col
         for (let ii = 0; ii < this.rows; ++ii)
         {
-            if (ii != i && this.board[ii][j] == this.board[i][j] && this.board[ii][j] != 0)
+            if (ii != i && this.board[ii][j] == this.board[i][j] && this.board[ii][j] != EMPTY_CELL)
                 return true;
         }
         // check box
         let boxI = Math.floor (i / this.boxRows);
         let boxJ = Math.floor (j / this.boxCols);
-        for (let bi = boxI * 3; bi < (boxI+1)*3; ++bi)
+        for (let bi = boxI * this.boxRows; bi < (boxI+1)*this.boxRows; ++bi)
         {
-            for (let bj = boxJ * 3; bj < (boxJ+1)*3; ++bj)
+            for (let bj = boxJ * this.boxCols; bj < (boxJ+1)*this.boxCols; ++bj)
             {
                 // ensure we are not looking at the same position
-                if (!(bi == i && bj == j) && this.board[bi][bj] == this.board[i][j] && this.board[bi][bj] != 0)
+                if (!(bi == i && bj == j) && this.board[bi][bj] == this.board[i][j] && this.board[bi][bj] != EMPTY_CELL)
                     return true;
+            }
+        }
+
+        // [additional constraints]
+        // check that this digit does not break any containing cages
+        for (let c = 0; c < this.cages.length; ++c)
+        {
+            let cage = this.cages[c];
+            let expectedCageSum = cage[0];
+            // ensure the given cell i,j is in this cage
+            let containsGivenCell = false;
+            for (let celli = 0; celli < cage[1].length; ++celli)
+            {
+                if (i == cage[1][celli][0] && j == cage[1][celli][1])
+                    containsGivenCell = true;
+            }
+            if (!containsGivenCell) continue;
+
+            let cageSize = cage[1].length;
+            let numFilledInCells = 0;
+            let currentCageSum = 0;
+            // foreach cell in this cage
+            for (let cc = 0; cc < cageSize; ++cc)
+            {
+                let [celli, cellj] = cage[1][cc];
+                // don't need to ignore given cell at i,j
+                // check if cell is filled in
+                if (this.board[celli][cellj] != EMPTY_CELL)
+                {
+                    // it's filled in so count this cell
+                    ++numFilledInCells;
+                    // Also update the current running sum of the cage
+                    currentCageSum += this.board[celli][cellj];
+                }
+            }
+            // Case 0 : given cell is bad if it results in a larger current sum than the given cage sum
+            // this ignores whether we have all digits filled in or not
+            // because obviously if 3/5 cells of the cage sum up to a number that is larger than expected,
+            // then it doesn't matter what the unfilled-in cells are since they cant be negative
+            if (currentCageSum > expectedCageSum)
+            {
+                return true;
+            }
+            // Case 1 : if all digits are filled in, current sum must equal given cage sum
+            let isFilled = numFilledInCells == cageSize;
+            if (isFilled && currentCageSum != expectedCageSum)
+            {
+                return true;
             }
         }
 
@@ -276,25 +367,73 @@ class SudokuBoard
         // check row
         for (let jj = 0; jj < this.cols; ++jj)
         {
-            if (jj != j && this.board[i][jj] == digit && this.board[i][jj] != 0)
+            if (jj != j && this.board[i][jj] == digit && this.board[i][jj] != EMPTY_CELL)
                 return false;
         }
         // check col
         for (let ii = 0; ii < this.rows; ++ii)
         {
-            if (ii != i && this.board[ii][j] == digit && this.board[ii][j] != 0)
+            if (ii != i && this.board[ii][j] == digit && this.board[ii][j] != EMPTY_CELL)
                 return false;
         }
         // check box
         let boxI = Math.floor (i / this.boxRows);
         let boxJ = Math.floor (j / this.boxCols);
-        for (let bi = boxI * 3; bi < (boxI+1)*3; ++bi)
+        for (let bi = boxI * this.boxRows; bi < (boxI+1)*this.boxRows; ++bi)
         {
-            for (let bj = boxJ * 3; bj < (boxJ+1)*3; ++bj)
+            for (let bj = boxJ * this.boxCols; bj < (boxJ+1)*this.boxCols; ++bj)
             {
                 // ensure we are not looking at the same position
-                if (!(bi == i && bj == j) && this.board[bi][bj] == digit && this.board[bi][bj] != 0)
+                if (!(bi == i && bj == j) && this.board[bi][bj] == digit && this.board[bi][bj] != EMPTY_CELL)
                     return false;
+            }
+        }
+
+        // [additional constraints]
+        // check that this digit does not break any containing cages
+        for (let c = 0; c < this.cages.length; ++c)
+        {
+            let cage = this.cages[c];
+            let expectedCageSum = cage[0];
+            // ensure the given cell is in this cage
+            let containsGivenCell = false;
+            for (let celli = 0; celli < cage[1].length; ++celli)
+            {
+                if (i == cage[1][celli][0] && j == cage[1][celli][1])
+                    containsGivenCell = true;
+            }
+            if (!containsGivenCell) continue;
+
+            let cageSize = cage[1].length;
+            let numFilledInCells = 0;
+            let currentCageSum = 0;
+            // foreach cell in this cage
+            for (let cc = 0; cc < cageSize; ++cc)
+            {
+                let [celli, cellj] = cage[1][cc];
+                // ignore if it is the given cell (this is a safety incase given cell is already filled in)
+                if (i == celli && j == cellj) continue;
+                // check if cell is filled in
+                if (this.board[celli][cellj] != EMPTY_CELL)
+                {
+                    // it's filled in so count this cell
+                    ++numFilledInCells;
+                    // Also update the current running sum of the cage
+                    currentCageSum += this.board[celli][cellj];
+                }
+            }
+            // Case 0 : given digit is bad if it results in a larger current sum than the given cage sum
+            currentCageSum += digit;
+            if (currentCageSum > expectedCageSum)
+            {
+                return false;
+            }
+            // Case 1 : if all digits are filled in, current sum must equal given cage sum
+            // +1 to count this current digit
+            let isFilled = (numFilledInCells + 1) == cageSize;
+            if (isFilled && currentCageSum != expectedCageSum)
+            {
+                return false;
             }
         }
 
@@ -324,9 +463,9 @@ class SudokuBoard
         ];
         let firsti = -1;
         let firstj = -1;
-        for (let i = 0; i < 9; ++i)
+        for (let i = 0; i < this.rows; ++i)
         {
-            for (let j = 0; j < 9; ++j)
+            for (let j = 0; j < this.cols; ++j)
             {
                 if (firsti == -1 && this.selectedCells[i][j])
                 {
@@ -357,9 +496,9 @@ class SudokuBoard
         // first assume that all selected cells were in floodfill reach
         let areCellsOrthogonal = true;
         // now look for a contradictory case
-        for (let i = 0; i < 9; ++i)
+        for (let i = 0; i < this.rows; ++i)
         {
-            for (let j = 0; j < 9; ++j)
+            for (let j = 0; j < this.cols; ++j)
             {
                 if (dfsBoard[i][j] == 1)
                     // found a cell that wasnt orthogonal
@@ -373,9 +512,9 @@ class SudokuBoard
         }
 
         // ensure cells are not already a cage
-        for (let i = 0; i < 9; ++i)
+        for (let i = 0; i < this.rows; ++i)
         {
-            for (let j = 0; j < 9; ++j)
+            for (let j = 0; j < this.cols; ++j)
             {
                 if (this.selectedCells[i][j])
                 {
@@ -406,9 +545,9 @@ class SudokuBoard
         // create cage
         console.log (`Making cage with sum ${sum}`);
         let cells = [];
-        for (let i = 0; i < 9; ++i)
+        for (let i = 0; i < this.rows; ++i)
         {
-            for (let j = 0; j < 9; ++j)
+            for (let j = 0; j < this.cols; ++j)
             {
                 if (sudokuBoard.selectedCells[i][j])
                     cells.push ([i,j]);
@@ -454,6 +593,21 @@ class SudokuBoard
     // digit, then the digit is instead removed from all of the selected cells
     inputDigit (digit)
     {
+        // ensure valid range
+        if (playMode != PLAY_MODE_COLOR && digit != EMPTY_CELL && (digit < this.low || digit >= this.high))
+        {
+            console.log ("Invalid digit", digit);
+            return;
+        }
+
+        // ensure valid color
+        let isColorValid = 0 <= digit && digit < this.numColors;
+        if (editMode == MODE_PLAY && playMode == PLAY_MODE_COLOR && !isColorValid && digit != EMPTY_CELL)
+        {
+            console.log ("Invalid color", digit);
+            return;
+        }
+
         // ** temporarily treat board maker digits as play digits
         let prevEditMode = editMode;
         if (editMode == MODE_BOARD_MAKER && boardMakerMode == BOARD_MAKER_MODE_DIGIT) 
@@ -461,38 +615,38 @@ class SudokuBoard
             editMode = MODE_PLAY;
             playMode = PLAY_MODE_DIGIT;
         }
-        // 1. given digit is 0 - should clear all info from selected
+        // 1. given digit is -1 - should clear all info from selected
         //   for the given mode
-        if (digit == 0)
+        if (digit == EMPTY_CELL)
         {    
-            for (let i = 0; i < 9; ++i)
+            for (let i = 0; i < this.rows; ++i)
             {
-                for (let j = 0; j < 9; ++j)
+                for (let j = 0; j < this.cols; ++j)
                 {
                     // delete if cell is selected
                     if (this.selectedCells[i][j])
                     {
                         if (editMode == MODE_PLAY && playMode == PLAY_MODE_DIGIT)
                         {
-                            this.board[i][j] = 0;
+                            this.board[i][j] = EMPTY_CELL;
                         }
-                        else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == 0)
+                        else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == EMPTY_CELL)
                         {
-                            for (let k = 0; k < 9; ++k)
+                            for (let k = this.low; k < this.high; ++k)
                             {
                                 this.topDigits[i][j][k] = 0;
                             }
                         }
-                        else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && this.board[i][j] == 0)
+                        else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && this.board[i][j] == EMPTY_CELL)
                         {
-                            for (let k = 0; k < 9; ++k)
+                            for (let k = this.low; k < this.high; ++k)
                             {
                                 this.centerDigits[i][j][k] = 0;
                             }
                         }
                         else if (editMode == MODE_PLAY && playMode == PLAY_MODE_COLOR)
                         {
-                            for (let k = 0; k < 9; ++k)
+                            for (let k = 0; k < this.numColors; ++k)
                             {
                                 this.cellColors[i][j][k] = 0;
                             }
@@ -503,9 +657,9 @@ class SudokuBoard
         }
     
         let wasChanged = false;
-        for (let i = 0; i < 9; ++i)
+        for (let i = 0; i < this.rows; ++i)
         {
-            for (let j = 0; j < 9; ++j)
+            for (let j = 0; j < this.cols; ++j)
             {
                 // delete if cell is selected
                 if (this.selectedCells[i][j])
@@ -515,19 +669,19 @@ class SudokuBoard
                         this.board[i][j] = digit;
                         wasChanged = true;
                     }
-                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == 0 && this.topDigits[i][j][digit-1] == 0)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == EMPTY_CELL && this.topDigits[i][j][digit] == 0)
                     {
-                        this.topDigits[i][j][digit-1] = 1;
+                        this.topDigits[i][j][digit] = 1;
                         wasChanged = true;
                     }
-                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && this.board[i][j] == 0 && this.centerDigits[i][j][digit-1] == 0)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && this.board[i][j] == EMPTY_CELL && this.centerDigits[i][j][digit] == 0)
                     {
-                        this.centerDigits[i][j][digit-1] = 1;
+                        this.centerDigits[i][j][digit] = 1;
                         wasChanged = true;
                     }
-                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_COLOR && this.cellColors[i][j][digit-1] == 0)
+                    else if (editMode == MODE_PLAY && playMode == PLAY_MODE_COLOR && this.cellColors[i][j][digit] == 0)
                     {
-                        this.cellColors[i][j][digit-1] = 1;
+                        this.cellColors[i][j][digit] = 1;
                         wasChanged = true;
                     }
                 }
@@ -537,28 +691,28 @@ class SudokuBoard
         // delete key if it was already set
         if (!wasChanged)
         {
-            for (let i = 0; i < 9; ++i)
+            for (let i = 0; i < this.rows; ++i)
             {
-                for (let j = 0; j < 9; ++j)
+                for (let j = 0; j < this.cols; ++j)
                 {
                     // delete if cell is selected
                     if (this.selectedCells[i][j])
                     {
                         if (editMode == MODE_PLAY && playMode == PLAY_MODE_DIGIT)
                         {
-                            this.board[i][j] = 0;
+                            this.board[i][j] = EMPTY_CELL;
                         }
-                        else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == 0)
+                        else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == EMPTY_CELL)
                         {
-                            this.topDigits[i][j][digit-1] = 0;
+                            this.topDigits[i][j][digit] = 0;
                         }
-                        else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && this.board[i][j] == 0)
+                        else if (editMode == MODE_PLAY && playMode == PLAY_MODE_SMALL && this.board[i][j] == EMPTY_CELL)
                         {
-                            this.centerDigits[i][j][digit-1] = 0;
+                            this.centerDigits[i][j][digit] = 0;
                         }
                         else if (editMode == MODE_PLAY && playMode == PLAY_MODE_COLOR)
                         {
-                            this.cellColors[i][j][digit-1] = 0;
+                            this.cellColors[i][j][digit] = 0;
                             wasChanged = true;
                         }
                     }
@@ -602,6 +756,7 @@ class SudokuBoard
     // draws the board to the canvas
     show ()
     {
+        let digitMapping = "0123456789abcdef";
         // draw each cell
         for (let i = 0; i < this.rows; ++i)
         {
@@ -619,18 +774,19 @@ class SudokuBoard
                 noFill ();
                 rect (x, y, this.cellWidth, this.cellHeight);
 
-                // add cell color - if exists
+                // add cell color/highlight - if exists
                 let numColors = this.cellColors[i][j].reduce((partialSum, a) => partialSum + a, 0);
                 if (numColors != 0)
                 {
                     let colorStripeWidth = this.cellWidth / numColors;
                     let colorsUsedSoFar = 0;
-                    for (let c = 0; c < 9; ++c)
+                    // this starts at 0 instead of this.low because white is 0
+                    for (let c = 0; c < this.numColors; ++c)
                     {
                         // ensure this color is present in this cell
                         if (this.cellColors[i][j][c] == 1)
                         {
-                            let cellColor = RGBA_COLORS[c+1];
+                            let cellColor = RGBA_COLORS[c];
                             let colorX = x + colorsUsedSoFar * colorStripeWidth;
                             noStroke ();
                             fill (cellColor);
@@ -663,25 +819,25 @@ class SudokuBoard
                     line (x+selectPadding, y+selectPadding, x+selectPadding, y+this.cellHeight-selectPadding);
                 }
 
-                // draw filled digit, if filled in (non-zero)
-                if (this.board[i][j] != 0)
+                // draw filled digit, if filled in
+                if (this.board[i][j] != EMPTY_CELL)
                 {
                     noStroke ();
                     fill (this.digitColor);
                     textFont (globalTextFont);
                     textAlign (CENTER, CENTER);
                     textSize (this.cellHeight-10);
-                    text (this.board[i][j], cellCenterX, cellCenterY + 5);
+                    text (digitMapping[this.board[i][j]], cellCenterX, cellCenterY + 5);
                 }
                 // if digit is not filled in, draw any penciled-in digits
                 else
                 {
                     // top digits
                     let topDigitsStr = "";
-                    for (let p = 0; p < this.numDigits; ++p)
+                    for (let p = this.low; p < this.high; ++p)
                     {
                         if (this.topDigits[i][j][p])
-                            topDigitsStr = topDigitsStr + (p+1);
+                            topDigitsStr = topDigitsStr + digitMapping[p];
                     }
 
                     // Ensure we have pencil marks
@@ -702,10 +858,10 @@ class SudokuBoard
 
                     // center pencil marks (small digits)
                     let pencilMarksStr = "";
-                    for (let p = 0; p < this.numDigits; ++p)
+                    for (let p = this.low; p < this.high; ++p)
                     {
                         if (this.centerDigits[i][j][p])
-                            pencilMarksStr = pencilMarksStr + (p+1);
+                            pencilMarksStr = pencilMarksStr + digitMapping[p];
                     }
 
                     // Ensure we have pencil marks
@@ -768,10 +924,10 @@ class SudokuBoard
                     if (i == 0 || !this.selectedCells[i-1][j] || isCursorPosition)
                         line (x+selectPadding, y+selectPadding, x+this.cellWidth-selectPadding, y+selectPadding);
                     // East Line
-                    if (j == 8 || !this.selectedCells[i][j+1] || isCursorPosition)
+                    if (j == this.cols-1 || !this.selectedCells[i][j+1] || isCursorPosition)
                         line (x+this.cellWidth-selectPadding, y+selectPadding, x+this.cellWidth-selectPadding, y+this.cellHeight-selectPadding);
                     // South Line
-                    if (i == 8 || !this.selectedCells[i+1][j] || isCursorPosition)
+                    if (i == this.rows-1 || !this.selectedCells[i+1][j] || isCursorPosition)
                         line (x+selectPadding, y+this.cellHeight-selectPadding, x+this.cellWidth-selectPadding, y+this.cellHeight-selectPadding);
                     // West Line
                     if (j == 0 || !this.selectedCells[i][j-1] || isCursorPosition)
