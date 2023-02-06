@@ -109,6 +109,7 @@ function basicSolverReducePenciledDigits ()
     lockedDigitInRow ();
     lockedDigitInCol ();
     lockedDigitInBox ();
+    restrictDominoes ();
 
     editMode = MODE_SOLVER;
 }
@@ -1233,6 +1234,120 @@ function lockedDigitInBox ()
     
     editMode = MODE_SOLVER;
 }
+
+//========================================================================
+
+function restrictDominoes ()
+{
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+    {
+        for (let j = 0; j < sudokuBoard.cols; ++j)
+        {
+            // ignore if already filled in
+            if (sudokuBoard.board[i][j] != EMPTY_CELL)
+                continue;
+
+            for (let domino_dir = 0; domino_dir < 4; ++domino_dir)
+            {
+                let otheri = i;
+                let otherj = j;
+                let domino_type = DOMINO_NONE;
+                let isNorthWest = false;
+                
+                // North
+                if (domino_dir == 0)
+                {
+                    otheri = i-1;
+                    otherj = j;
+                    // ignore if no cell to the north
+                    if (otheri < 0)
+                        continue;
+                    // check North's south - we do not save north dominoes
+                    domino_type = sudokuBoard.dominoes[otheri][otherj][DOMINO_SOUTH];
+                    isNorthWest = true;
+                }
+
+                // East
+                else if (domino_dir == 1)
+                {
+                    otheri = i;
+                    otherj = j+1;
+                    // ignore if no cell to the east
+                    if (otherj >= sudokuBoard.cols)
+                        continue;
+                    domino_type = sudokuBoard.dominoes[i][j][DOMINO_EAST];
+                    isNorthWest =  false;
+                }
+
+                // South
+                else if (domino_dir == 2)
+                {
+                    otheri = i+1;
+                    otherj = j;
+                    // ignore if no cell to the south
+                    if (otheri >= sudokuBoard.rows)
+                        continue;
+                    domino_type = sudokuBoard.dominoes[i][j][DOMINO_SOUTH];
+                    isNorthWest =  false;
+                }
+
+                // West
+                else if (domino_dir == 3)
+                {
+                    otheri = i;
+                    otherj = j-1;
+                    // ignore if no cell to the south
+                    if (otherj < 0)
+                        continue;
+                    // check West's east - we do not save West dominoes
+                    domino_type = sudokuBoard.dominoes[otheri][otherj][DOMINO_EAST];
+                    isNorthWest = true;
+                }
+
+                // ensure we are looking at a domino
+                if (domino_type == DOMINO_NONE)
+                    continue;
+
+                // ensure both cells are not filled in already
+                // a filled in cell wouldnt get solved by this technique
+                if (sudokuBoard.board[otheri][otherj] != EMPTY_CELL)
+                    continue;
+
+                // ensure that each center digit is valid
+                for (let p = sudokuBoard.low; p < sudokuBoard.high; ++p)
+                {
+                    if (sudokuBoard.centerDigits[i][j][p] == 0) continue;
+                    // set this to something in the penciled digits list
+                    sudokuBoard.board[i][j] = p;
+
+                    // check if other has valid penciled digits
+                    let hasValidDigit = false;
+                    for (let pp = sudokuBoard.low; pp < sudokuBoard.high; ++pp)
+                    {
+                        // ensure the digit is penciled in
+                        if (sudokuBoard.centerDigits[otheri][otherj][pp] == 0) continue;
+                        let result = sudokuBoard.isDigitValid (otheri, otherj, pp);
+                        if (result)
+                        {
+                            hasValidDigit = true;
+                            break;
+                        }
+                    }
+
+                    // if other has a valid digit, then this is a valid digit
+                    // otherwise, we can remove the current digit from the current cell
+                    if (!hasValidDigit)
+                        sudokuBoard.centerDigits[i][j][p] = 0;
+
+                    // undo what we set
+                    sudokuBoard.board[i][j] = EMPTY_CELL;
+
+                } // endfor - for each center digit
+            } // endfor - domino direction
+        } // endfor - j cols
+    } // endfor - i rows
+} // endfunction
+
 
 
 

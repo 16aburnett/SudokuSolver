@@ -224,7 +224,7 @@ class SudokuBoard
         {
             for (let j = 0; j < this.cols; ++j)
             {
-                if (sudokuBoard.selectedCells[i][j] == 0)
+                if (this.selectedCells[i][j] == 0)
                 {
                     return false;
                 }
@@ -269,7 +269,7 @@ class SudokuBoard
     {
         for (let i = 0; i < this.rows; ++i)
             for (let j = 0; j < this.cols; ++j)
-                sudokuBoard.board[i][j] = EMPTY_CELL;
+                this.board[i][j] = EMPTY_CELL;
     }
     
     //========================================================================
@@ -279,7 +279,7 @@ class SudokuBoard
         for (let i = 0; i < this.rows; ++i)
             for (let j = 0; j < this.cols; ++j)
                 for (let k = this.low; k < this.high; ++k)
-                    sudokuBoard.topDigits[i][j][k] = 0;
+                    this.topDigits[i][j][k] = 0;
     }
     
     //========================================================================
@@ -289,7 +289,7 @@ class SudokuBoard
         for (let i = 0; i < this.rows; ++i)
             for (let j = 0; j < this.cols; ++j)
                 for (let k = this.low; k < this.high; ++k)
-                    sudokuBoard.centerDigits[i][j][k] = 0;
+                    this.centerDigits[i][j][k] = 0;
     }
     
     //========================================================================
@@ -299,7 +299,7 @@ class SudokuBoard
         for (let i = 0; i < this.rows; ++i)
             for (let j = 0; j < this.cols; ++j)
                 for (let k = this.low; k < this.high; ++k)
-                    sudokuBoard.cellColors[i][j][k] = 0;
+                    this.cellColors[i][j][k] = 0;
     }
     
     //========================================================================
@@ -822,7 +822,7 @@ class SudokuBoard
         {
             for (let j = 0; j < this.cols; ++j)
             {
-                if (sudokuBoard.selectedCells[i][j])
+                if (this.selectedCells[i][j])
                     cells.push ([i,j]);
             }
         }
