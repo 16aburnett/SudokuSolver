@@ -364,6 +364,27 @@
                                             <button class="panelButton" onclick="createHexadecimalBoard()">Hexadecimal Board</button>
                                         </td>
                                     </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="3">
+                                            Save Board to File
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <button class="panelButton" onclick="exportBoardToJSON ()">Export Board to JSON</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="3">
+                                            Load Board from File
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <input id="importBoardFromJSON_btn" type="file"/>
+                                            <button class="panelButton" type="file" onclick="importBoardFromJSON ()">Import Board from JSON</button>
+                                        </td>
+                                    </tr>
                                 </table>
                             </div>
                             <div id="boardMakerPanelDigitPanel" class="" style="display:none;overflow:hidden">
@@ -468,6 +489,81 @@
                                         <th class="color-foreground0" colspan="3">
                                             Dominoes
                                         </th>
+                                    </tr>
+                                    <tr>
+                                        <td class="color-foreground0" colspan="3">
+                                            Dominoes are hints given to show the relationship of an othogonally adjacent pair of cells.
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="color-foreground0" colspan="2">
+                                            Full Dominoes
+                                        </td>
+                                        <td class="color-foreground0" colspan="1">
+                                            <!-- Rounded switch -->
+                                            <label class="switch" style="float:right;">
+                                              <input type="checkbox" id="dominoFullnessSlider" onclick="toggleDominoFullness()">
+                                              <span class="slider round"></span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <button class="panelButton" onclick="sudokuBoard.markDominoWithSelectedCells (DOMINO_NONE)">Unmark Selected Pair</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <button class="panelButton" onclick="sudokuBoard.clearDominoes ()">Clear All Dominoes</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="2">
+                                            Kropki White Dots (consecutive)
+                                        </th>
+                                        <td colspan="1">
+                                            <button class="panelButton" onclick="sudokuBoard.markDominoWithSelectedCells (DOMINO_KROPKI_WHITE)">Mark Selected Pair</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="2">
+                                            Kropki Black Dots (double)
+                                        </th>
+                                        <td colspan="1">
+                                            <button class="panelButton" onclick="sudokuBoard.markDominoWithSelectedCells (DOMINO_KROPKI_BLACK)">Mark Selected Pair</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="2">
+                                            Sum to 5 (V)
+                                        </th>
+                                        <td colspan="1">
+                                            <button class="panelButton" onclick="sudokuBoard.markDominoWithSelectedCells (DOMINO_SUM_V)">Mark Selected Pair</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="2">
+                                            Sum to 10 (X)
+                                        </th>
+                                        <td colspan="1">
+                                            <button class="panelButton" onclick="sudokuBoard.markDominoWithSelectedCells (DOMINO_SUM_X)">Mark Selected Pair</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="2">
+                                            Less Than
+                                        </th>
+                                        <td colspan="1">
+                                            <button class="panelButton" onclick="sudokuBoard.markDominoWithSelectedCells (DOMINO_LESS_THAN)">Mark Selected Pair</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th class="color-foreground0" colspan="2">
+                                            Greater Than
+                                        </th>
+                                        <td colspan="1">
+                                            <button class="panelButton" onclick="sudokuBoard.markDominoWithSelectedCells (DOMINO_GREATER_THAN)">Mark Selected Pair</button>
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
@@ -583,6 +679,20 @@
                                     <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (0)" title="Cage Board">Cage Board 0</button>
                                 </td>
                             </tr>
+                            <tr>
+                                <th class="color-foreground0" colspan="3">Domino Sudokus</th>
+                            </tr>
+                            <tr>
+                                <td colspan="1">
+                                    <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (0)" title="Domino Board">Domino Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (1)" title="Domino Board">Domino Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (2)" title="Domino Board">Domino Board 2</button>
+                                </td>
+                            </tr>
                         </table>
                     </div>
                     <div id="solverPanel" class="buttonPanel" style="display: none;">
@@ -669,6 +779,48 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div id="rulesSection">
+            <h3>Rules</h3>
+            <table>
+                <tr>
+                    <td>
+                        <p class="color-foreground0">Normal Sudoku Rules</p>
+                    </td>
+                    <td>
+                        <!-- Rounded switch -->
+                        <label class="switch">
+                          <input type="checkbox" id="rules_normalSudoku" checked disabled>
+                          <span class="slider round"></span>
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p class="color-foreground0">Unique Cage Digits</p>
+                    </td>
+                    <td>
+                        <!-- Rounded switch -->
+                        <label class="switch">
+                          <input type="checkbox" id="rules_uniqueCages" checked disabled>
+                          <span class="slider round"></span>
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p class="color-foreground0">Full Domino</p>
+                    </td>
+                    <td>
+                        <!-- Rounded switch -->
+                        <label class="switch">
+                          <input type="checkbox" id="rules_fullDomino" disabled>
+                          <span class="slider round"></span>
+                        </label>
+                    </td>
+                </tr>
+            </table>
         </div>
 
         <div id="pageFooter">

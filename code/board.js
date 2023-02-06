@@ -1,6 +1,20 @@
 
 const EMPTY_CELL = -1;
 
+const DOMINO_NONE = 0;
+const DOMINO_KROPKI_WHITE = 1;
+const DOMINO_KROPKI_BLACK = 2;
+const DOMINO_SUM_V = 3;
+const DOMINO_SUM_X = 4;
+const DOMINO_LESS_THAN = 5;
+const DOMINO_GREATER_THAN = 6;
+
+// const DOMINO_NORTH = 0;
+const DOMINO_EAST  = 0;
+const DOMINO_SOUTH = 1;
+// const DOMINO_WEST  = 3;
+const DOMINO_NUM_DIRS = 2;
+
 class SudokuBoard 
 {
     constructor (base=9)
@@ -46,6 +60,13 @@ class SudokuBoard
         // each cage stores a cage sum
         // and a list of cells that make up the cage
         this.cages = [];
+        // dominoes
+        // this stores the 9x9 board and 4 values per cell representing N E S W relationships
+        this.dominoes = [];
+        // full dominoes means that all dominoes are given
+        // and that the absense of a domino means that those two cells do not follow the dominoe's rules
+        // partial dominoes is the opposite where two cells could follow a dominoes rules but might not have a domino marked
+        this.isFullDomino = false;
 
         // initialize board state
         for (let i = 0; i < this.rows; ++i)
@@ -56,6 +77,7 @@ class SudokuBoard
             this.topDigits    .push ([]);
             this.centerDigits .push ([]);
             this.cellColors   .push ([]);
+            this.dominoes     .push ([]);
             for (let j = 0; j < this.cols; ++j)
             {
                 this.board[i]        .push (EMPTY_CELL);
@@ -64,6 +86,7 @@ class SudokuBoard
                 this.topDigits[i]    .push ([]);
                 this.centerDigits[i] .push ([]);
                 this.cellColors[i]   .push ([]);
+                this.dominoes[i]     .push ([]);
                 // this starts at 0 because we include 0 even if this.low starts at 1
                 for (let k = 0; k < this.high; ++k)
                 {
@@ -74,6 +97,8 @@ class SudokuBoard
                 {
                     this.cellColors[i][j]  .push (0);
                 }
+                for (let d = 0; d < DOMINO_NUM_DIRS; ++d)
+                    this.dominoes[i][j].push (DOMINO_NONE);
             }
         }
 
@@ -109,6 +134,10 @@ class SudokuBoard
         this.cageSumColor = DARKMODE_FOREGROUND0;
         this.cageTextSize = 12;
         this.cageTextFont = "Sans";
+
+        this.dominoBorderColor = DARKMODE_FOREGROUND0;
+        this.dominoColor = DARKMODE_BACKGROUND0;
+        this.dominoSize = 20;
     }
 
     //========================================================================
@@ -159,6 +188,7 @@ class SudokuBoard
         this.clearAllMarks ();
         // advanced sudoku features
         this.clearCages ();
+        this.clearDominoes ();
     }
     
     //========================================================================
@@ -167,6 +197,24 @@ class SudokuBoard
     {
         this.cages = [];
     }
+
+    //========================================================================
+    
+    clearDominoes ()
+    {
+        this.dominoes = [];
+        // initialize board state
+        for (let i = 0; i < this.rows; ++i)
+        {
+            this.dominoes     .push ([]);
+            for (let j = 0; j < this.cols; ++j)
+            {
+                //                           North        East         South        West
+                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE, DOMINO_NONE, DOMINO_NONE]);
+            }
+        }
+    }
+    
     
     //========================================================================
     
@@ -221,7 +269,7 @@ class SudokuBoard
     {
         for (let i = 0; i < this.rows; ++i)
             for (let j = 0; j < this.cols; ++j)
-                sudokuBoard.board[i][j] = 0;
+                sudokuBoard.board[i][j] = EMPTY_CELL;
     }
     
     //========================================================================
@@ -283,6 +331,10 @@ class SudokuBoard
     // returns false if there is no conflict
     isCellConflicting (i, j)
     {
+        // cell isnt conflicting if it's not filled in
+        if (this.board[i][j] == EMPTY_CELL)
+            return false;
+
         // check row
         for (let jj = 0; jj < this.cols; ++jj)
         {
@@ -355,6 +407,15 @@ class SudokuBoard
                 return true;
             }
         }
+
+        // dominoes
+        let digit = this.board[i][j];
+        this.board[i][j] = EMPTY_CELL;
+        let result = this.isDigitValid (i, j, digit);
+        this.board[i][j] = digit;
+
+        if (!result)
+            return true;
 
         // reaches here if we did not find a conflict
         return false;
@@ -436,6 +497,218 @@ class SudokuBoard
                 return false;
             }
         }
+
+        // Dominoes
+        // check the dominoes in each direction from the given cell
+        for (let d = 0; d < 4; ++d)
+        {
+            let otheri = i;
+            let otherj = j;
+            let domino_type = DOMINO_NONE;
+            let isNorthWest = false;
+            
+            // North
+            if (d == 0)
+            {
+                otheri = i-1;
+                otherj = j;
+                // ignore if no cell to the north
+                if (otheri < 0)
+                    continue;
+                // check North's south - we do not save north dominoes
+                domino_type = this.dominoes[otheri][otherj][DOMINO_SOUTH];
+                isNorthWest = true;
+            }
+
+            // East
+            else if (d == 1)
+            {
+                otheri = i;
+                otherj = j+1;
+                domino_type = this.dominoes[i][j][DOMINO_EAST];
+                isNorthWest =  false;
+            }
+
+            // South
+            else if (d == 2)
+            {
+                otheri = i+1;
+                otherj = j;
+                domino_type = this.dominoes[i][j][DOMINO_SOUTH];
+                isNorthWest =  false;
+            }
+
+            // West
+            else if (d == 3)
+            {
+                otheri = i;
+                otherj = j-1;
+                // ignore if no cell to the south
+                if (otherj < 0)
+                    continue;
+                // check West's east - we do not save West dominoes
+                domino_type = this.dominoes[otheri][otherj][DOMINO_EAST];
+                isNorthWest = true;
+            }
+
+            // validate based on the domino's type
+            if (domino_type == DOMINO_KROPKI_WHITE)
+            {
+                // Kropki White means that the pair should be consecutive
+
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    // ensure this digit is consecutive
+                    if (!(otherDigit-1 == digit || otherDigit+1 == digit))
+                        // not consecutive
+                        return false;
+                }
+
+            }
+            else if (domino_type == DOMINO_KROPKI_BLACK)
+            {
+                // Kropki black means that the pair should have a 1:2 relationship (aka double)
+
+                // without having the other digit, we already can eliminate 5, 7, and 9
+                // **this is only true for board size of 9
+                if (this.numDigits == 9)
+                {
+                    // reject 5, 7, and 9
+                    if (digit == 5 || digit == 7 || digit == 9)
+                        return false;
+                }
+
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    // ensure this digit is 1:2
+                    if (!(otherDigit*2 == digit || otherDigit == digit*2))
+                        // not 1:2
+                        return false;
+                }
+                
+            }
+            else if (domino_type == DOMINO_SUM_V)
+            {
+                // Sum V means that the pair must sum to 5
+
+                // without having the other digit, we already can eliminate anything 5 or higher
+                // because they will already be higher than 5
+                // ** 5 is acceptable for hexadecimal because 0 is valid
+                if (this.numDigits == 9)
+                {
+                    // reject 5 or higher
+                    if (digit >= 5)
+                        return false;
+                }
+                else if (this.numDigits == 16)
+                {
+                    // reject higher than 5
+                    if (digit > 5)
+                        return false;
+                }
+
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    // ensure they sum to 5
+                    if (!(otherDigit + digit == 5))
+                        // not sum = 5
+                        return false;
+                }
+
+            }
+            else if (domino_type == DOMINO_SUM_X)
+            {
+                // Sum X means that the pair must sum to 10
+
+                // without having the other digit, we already can eliminate anything 11 or higher
+                // because they will already be higher than 10
+                // **this is only for hexadecimal since 10+ isnt valid in 9sudoku
+                if (this.numDigits == 16)
+                {
+                    // reject higher than 10
+                    if (digit > 10)
+                        return false;
+                }
+
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    // ensure they sum to 10
+                    if (!(otherDigit + digit == 10))
+                        // not sum = 10
+                        return false;
+                }
+
+            }
+            else if (domino_type == DOMINO_LESS_THAN)
+            {
+                // Less than means that this cell must be less than the other cell
+                // Note: that this reads left to right and top down so lhs < rhs even if rhs is the given cell
+
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    if (isNorthWest)
+                    {
+                        // ensure lhs < rhs
+                        if (!(otherDigit < digit))
+                            return false;
+                    }
+                    else
+                    {
+                        // ensure lhs < rhs
+                        if (!(digit < otherDigit))
+                            return false;
+                    }
+                }
+
+            }
+            else if (domino_type == DOMINO_GREATER_THAN)
+            {
+                // Greater than means that this cell must be greater than the other cell
+                // Note: that this reads left to right and top down so lhs > rhs even if rhs is the given cell
+
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    if (isNorthWest)
+                    {
+                        // ensure lhs > rhs
+                        if (!(otherDigit > digit))
+                            return false;
+                    }
+                    else
+                    {
+                        // ensure lhs > rhs
+                        if (!(digit > otherDigit))
+                            return false;
+                    }
+                }
+                
+            }
+            else
+            {
+                // draw nothing because no dot
+            }
+
+
+        }
+
 
         // reaches here if we did not find a conflict
         return true;
@@ -586,6 +859,111 @@ class SudokuBoard
             }
         }
     }
+    
+    //========================================================================
+
+    // turns the selected pair of cells into a domino
+    // if selected cells are not orthogonally connected, then a domino cannot be made
+    // if number of selected cells are not 2, then we have too many or two little for a domino
+    markDominoWithSelectedCells (domino_type=DOMINO_NONE)
+    {
+        let num_selected = 0;
+        let i0 = -1;
+        let j0 = -1;
+        let i1 = -1;
+        let j1 = -1;
+        for (let i = 0; i < this.rows; ++i)
+        {
+            for (let j = 0; j < this.cols; ++j)
+            {
+                if (this.selectedCells[i][j] == 1)
+                {
+                    ++num_selected;
+                    if (num_selected == 1)
+                    {
+                        i0 = i;
+                        j0 = j;
+                    }
+                    else if (num_selected == 2)
+                    {
+                        i1 = i;
+                        j1 = j;
+                    }
+                }
+            }
+        }
+
+        // ensure only 2 cells were selected
+        if (num_selected != 2)
+        {
+            console.log ("Domino Error: expected 2 selected cells, but got", num_selected);
+            return;
+        }
+
+        // ensure cells are adjacent
+        // cell1 North of cell0
+        if (i0 - 1 == i1 && j0 == j1)
+        {
+            console.log ("North");
+        }
+        // cell1 East of cell0
+        else if (i0 == i1 && j0 + 1 == j1)
+        {
+            console.log ("East");
+        }
+        // cell1 South of cell0
+        else if (i0 + 1 == i1 && j0 == j1)
+        {
+            console.log ("South");
+        }
+        // cell1 West of cell0
+        else if (i0 == i1 && j0 - 1 == j1)
+        {
+            console.log ("West");
+        }
+        // not adjacent
+        else
+        {
+            console.log ("Domino Error: Selected cells are not adjacent");
+            return;
+        }
+
+        // add the domino relationship between the two cells
+        // cell1 North of cell0
+        if (i0 - 1 == i1 && j0 == j1)
+        {
+            // cell0's North
+            // this.dominoes[i0][j0][DOMINO_NORTH] = domino_type;
+            // cell1's South
+            this.dominoes[i1][j1][DOMINO_SOUTH] = domino_type;
+        }
+        // cell1 East of cell0
+        else if (i0 == i1 && j0 + 1 == j1)
+        {
+            // cell0's East
+            this.dominoes[i0][j0][DOMINO_EAST] = domino_type;
+            // cell1's West
+            // this.dominoes[i1][j1][DOMINO_WEST] = domino_type;
+        }
+        // cell1 South of cell0
+        else if (i0 + 1 == i1 && j0 == j1)
+        {
+            // cell0's South
+            this.dominoes[i0][j0][DOMINO_SOUTH] = domino_type;
+            // cell1's North
+            // this.dominoes[i1][j1][DOMINO_NORTH] = domino_type;
+        }
+        // cell1 West of cell0
+        else if (i0 == i1 && j0 - 1 == j1)
+        {
+            // cell0's West
+            // this.dominoes[i0][j0][DOMINO_WEST] = domino_type;
+            // cell1's East
+            this.dominoes[i1][j1][DOMINO_EAST] = domino_type;
+        }
+        
+    }
+
     //========================================================================
     
     // Applies a given digit to each of the currently selected cells
@@ -736,6 +1114,9 @@ class SudokuBoard
         this.cageSumColor = DARKMODE_FOREGROUND0;
         this.selectionBorderColor = [50, 255, 255, 220];
         this.cursorBorderColor =    [250, 255, 50, 220];
+
+        this.dominoBorderColor = DARKMODE_BACKGROUND0;
+        this.dominoColor = DARKMODE_FOREGROUND0;
     }
 
     //====================================================================
@@ -749,6 +1130,9 @@ class SudokuBoard
         this.cageSumColor = LIGHTMODE_FOREGROUND0;
         this.selectionBorderColor = [50, 50, 200, 220];
         this.cursorBorderColor =    [50, 255, 50, 220];
+
+        this.dominoBorderColor = LIGHTMODE_BACKGROUND0;
+        this.dominoColor = LIGHTMODE_FOREGROUND0;
     }
 
     //====================================================================
@@ -827,7 +1211,7 @@ class SudokuBoard
                     textFont (globalTextFont);
                     textAlign (CENTER, CENTER);
                     textSize (this.cellHeight-10);
-                    text (digitMapping[this.board[i][j]], cellCenterX, cellCenterY + 5);
+                    text (digitMapping[this.board[i][j]], cellCenterX, cellCenterY + 3);
                 }
                 // if digit is not filled in, draw any penciled-in digits
                 else
@@ -877,7 +1261,7 @@ class SudokuBoard
                         textSize (strHeight);
                         while (textWidth (pencilMarksStr) >= this.cellWidth - 10)
                             textSize (--strHeight);
-                        text (pencilMarksStr, cellCenterX, cellCenterY + 5);
+                        text (pencilMarksStr, cellCenterX, cellCenterY);
                     }
                 }
             }
@@ -898,6 +1282,7 @@ class SudokuBoard
         }
 
         this.drawCages ();
+        this.drawDominoes ();
 
         // highlight selected tiles
         for (let i = 0; i < this.rows; ++i)
@@ -1030,6 +1415,127 @@ class SudokuBoard
                 if (!hasWestCell)
                     line (x+cageBorderPadding, y+cageBorderPadding, x+cageBorderPadding, y+this.cellHeight-cageBorderPadding);
                 drawingContext.setLineDash([]);
+            }
+        }
+    }
+
+    //====================================================================
+
+    // draws domino markers on the board if there are any
+    drawDominoes ()
+    {
+        for (let i = 0; i < this.rows; ++i)
+        {
+            let y = this.y + i * this.cellHeight;
+            for (let j = 0; j < this.cols; ++j)
+            {
+                let x = this.x + j * this.cellWidth;
+
+                let cellCenterX = x + this.cellWidth / 2;
+                let cellCenterY = y + this.cellHeight / 2;
+
+                // draw domino marker for each domino direction (i.e. north east south and west)
+                for (let d = 0; d < DOMINO_NUM_DIRS; ++d)
+                {
+                    // direction
+                    let domino_marker_x = cellCenterX;
+                    let domino_marker_y = cellCenterY;
+                    let domino_type = DOMINO_NONE;
+                    // North
+                    // if (d == DOMINO_NORTH)
+                    // {
+                    //     domino_marker_x = cellCenterX;
+                    //     domino_marker_y = y;
+                    //     domino_type = this.dominoes[i][j][d];
+                    // }
+
+                    // East
+                    if (d == DOMINO_EAST)
+                    {
+                        domino_marker_x = x+this.cellWidth;
+                        domino_marker_y = cellCenterY;
+                        domino_type = this.dominoes[i][j][d];
+                    }
+
+                    // South
+                    else if (d == DOMINO_SOUTH)
+                    {
+                        domino_marker_x = cellCenterX;
+                        domino_marker_y = y+this.cellHeight;
+                        domino_type = this.dominoes[i][j][d];
+                    }
+
+                    // West
+                    // else if (d == DOMINO_WEST)
+                    // {
+                    //     domino_marker_x = x;
+                    //     domino_marker_y = cellCenterY;
+                    //     domino_type = this.dominoes[i][j][d];
+                    // }
+                    
+                    // draw the domino
+                    strokeWeight (1);
+                    if (domino_type == DOMINO_KROPKI_WHITE)
+                    {
+                        stroke (0);
+                        fill (255);
+                        let circle_redius = this.dominoSize-6;
+                        circle (domino_marker_x, domino_marker_y, circle_redius);
+                    }
+                    else if (domino_type == DOMINO_KROPKI_BLACK)
+                    {
+                        stroke (255);
+                        fill (0);
+                        let circle_redius = this.dominoSize-6;
+                        circle (domino_marker_x, domino_marker_y, circle_redius);
+                    }
+                    else if (domino_type == DOMINO_SUM_V)
+                    {
+                        stroke (this.dominoBorderColor);
+                        fill (this.dominoColor);
+                        textSize (this.dominoSize);
+                        textFont ("monospace");
+                        textStyle (BOLD);
+                        textAlign (CENTER, CENTER);
+                        text ("V", domino_marker_x, domino_marker_y);
+                    }
+                    else if (domino_type == DOMINO_SUM_X)
+                    {
+                        stroke (this.dominoBorderColor);
+                        fill (this.dominoColor);
+                        textSize (this.dominoSize);
+                        textFont ("monospace");
+                        textStyle (BOLD);
+                        textAlign (CENTER, CENTER);
+                        text ("X", domino_marker_x, domino_marker_y);
+                    }
+                    else if (domino_type == DOMINO_LESS_THAN)
+                    {
+                        stroke (this.dominoBorderColor);
+                        fill (this.dominoColor);
+                        textSize (this.dominoSize);
+                        textFont ("monospace");
+                        textStyle (BOLD);
+                        textAlign (CENTER, CENTER);
+                        text ("<", domino_marker_x, domino_marker_y);
+                    }
+                    else if (domino_type == DOMINO_GREATER_THAN)
+                    {
+                        stroke (this.dominoBorderColor);
+                        fill (this.dominoColor);
+                        textSize (this.dominoSize);
+                        textFont ("monospace");
+                        textStyle (BOLD);
+                        textAlign (CENTER, CENTER);
+                        text (">", domino_marker_x, domino_marker_y);
+                    }
+                    else
+                    {
+                        // draw nothing because no dot
+                    }
+                } // end for - each domino direction
+
+
             }
         }
     }

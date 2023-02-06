@@ -54,6 +54,10 @@ BOARD MAKER
     - graphics
 - X, V, black/white dot dominoes
 - palindrome lines
+- board maker should display the solution in a grayed out color
+- and it should warn if there are multiple solutions
+- a way to export a board to a json file and a way to import a board from a json
+    - for BC, assume loading a non-existing field means there are no dominos or cages etc
 
 - Boolean settings
     - Example: all white dots are given, meaning if a white dot is not present between two cells, 

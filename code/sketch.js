@@ -265,6 +265,11 @@ function draw ()
 
     sudokuBoard.show ();
 
+    // ensure rules are updated
+    document.getElementById ("rules_normalSudoku").checked = true;
+    document.getElementById ("rules_uniqueCages").checked = true;
+    document.getElementById ("rules_fullDomino").checked = sudokuBoard.isFullDomino;
+
 }
 
 //========================================================================
@@ -483,46 +488,105 @@ function mouseDragged ()
 
 //========================================================================
 
+function loadBoardFromData (data)
+{
+    // esnure base was provided
+    let base = 9;
+    // if (!("base" in data))
+    // {
+    //     console.log ("Load Error: base is required");
+    //     return;
+    // }
+    if ("base" in data)
+    {
+        base = data["base"];
+    }
+
+    // ensure we have a board
+    let hasBoardKey = ("board" in data);
+    let isArray = Array.isArray(data["board"])
+    if (!hasBoardKey || !isArray)
+    {
+        console.log ("Load Error: board is required");
+        return;
+    }
+
+    // try to determine base from board size
+    if (data["board"].length == 9 || data["board"].length == 16)
+    {
+        base = data["board"].length;
+    }
+    else
+    {
+        console.log ("Load Error: board size must be 9 or 16, but got", data["board"].length);
+        return;
+    }
+
+    newSudokuBoard = new SudokuBoard (base);
+
+    // load board
+    for (let i = 0; i < newSudokuBoard.rows; ++i)
+        for (let j = 0; j < newSudokuBoard.cols; ++j)
+            newSudokuBoard.board[i][j] = data["board"][i][j];
+
+    // add cages, if there are any
+    for (let cagei = 0; "cages" in data && cagei < data["cages"].length; ++cagei)
+        newSudokuBoard.cages.push (data["cages"][cagei]);
+
+    // add dominoes, if there are any
+    if ("dominoes" in data)
+        for (let i = 0; i < newSudokuBoard.rows; ++i)
+            for (let j = 0; j < newSudokuBoard.cols; ++j)
+                for (let d = 0; d < DOMINO_NUM_DIRS; ++d)
+                    newSudokuBoard.dominoes[i][j][d] = data["dominoes"][i][j][d];
+    if ("isFullDomino" in data)
+        newSudokuBoard.isFullDomino = data["isFullDomino"];
+
+    // swap in the newly loaded sudoku board
+    sudokuBoard = newSudokuBoard;
+
+    // darkmode setup
+    if (isDarkMode)
+    {
+        setDarkMode ();
+    }
+    // lightmode setup
+    else
+    {
+        setLightMode ();
+    }
+
+    document.getElementById ("dominoFullnessSlider").checked = sudokuBoard.isFullDomino;
+    document.getElementById ("rules_fullDomino").checked = sudokuBoard.isFullDomino;
+
+}
+
+//========================================================================
+
 function loadEasyBoard (boardIndex)
 {
-    createDecimalBoard ();
-
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = easyBoards[boardIndex][i][j];
+    loadBoardFromData (easyBoards[boardIndex]);
 }
 
 //========================================================================
 
 function loadMediumBoard (boardIndex)
 {
-    createDecimalBoard ();
-
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = mediumBoards[boardIndex][i][j];
+    loadBoardFromData (mediumBoards[boardIndex]);
 }
 
 //========================================================================
 
 function loadHardBoard (boardIndex)
 {
-    createDecimalBoard ();
-
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = hardBoards[boardIndex][i][j];
+    loadBoardFromData (hardBoards[boardIndex]);
 }
 
 //========================================================================
 
 function loadExpertBoard (boardIndex)
 {
-    createDecimalBoard ();
-
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = expertBoards[boardIndex][i][j];
+    loadBoardFromData (expertBoards[boardIndex]);
     
 }
 
@@ -530,60 +594,53 @@ function loadExpertBoard (boardIndex)
 
 function loadEvilBoard (boardIndex)
 {
-    createDecimalBoard ();
-
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = evilBoards[boardIndex][i][j];
+    loadBoardFromData (evilBoards[boardIndex]);
 }
 
 //========================================================================
 
 function loadIntermediateHexadecimalBoard (boardIndex)
 {
-    createHexadecimalBoard ();
-
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = intermediateHexadecimalBoards[boardIndex][i][j];
+    loadBoardFromData (intermediateHexadecimalBoards[boardIndex]);
 }
 
 //========================================================================
 
 function loadChallengingHexadecimalBoard (boardIndex)
 {
-    createHexadecimalBoard ();
-
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = challengingHexadecimalBoards[boardIndex][i][j];
+    loadBoardFromData (challengingHexadecimalBoards[boardIndex]);
 }
 
 //========================================================================
 
 function loadToughHexadecimalBoard (boardIndex)
 {
-    createHexadecimalBoard ();
-
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = toughHexadecimalBoards[boardIndex][i][j];
+    loadBoardFromData (toughHexadecimalBoards[boardIndex]);
 }
 
 //========================================================================
 
 function loadCageBoard (boardIndex)
 {
-    createDecimalBoard ();
+    loadBoardFromData (cagesBoards[boardIndex]);
+}
 
-    for (let i = 0; i < sudokuBoard.rows; ++i)
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-            sudokuBoard.board[i][j] = cagesBoards[boardIndex].board[i][j];
-    // add cages
-    for (let cagei = 0; cagei < cagesBoards[boardIndex].cages.length; ++cagei)
-    {
-        sudokuBoard.cages.push (cagesBoards[boardIndex].cages[cagei]);
-    }
+//========================================================================
+
+function loadDominoBoard (boardIndex)
+{
+    fetch(`puzzles/dominoPuzzle${boardIndex}.json`)
+        .then(response => response.json())
+        .then(json => loadBoardFromData (json));
+}
+
+//========================================================================
+
+function toggleDominoFullness ()
+{
+    sudokuBoard.isFullDomino = document.getElementById ("dominoFullnessSlider").checked;
+    document.getElementById ("rules_fullDomino").checked = sudokuBoard.isFullDomino;
+    console.log (sudokuBoard.isFullDomino);
 }
 
 //========================================================================
@@ -620,6 +677,65 @@ function createHexadecimalBoard ()
     {
         setLightMode ();
     }
+}
+
+//========================================================================
+
+function exportBoardToJSON ()
+{
+    // gather board data/state
+    let board_data = {
+        base: sudokuBoard.numDigits,
+        board: sudokuBoard.board,
+        givenDigits: sudokuBoard.givenDigits,
+        selectedCells: sudokuBoard.selectedCells,
+        topDigits: sudokuBoard.topDigits,
+        centerDigits: sudokuBoard.centerDigits,
+        cellColors: sudokuBoard.cellColors,
+        // [advanced sudoku features]
+        cages: sudokuBoard.cages,
+        dominoes: sudokuBoard.dominoes,
+        isFullDomino: sudokuBoard.isFullDomino,
+    };
+    
+    const filename = 'data.json';
+    const jsonStr = JSON.stringify(board_data);
+
+    let element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(jsonStr));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+//========================================================================
+
+function importBoardFromJSON ()
+{
+    let files = document.getElementById("importBoardFromJSON_btn").files;
+    // ensure we got 1 file
+    if (files.length != 1)
+    {
+        console.log ("Error: expected 1 file, but got", files.length)
+        return;
+    }
+    
+    let file_reader = new FileReader ();
+
+    file_reader.onload = function (e) {
+
+        let data = JSON.parse (e.target.result);
+        console.log (data);
+
+        loadBoardFromData (data);
+
+    };
+    file_reader.readAsText (files.item(0));
 }
 
 //========================================================================
