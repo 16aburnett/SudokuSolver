@@ -498,9 +498,12 @@ function nakedPairsInBox ()
                     if (penciledDigitsij.length == 2)
                     {
                         // then find a matching cell with the same two penciled in digits
-                        for (let k = boxi*sudokuBoard.boxRows; k < (boxi+1)*sudokuBoard.boxRows; ++k)
+                        let next_col0 = j+1;
+                        for (let k = i; k < (boxi+1)*sudokuBoard.boxRows; ++k)
                         {
-                            for (let l = boxj*sudokuBoard.boxCols; l < (boxj+1)*sudokuBoard.boxCols; ++l)
+                            // reset column index if we advanced to next row
+                            if (k!=i) next_col0 = boxj*sudokuBoard.boxCols;
+                            for (let l = next_col0; l < (boxj+1)*sudokuBoard.boxCols; ++l)
                             {
                                 let penciledDigitskl = sudokuBoard.getCenterDigits (k, l);
                                 // ensure it has two digits and matching digits
@@ -770,6 +773,725 @@ function hiddenPairsInCol ()
 // searches for hidden pairs of digits and isolates them 
 // by removing other penciled digits from the pair's cells
 function hiddenPairsInBox ()
+{
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
+
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
+
+    // for each box
+    for (let boxi = 0; boxi < sudokuBoard.boxRows; ++boxi)
+    {
+        for (let boxj = 0; boxj < sudokuBoard.boxCols; ++boxj)
+        {
+            // we need two digits that mutually occupy the same two cells in the same box
+            // lets start with finding a digit that occupies only two cells
+            for (let d0 = sudokuBoard.low; d0 < sudokuBoard.high; ++d0)
+            {
+                // find possible positions of this digit in this box
+                let isAlreadyFilledIn = false;
+                let possibleLocationsI = [];
+                let possibleLocationsJ = [];
+                for (let i = boxi*sudokuBoard.boxRows; i < (boxi+1)*sudokuBoard.boxRows; ++i)
+                {
+                    for (let j = boxj*sudokuBoard.boxCols; j < (boxj+1)*sudokuBoard.boxCols; ++j)
+                    {
+                        // this is a possible location
+                        // if d0 is penciled here
+                        if (sudokuBoard.centerDigits[i][j][d0] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                        {
+                            possibleLocationsI.push (i);
+                            possibleLocationsJ.push (j);
+                        }
+
+                        // we can also ignore if d0 was already filled in this box
+                        if (sudokuBoard.board[i][j] == d0) 
+                        {
+                            isAlreadyFilledIn = true;
+                            break;
+                        }
+                    }
+                    if (isAlreadyFilledIn) break;
+                }
+                // ensure digit wasnt already filled in
+                if (isAlreadyFilledIn) continue;
+                // ensure this digit has exactly 2 valid locations (to make a pair)
+                if (possibleLocationsI.length != 2) continue;
+                // reaches here if this digit can only go in 2 locations in this box
+                // highlight those two positions
+                // sudokuBoard.cellColors[possibleLocationsI[0]][possibleLocationsJ[0]][COLOR_BLUE] = 1;
+                // sudokuBoard.cellColors[possibleLocationsI[1]][possibleLocationsJ[1]][COLOR_BLUE] = 1;
+                // mark the digit
+                sudokuBoard.topDigits[possibleLocationsI[0]][possibleLocationsJ[0]][d0] = 1;
+                sudokuBoard.topDigits[possibleLocationsI[1]][possibleLocationsJ[1]][d0] = 1;
+                // we will use the digit marks to determine if two digits occupy the same two cells
+            }
+            // search for two cells with the same digit pair
+            for (let i = boxi*sudokuBoard.boxRows; i < (boxi+1)*sudokuBoard.boxRows; ++i)
+            {
+                for (let j = boxj*sudokuBoard.boxCols; j < (boxj+1)*sudokuBoard.boxCols; ++j)
+                {
+                    // ignore if cell is already filled in
+                    if (sudokuBoard.board[i][j] != EMPTY_CELL) continue;
+
+                    let digits0 = sudokuBoard.getTopDigits (i,j);
+                    // ignore if not a pair
+                    if (digits0.length != 2) continue;
+                    // look for another pair that matches
+                    for (let ii = boxi*sudokuBoard.boxRows; ii < (boxi+1)*sudokuBoard.boxRows; ++ii)
+                    {
+                        for (let jj = boxj*sudokuBoard.boxCols; jj < (boxj+1)*sudokuBoard.boxCols; ++jj)
+                        {
+                            // ignore if we are looking at the same cell
+                            if (i == ii && j == jj) continue;
+                            // ignore if cell is already filled in
+                            if (sudokuBoard.board[ii][jj] != EMPTY_CELL) continue;
+
+                            let digits1 = sudokuBoard.getTopDigits (ii,jj);
+                            // ignore if not a pair
+                            if (digits1.length != 2) continue;
+                            // ensure pairs match
+                            if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
+                            // reaches here if pairs match
+
+                            // ignore if cells are naked pairs already
+                            // this is not necessary
+                            // this is just so we only color the cells if there is a change to note
+                            if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(ii,jj).length == 2) break;
+
+                            // pairs match so isolate them
+                            // aka remove other penciled digits from these cells
+
+                            // clear all pencil marks
+                            for (let d = sudokuBoard.low; d <= sudokuBoard.high; ++d)
+                            {
+                                sudokuBoard.centerDigits[i ][j ][d] = 0;
+                                sudokuBoard.centerDigits[ii][jj][d] = 0;
+                            }
+
+                            // pencil only the pair digits
+                            sudokuBoard.centerDigits[i ][j ][digits0[0]] = 1;
+                            sudokuBoard.centerDigits[ii][jj][digits0[0]] = 1;
+                            sudokuBoard.centerDigits[i ][j ][digits1[1]] = 1;
+                            sudokuBoard.centerDigits[ii][jj][digits1[1]] = 1;
+
+                            // highlight isolated cells
+                            sudokuBoard.cellColors[i ][j ][COLOR_GREEN] = 1;
+                            sudokuBoard.cellColors[ii][jj][COLOR_GREEN] = 1;
+                        }
+                    } 
+                }
+            }
+            
+        }
+    }
+
+        
+
+
+    editMode = MODE_SOLVER;
+    return true;
+}
+
+//========================================================================
+
+// searches for naked triples in a row, 
+// and removes their digits from elsewhere in the row
+// a naked triple is three cells who have the same 3 possible digits
+// Full triple:       [ 1 2 3 ][ 1 2 3 ][ 1 2 3 ] possible digits = 1,2,3
+// restricted triple: [ 1 2   ][ 2 3   ][ 1 3   ] possible digits = 1,2,3
+function nakedTriplesInRow ()
+{
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
+
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
+
+    // search for triples in each row
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+    {
+        // first, look for a cell with three or less penciled in digits
+        for (let j = 0; j < sudokuBoard.cols; ++j)
+        {
+            // ensure digit is not filled in already
+            if (sudokuBoard.board[i][j] != EMPTY_CELL)
+                continue;
+            let penciledDigitsj = sudokuBoard.getCenterDigits (i, j);
+            // ensure it has penciled digits
+            // if not, then something went wrong somewhere
+            if (!(penciledDigitsj.length > 0))
+                continue;
+            // ensure it has three or less digits
+            // if not, then it isnt a part of a naked triple, so move on
+            if (!(penciledDigitsj.length <= 3))
+                continue;
+            // this could be a part of a triple,
+            // lets keep track of possible triple digits
+            triple_digits0 = new Set(penciledDigitsj)
+            // then find a second matching cell with the same 3 penciled in digits
+            for (let k = j+1; k < sudokuBoard.cols; ++k)
+            {
+                // ensure digit is not filled in already
+                if (sudokuBoard.board[i][k] != EMPTY_CELL)
+                    continue;
+                let penciledDigitsk = sudokuBoard.getCenterDigits (i, k);
+                // ensure it has penciled digits
+                // if not, then something went wrong somewhere
+                if (!(penciledDigitsk.length > 0))
+                    continue;
+                // ensure it has 3 or less digits
+                // if not, then it isnt a part of a naked triple, so move on
+                if (!(penciledDigitsk.length <= 3))
+                    continue;
+                // ensure that we are still looking at a max of 3 different possible digits
+                // if more than 3 different digits to choose from,
+                // then those cells cannot be triples
+                triple_digits1 = new Set ([...triple_digits0, ...penciledDigitsk]);
+                if (triple_digits1.size > 3)
+                    continue;
+
+                // then find a third matching cell with the same 3 penciled in digits
+                for (let l = k+1; l < sudokuBoard.cols; ++l)
+                {
+                    // ensure digit is not filled in already
+                    if (sudokuBoard.board[i][l] != EMPTY_CELL)
+                        continue;
+                    let penciledDigitsl = sudokuBoard.getCenterDigits (i, l);
+                    // ensure it has penciled digits
+                    // if not, then something went wrong somewhere
+                    if (!(penciledDigitsl.length > 0))
+                        continue;
+                    // ensure it has 3 or less digits
+                    // if not, then it isnt a part of a naked triple, so move on
+                    if (!(penciledDigitsl.length <= 3))
+                        continue;
+                    // ensure that we are still looking at a max of 3 *different* possible digits
+                    // if more than 3 different digits to choose from,
+                    // then those cells cannot be triples
+                    triple_digits2 = new Set ([...triple_digits1, ...penciledDigitsl]);
+                    if (triple_digits2.size > 3)
+                        continue;
+                    
+                    // reaches here if we have 3 cells that have the same 3 possible digits
+                    // so we have a triple!
+                    // let's highlight it!
+                    sudokuBoard.cellColors[i][j][COLOR_GREEN] = 1;
+                    sudokuBoard.cellColors[i][k][COLOR_GREEN] = 1;
+                    sudokuBoard.cellColors[i][l][COLOR_GREEN] = 1;
+                    // highlight this row
+                    for (let jj = 0; jj < sudokuBoard.cols; ++jj)
+                    {
+                        // ensure it is not one of the triple cells
+                        if (jj == j || jj == k || jj == l) continue;
+                        sudokuBoard.cellColors[i][jj][COLOR_YELLOW] = 1;
+                    }
+                    // since this triple exists, we know that none of these digits
+                    // can appear in other cells in this row
+                    // so lets remove any pencilmarks
+                    for (let jj = 0; jj < sudokuBoard.cols; ++jj)
+                    {
+                        // ensure this cell is not one of the triple cells
+                        if (!(j != jj && k != jj && l != jj))
+                            continue;
+
+                        // remove triple's digits if it exists
+                        let penciledDigitsijj = sudokuBoard.getCenterDigits (i, jj);
+                        for (const triple_digit of triple_digits2)
+                        {
+                            if (penciledDigitsijj.includes (triple_digit))
+                            {
+                                sudokuBoard.centerDigits[i][jj][triple_digit] = 0;
+                                // highlight this cell to denote that it was reduced
+                                sudokuBoard.cellColors[i][jj][COLOR_RED] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    editMode = MODE_SOLVER;
+    return true;
+}
+
+//========================================================================
+
+// searches for naked triples in a column, 
+// and removes their digits from elsewhere in the column
+function nakedTriplesInCol ()
+{
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
+
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
+
+    // search for triples in each column
+    for (let j = 0; j < sudokuBoard.cols; ++j)
+    {
+        // first, look for a cell with 3 or less penciled in digits
+        for (let i = 0; i < sudokuBoard.rows; ++i)
+        {
+            // ensure digit is not filled in already
+            if (sudokuBoard.board[i][j] != EMPTY_CELL)
+                continue;
+            let penciledDigitsi = sudokuBoard.getCenterDigits (i, j);
+            // ensure it has penciled digits
+            // if not, then something went wrong somewhere
+            if (!(penciledDigitsi.length > 0))
+                continue;
+            // ensure it has 3 or less digits
+            // if not, then it isnt a part of a naked triple, so move on
+            if (!(penciledDigitsi.length <= 3))
+                continue;
+            // this could be a part of a triple,
+            // lets keep track of possible triple digits
+            triple_digits0 = new Set(penciledDigitsi)
+            // then find a second matching cell with the same 3 penciled in digits
+            for (let k = i+1; k < sudokuBoard.rows; ++k)
+            {
+                // ensure digit is not filled in already
+                if (sudokuBoard.board[k][j] != EMPTY_CELL)
+                    continue;
+                let penciledDigitsk = sudokuBoard.getCenterDigits (k, j);
+                // ensure it has penciled digits
+                // if not, then something went wrong somewhere
+                if (!(penciledDigitsk.length > 0))
+                    continue;
+                // ensure it has 3 or less digits
+                // if not, then it isnt a part of a naked triple, so move on
+                if (!(penciledDigitsk.length <= 3))
+                    continue;
+                // ensure that we are still looking at a max of 3 *different* possible digits
+                // if more than 3 different digits to choose from,
+                // then those cells cannot be triples
+                triple_digits1 = new Set ([...triple_digits0, ...penciledDigitsk]);
+                if (triple_digits1.size > 3)
+                    continue;
+
+                // then find a third matching cell with the same 3 penciled in digits
+                for (let l = k+1; l < sudokuBoard.rows; ++l)
+                {
+                    // ensure digit is not filled in already
+                    if (sudokuBoard.board[l][j] != EMPTY_CELL)
+                        continue;
+                    let penciledDigitsl = sudokuBoard.getCenterDigits (l, j);
+                    // ensure it has penciled digits
+                    // if not, then something went wrong somewhere
+                    if (!(penciledDigitsl.length > 0))
+                        continue;
+                    // ensure it has 3 or less digits
+                    // if not, then it isnt a part of a naked triple, so move on
+                    if (!(penciledDigitsl.length <= 3))
+                        continue;
+                    // ensure that we are still looking at a max of 3 *different* possible digits
+                    // if more than 3 different digits to choose from,
+                    // then those cells cannot be triples
+                    triple_digits2 = new Set ([...triple_digits1, ...penciledDigitsl]);
+                    if (triple_digits2.size > 3)
+                        continue;
+
+                    // reaches here if we have 3 cells that have the same 3 possible digits
+                    // so we have a triple!
+                    // let's highlight it!
+                    sudokuBoard.cellColors[i][j][COLOR_GREEN] = 1;
+                    sudokuBoard.cellColors[k][j][COLOR_GREEN] = 1;
+                    sudokuBoard.cellColors[l][j][COLOR_GREEN] = 1;
+                    // highlight this column
+                    for (let ii = 0; ii < sudokuBoard.rows; ++ii)
+                    {
+                        // ensure it is not one of the triple cells
+                        if (ii == i || ii == k || ii == l) continue;
+                        sudokuBoard.cellColors[ii][j][COLOR_YELLOW] = 1;
+                    }
+                    // since this triple exists, we know that none of these digits
+                    // can appear in other cells in this column
+                    // so lets remove any pencilmarks
+                    for (let ii = 0; ii < sudokuBoard.rows; ++ii)
+                    {
+                        // ensure this cell is not either triple cell
+                        if (!(i != ii && k != ii && l != ii))
+                            continue;
+
+                        // remove triple's digits if it exists
+                        let penciledDigitsiij = sudokuBoard.getCenterDigits (ii, j);
+                        for (const triple_digit of triple_digits2)
+                        {
+                            if (penciledDigitsiij.includes (triple_digit))
+                            {
+                                sudokuBoard.centerDigits[ii][j][triple_digit] = 0;
+                                // highlight this cell to be sure
+                                sudokuBoard.cellColors[ii][j][COLOR_RED] = 1;
+                            }
+                        }
+                    }   
+                }
+            }
+        }
+    }
+    editMode = MODE_SOLVER;
+    return true;
+}
+
+//========================================================================
+
+// searches for naked triples in a box, 
+// and removes their digits from elsewhere in the box
+function nakedTriplesInBox ()
+{
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
+
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
+
+    // search each box for triples
+    for (let boxi = 0; boxi < sudokuBoard.boxRows; ++boxi)
+    {
+        for (let boxj = 0; boxj < sudokuBoard.boxCols; ++boxj)
+        {
+            // first, look for a cell with three or less penciled in digits
+            for (let i = boxi*sudokuBoard.boxRows; i < (boxi+1)*sudokuBoard.boxRows; ++i)
+            {
+                for (let j = boxj*sudokuBoard.boxCols; j < (boxj+1)*sudokuBoard.boxCols; ++j)
+                {
+                    // ensure digit is not filled in already
+                    if (sudokuBoard.board[i][j] != EMPTY_CELL)
+                        continue;
+                    let penciledDigitsij = sudokuBoard.getCenterDigits (i, j);
+                    // ensure it has penciled digits
+                    // if not, then something went wrong somewhere
+                    if (!(penciledDigitsij.length > 0))
+                        continue;
+                    // ensure it has three or less digits
+                    // if not, then it isnt a part of a naked triple, so move on
+                    if (!(penciledDigitsij.length <= 3))
+                        continue;
+                    // this could be a part of a triple,
+                    // lets keep track of possible triple digits
+                    triple_digits0 = new Set(penciledDigitsij)
+                    // then find a second matching cell with the same 3 penciled in digits
+                    let next_col0 = j+1;
+                    for (let k = i; k < (boxi+1)*sudokuBoard.boxRows; ++k)
+                    {
+                        // reset column index if we advanced to next row
+                        if (k!=i) next_col0 = boxj*sudokuBoard.boxCols;
+                        for (let l = next_col0; l < (boxj+1)*sudokuBoard.boxCols; ++l)
+                        {
+                            // ensure digit is not filled in already
+                            if (sudokuBoard.board[k][l] != EMPTY_CELL)
+                                continue;
+                            let penciledDigitskl = sudokuBoard.getCenterDigits (k, l);
+                            // ensure it has penciled digits
+                            // if not, then something went wrong somewhere
+                            if (!(penciledDigitskl.length > 0))
+                                continue;
+                            // ensure it has 3 or less digits
+                            // if not, then it isnt a part of a naked triple, so move on
+                            if (!(penciledDigitskl.length <= 3))
+                                continue;
+                            // ensure that we are still looking at a max of 3 different possible digits
+                            // if more than 3 different digits to choose from,
+                            // then those cells cannot be triples
+                            triple_digits1 = new Set ([...triple_digits0, ...penciledDigitskl]);
+                            if (triple_digits1.size > 3)
+                                continue;
+
+                            // then find a third matching cell with the same 3 penciled in digits
+                            let next_col1 = l+1;
+                            for (let m = k; m < (boxi+1)*sudokuBoard.boxRows; ++m)
+                            {
+                                // reset column index if we advanced to next row
+                                if (m!=k) next_col1 = boxj*sudokuBoard.boxCols;
+                                for (let n = next_col1; n < (boxj+1)*sudokuBoard.boxCols; ++n)
+                                {
+                                    // ensure digit is not filled in already
+                                    if (sudokuBoard.board[m][n] != EMPTY_CELL)
+                                        continue;
+                                    let penciledDigitsmn = sudokuBoard.getCenterDigits (m, n);
+                                    // ensure it has penciled digits
+                                    // if not, then something went wrong somewhere
+                                    if (!(penciledDigitsmn.length > 0))
+                                        continue;
+                                    // ensure it has 3 or less digits
+                                    // if not, then it isnt a part of a naked triple, so move on
+                                    if (!(penciledDigitsmn.length <= 3))
+                                        continue;
+                                    // ensure that we are still looking at a max of 3 *different* possible digits
+                                    // if more than 3 different digits to choose from,
+                                    // then those cells cannot be triples
+                                    triple_digits2 = new Set ([...triple_digits1, ...penciledDigitsmn]);
+                                    if (triple_digits2.size > 3)
+                                        continue;
+                                        
+                                    // reaches here if we have 3 cells that have the same 3 possible digits
+                                    // so we have a triple!
+                                    // let's highlight it!
+                                    sudokuBoard.cellColors[i][j][COLOR_GREEN] = 1;
+                                    sudokuBoard.cellColors[k][l][COLOR_GREEN] = 1;
+                                    sudokuBoard.cellColors[m][n][COLOR_GREEN] = 1;
+                                    // since this triple exists, we know that none of these digits
+                                    // can appear in other cells in this box
+                                    // so lets remove any pencilmarks
+                                    for (let ii = boxi*sudokuBoard.boxRows; ii < (boxi+1)*sudokuBoard.boxRows; ++ii)
+                                    {
+                                        for (let jj = boxj*sudokuBoard.boxCols; jj < (boxj+1)*sudokuBoard.boxCols; ++jj)
+                                        {
+                                            // ensure this cell is not one of the triple cells
+                                            if (!(!(i==ii&&j==jj) && !(k==ii&&l==jj) && !(m==ii&&n==jj)))
+                                                continue;
+                                            // remove triple's digits if it exists
+                                            let hasReduced = false;
+                                            let penciledDigitsiijj = sudokuBoard.getCenterDigits (ii, jj);
+                                            for (const triple_digit of triple_digits2)
+                                            {
+                                                // includes triple's digits
+                                                if (penciledDigitsiijj.includes (triple_digit))
+                                                {
+                                                    sudokuBoard.centerDigits[ii][jj][triple_digit] = 0;
+                                                    // highlight this cell so we know we deleted stuff
+                                                    sudokuBoard.cellColors[ii][jj][COLOR_RED] = 1;
+                                                    hasReduced = true;
+                                                }
+                                            }
+                                            // if we didnt reduce a digit, then color the cell yellow
+                                            if (!hasReduced)
+                                            {
+                                                sudokuBoard.cellColors[ii][jj][COLOR_YELLOW] = 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    editMode = MODE_SOLVER;
+    return true;
+}
+
+//========================================================================
+
+// searches for hidden triples of digits and isolates them 
+// by removing other penciled digits from the triple's cells
+function hiddenTriplesInRow ()
+{
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
+
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
+
+    // for each row
+    for (let i = 0; i < sudokuBoard.rows; ++i)
+    {
+        // we need two digits that mutually occupy the same two cells in the same row
+        // lets start with finding a digit that occupies only two cells
+        for (let d0 = sudokuBoard.low; d0 < sudokuBoard.high; ++d0)
+        {
+            // find possible positions of this digit in this row
+            let isAlreadyFilledIn = false;
+            let possibleLocationsJ = [];
+            for (let j = 0; j < sudokuBoard.cols; ++j)
+            {
+                // this is a possible location
+                // if d0 is penciled here
+                if (sudokuBoard.centerDigits[i][j][d0] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                    possibleLocationsJ.push (j);
+
+                // we can also ignore if d0 was already filled in this row
+                if (sudokuBoard.board[i][j] == d0) 
+                {
+                    isAlreadyFilledIn = true;
+                    break;
+                }
+            }
+            // ensure digit wasnt already filled in
+            if (isAlreadyFilledIn) continue;
+            // ensure this digit has exactly 2 valid locations (to make a pair)
+            if (possibleLocationsJ.length != 2) continue;
+            // reaches here if this digit can only go in 2 locations in this row
+            // highlight those two positions
+            // sudokuBoard.cellColors[i][possibleLocationsJ[0]][COLOR_BLUE] = 1;
+            // sudokuBoard.cellColors[i][possibleLocationsJ[1]][COLOR_BLUE] = 1;
+            // mark the digit
+            sudokuBoard.topDigits[i][possibleLocationsJ[0]][d0] = 1;
+            sudokuBoard.topDigits[i][possibleLocationsJ[1]][d0] = 1;
+            // we will use the digit marks to determine if two digits occupy the same two cells
+        }
+        // search for two cells with the same digit pair
+        for (let j = 0; j < sudokuBoard.cols; ++j)
+        {
+            // ignore if cell is already filled in
+            if (sudokuBoard.board[i][j] != EMPTY_CELL) continue;
+
+            let digits0 = sudokuBoard.getTopDigits (i,j);
+            // ignore if not a pair
+            if (digits0.length != 2) continue;
+            // look for another pair that matches
+            for (let jj = j+1; jj < sudokuBoard.cols; ++jj)
+            {
+                // ignore if cell is alread filled in
+                if (sudokuBoard.board[i][jj] != EMPTY_CELL) continue;
+
+                let digits1 = sudokuBoard.getTopDigits (i,jj);
+                // ignore if not a pair
+                if (digits1.length != 2) continue;
+                // ensure pairs match
+                if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
+                // reaches here if pairs match
+
+                // ignore if cells are naked pairs already
+                // this is not necessary
+                // this is just so we only color the cells if there is a change to note
+                if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(i,jj).length == 2) break;
+
+                // pairs match and are not naked pairs so make them naked pairs
+                // aka remove other penciled digits from these cells
+
+                // clear all pencil marks
+                for (let d = sudokuBoard.low; d < sudokuBoard.high; ++d)
+                {
+                    sudokuBoard.centerDigits[i][j ][d] = 0;
+                    sudokuBoard.centerDigits[i][jj][d] = 0;
+                }
+
+                // pencil only the pair digits
+                sudokuBoard.centerDigits[i][j ][digits0[0]] = 1;
+                sudokuBoard.centerDigits[i][jj][digits0[0]] = 1;
+                sudokuBoard.centerDigits[i][j ][digits1[1]] = 1;
+                sudokuBoard.centerDigits[i][jj][digits1[1]] = 1;
+
+                // highlight isolated cells
+                sudokuBoard.cellColors[i][j ][COLOR_GREEN] = 1;
+                sudokuBoard.cellColors[i][jj][COLOR_GREEN] = 1;
+            } 
+        }
+    }
+
+    editMode = MODE_SOLVER;
+    return true;
+}
+
+//========================================================================
+
+// searches for hidden triples of digits and isolates them 
+// by removing other penciled digits from the triple's cells
+function hiddenTriplesInCol ()
+{
+    editMode = MODE_PLAY;
+    playMode = PLAY_MODE_SMALL;
+
+    sudokuBoard.clearSelectedCells ();
+    sudokuBoard.clearTopDigits ();
+    sudokuBoard.clearColors ();
+
+    // for each column
+    for (let j = 0; j < sudokuBoard.cols; ++j)
+    {
+        // we need two digits that mutually occupy the same two cells in the same column
+        // lets start with finding a digit that occupies only two cells
+        for (let d0 = sudokuBoard.low; d0 < sudokuBoard.high; ++d0)
+        {
+            // find possible positions of this digit in this column
+            let isAlreadyFilledIn = false;
+            let possibleLocationsI = [];
+            for (let i = 0; i < sudokuBoard.rows; ++i)
+            {
+                // this is a possible location
+                // if d0 is penciled here
+                if (sudokuBoard.centerDigits[i][j][d0] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                    possibleLocationsI.push (i);
+
+                // we can also ignore if d0 was already filled in this column
+                if (sudokuBoard.board[i][j] == d0) 
+                {
+                    isAlreadyFilledIn = true;
+                    break;
+                }
+            }
+            // ensure digit wasnt already filled in
+            if (isAlreadyFilledIn) continue;
+            // ensure this digit has exactly 2 valid locations (to make a pair)
+            if (possibleLocationsI.length != 2) continue;
+            // reaches here if this digit can only go in 2 locations in this column
+            // highlight those two positions
+            // sudokuBoard.cellColors[possibleLocationsI[0]][j][COLOR_BLUE] = 1;
+            // sudokuBoard.cellColors[possibleLocationsI[1]][j][COLOR_BLUE] = 1;
+            // mark the digit
+            sudokuBoard.topDigits[possibleLocationsI[0]][j][d0] = 1;
+            sudokuBoard.topDigits[possibleLocationsI[1]][j][d0] = 1;
+            // we will use the digit marks to determine if two digits occupy the same two cells
+        }
+        // search for two cells with the same digit pair
+        for (let i = 0; i < sudokuBoard.rows; ++i)
+        {
+            // ignore if cell is already filled in
+            if (sudokuBoard.board[i][j] != EMPTY_CELL) continue;
+
+            let digits0 = sudokuBoard.getTopDigits (i,j);
+            // ignore if not a pair
+            if (digits0.length != 2) continue;
+            // look for another pair that matches
+            for (let ii = i+1; ii < sudokuBoard.rows; ++ii)
+            {
+                // ignore if cell is already filled in
+                if (sudokuBoard.board[ii][j] != EMPTY_CELL) continue;
+
+                let digits1 = sudokuBoard.getTopDigits (ii,j);
+                // ignore if not a pair
+                if (digits1.length != 2) continue;
+                // ensure pairs match
+                if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
+                // reaches here if pairs match
+
+                // ignore if cells are naked pairs already
+                // this is not necessary
+                // this is just so we only color the cells if there is a change to note
+                if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(ii,j).length == 2) break;
+
+                // pairs match so isolate them
+                // aka remove other penciled digits from these cells
+
+                // clear all pencil marks
+                for (let d = sudokuBoard.low; d < sudokuBoard.high; ++d)
+                {
+                    sudokuBoard.centerDigits[i ][j][d] = 0;
+                    sudokuBoard.centerDigits[ii][j][d] = 0;
+                }
+
+                // pencil only the pair digits
+                sudokuBoard.centerDigits[i ][j][digits0[0]] = 1;
+                sudokuBoard.centerDigits[ii][j][digits0[0]] = 1;
+                sudokuBoard.centerDigits[i ][j][digits1[1]] = 1;
+                sudokuBoard.centerDigits[ii][j][digits1[1]] = 1;
+
+                // highlight isolated cells
+                sudokuBoard.cellColors[i ][j][COLOR_GREEN] = 1;
+                sudokuBoard.cellColors[ii][j][COLOR_GREEN] = 1;
+            } 
+        }
+    }
+
+    editMode = MODE_SOLVER;
+    return true;
+}
+
+//========================================================================
+
+// searches for hidden pairs of digits and isolates them 
+// by removing other penciled digits from the triple's cells
+function hiddenTriplesInBox ()
 {
     editMode = MODE_PLAY;
     playMode = PLAY_MODE_SMALL;
