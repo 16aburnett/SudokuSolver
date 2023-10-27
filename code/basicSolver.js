@@ -106,6 +106,12 @@ function basicSolverReducePenciledDigits ()
     hiddenPairsInRow ();
     hiddenPairsInCol ();
     hiddenPairsInBox ();
+    nakedTriplesInRow ();
+    nakedTriplesInCol ();
+    nakedTriplesInBox ();
+    hiddenTriplesInRow ();
+    hiddenTriplesInCol ();
+    hiddenTriplesInBox ();
     lockedDigitInRow ();
     lockedDigitInCol ();
     lockedDigitInBox ();
@@ -1281,6 +1287,27 @@ function nakedTriplesInBox ()
 
 //========================================================================
 
+// for each digit, d0
+//    loop over region
+//       reject d0 if it is already filled in
+//       reject d0 if it can be in >3 cells in the region
+//    if digit is not rejected, then move on to next digit
+//    for each next digit, d1
+//       loop over region
+//          reject second digit if it is already filled in
+//          reject second digit if it can be in >3 cells in the region
+//       reject second digit if second digit possible cells + first digit possible cells is >3 different cells
+//       for each next digit, d2
+//          loop over region
+//             reject third digit if it is already filled in
+//             reject third digit if it can be in >3 cells in the region
+//          reject third digit if combined with first and second results in >3 cells
+//          reaches here if we found 3 digits (d0,d1,d2) that occupy a total of 3 cells
+//          this is a triple so isolate it if there are other digits in those cells
+
+
+
+
 // searches for hidden triples of digits and isolates them 
 // by removing other penciled digits from the triple's cells
 function hiddenTriplesInRow ()
@@ -1295,22 +1322,24 @@ function hiddenTriplesInRow ()
     // for each row
     for (let i = 0; i < sudokuBoard.rows; ++i)
     {
-        // we need two digits that mutually occupy the same two cells in the same row
-        // lets start with finding a digit that occupies only two cells
+        // we need 3 digits that mutually occupy the same 3 cells in the same row
+        // lets start with finding a first digit that occupies 3 or less cells
+        // for each digit
         for (let d0 = sudokuBoard.low; d0 < sudokuBoard.high; ++d0)
         {
             // find possible positions of this digit in this row
             let isAlreadyFilledIn = false;
-            let possibleLocationsJ = [];
+            let possibleCellsd0 = [];
             for (let j = 0; j < sudokuBoard.cols; ++j)
             {
                 // this is a possible location
                 // if d0 is penciled here
+                // and as long as this cell isnt already filled in
                 if (sudokuBoard.centerDigits[i][j][d0] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
-                    possibleLocationsJ.push (j);
+                    possibleCellsd0.push (j);
 
                 // we can also ignore if d0 was already filled in this row
-                if (sudokuBoard.board[i][j] == d0) 
+                if (sudokuBoard.board[i][j] == d0)
                 {
                     isAlreadyFilledIn = true;
                     break;
@@ -1318,64 +1347,116 @@ function hiddenTriplesInRow ()
             }
             // ensure digit wasnt already filled in
             if (isAlreadyFilledIn) continue;
-            // ensure this digit has exactly 2 valid locations (to make a pair)
-            if (possibleLocationsJ.length != 2) continue;
-            // reaches here if this digit can only go in 2 locations in this row
-            // highlight those two positions
-            // sudokuBoard.cellColors[i][possibleLocationsJ[0]][COLOR_BLUE] = 1;
-            // sudokuBoard.cellColors[i][possibleLocationsJ[1]][COLOR_BLUE] = 1;
+            // ensure this digit has 3 or less valid locations (to make a triple)
+            if (possibleCellsd0.length > 3) continue;
+            // reaches here if this digit can only go in 3 or less locations in this row
+            // highlight those positions
+            // for (const location of possibleCellsd0)
+            //     sudokuBoard.cellColors[i][location][COLOR_BLUE] = 1;
             // mark the digit
-            sudokuBoard.topDigits[i][possibleLocationsJ[0]][d0] = 1;
-            sudokuBoard.topDigits[i][possibleLocationsJ[1]][d0] = 1;
-            // we will use the digit marks to determine if two digits occupy the same two cells
-        }
-        // search for two cells with the same digit pair
-        for (let j = 0; j < sudokuBoard.cols; ++j)
-        {
-            // ignore if cell is already filled in
-            if (sudokuBoard.board[i][j] != EMPTY_CELL) continue;
+            for (const location of possibleCellsd0)
+                sudokuBoard.topDigits[i][location][d0] = 1;
 
-            let digits0 = sudokuBoard.getTopDigits (i,j);
-            // ignore if not a pair
-            if (digits0.length != 2) continue;
-            // look for another pair that matches
-            for (let jj = j+1; jj < sudokuBoard.cols; ++jj)
+            // d0 could be a part of a triple, lets look for another possible triple digit
+            // for each next digit, d1
+            for (let d1 = d0+1; d1 < sudokuBoard.high; ++d1)
             {
-                // ignore if cell is alread filled in
-                if (sudokuBoard.board[i][jj] != EMPTY_CELL) continue;
-
-                let digits1 = sudokuBoard.getTopDigits (i,jj);
-                // ignore if not a pair
-                if (digits1.length != 2) continue;
-                // ensure pairs match
-                if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
-                // reaches here if pairs match
-
-                // ignore if cells are naked pairs already
-                // this is not necessary
-                // this is just so we only color the cells if there is a change to note
-                if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(i,jj).length == 2) break;
-
-                // pairs match and are not naked pairs so make them naked pairs
-                // aka remove other penciled digits from these cells
-
-                // clear all pencil marks
-                for (let d = sudokuBoard.low; d < sudokuBoard.high; ++d)
+                // find possible positions of this digit in this row
+                let isAlreadyFilledIn = false;
+                let possibleCellsd1 = [];
+                for (let j = 0; j < sudokuBoard.cols; ++j)
                 {
-                    sudokuBoard.centerDigits[i][j ][d] = 0;
-                    sudokuBoard.centerDigits[i][jj][d] = 0;
+                    // this is a possible location
+                    // if d1 is penciled here
+                    if (sudokuBoard.centerDigits[i][j][d1] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                        possibleCellsd1.push (j);
+
+                    // we can also ignore if d1 was already filled in this row
+                    if (sudokuBoard.board[i][j] == d1)
+                    {
+                        isAlreadyFilledIn = true;
+                        break;
+                    }
                 }
+                // ensure digit wasnt already filled in
+                if (isAlreadyFilledIn) continue;
+                // ensure this digit has 3 or less valid locations (to make a triple)
+                if (possibleCellsd1.length > 3) continue;
+                // reaches here if this digit can only go in 3 or less locations in this row
+                // ensure that this digit shares the same cells as d0, reject if not
+                let possibleCellsd0d1 = new Set([...possibleCellsd0, ...possibleCellsd1]);
+                if (possibleCellsd0d1.size > 3) continue;
 
-                // pencil only the pair digits
-                sudokuBoard.centerDigits[i][j ][digits0[0]] = 1;
-                sudokuBoard.centerDigits[i][jj][digits0[0]] = 1;
-                sudokuBoard.centerDigits[i][j ][digits1[1]] = 1;
-                sudokuBoard.centerDigits[i][jj][digits1[1]] = 1;
+                // reaches here if d0 and d1 occupy a max of 3 different cells
+                // highlight those positions
+                // for (const location of possibleCellsd1)
+                //     sudokuBoard.cellColors[i][location][COLOR_PURPLE] = 1;
+                // mark the digit
+                for (const location of possibleCellsd1)
+                    sudokuBoard.topDigits[i][location][d1] = 1;
 
-                // highlight isolated cells
-                sudokuBoard.cellColors[i][j ][COLOR_GREEN] = 1;
-                sudokuBoard.cellColors[i][jj][COLOR_GREEN] = 1;
-            } 
+                // look for third digit to complete the triple
+                // for each next digit, d2
+                for (let d2 = d1+1; d2 < sudokuBoard.high; ++d2)
+                {
+                    // find possible positions of this digit in this row
+                    let isAlreadyFilledIn = false;
+                    let possibleCellsd2 = [];
+                    for (let j = 0; j < sudokuBoard.cols; ++j)
+                    {
+                        // this is a possible location
+                        // if d2 is penciled here
+                        if (sudokuBoard.centerDigits[i][j][d2] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                            possibleCellsd2.push (j);
+
+                        // we can also ignore if d2 was already filled in this row
+                        if (sudokuBoard.board[i][j] == d2)
+                        {
+                            isAlreadyFilledIn = true;
+                            break;
+                        }
+                    }
+                    // ensure digit wasnt already filled in
+                    if (isAlreadyFilledIn) continue;
+                    // ensure this digit has 3 or less valid locations (to make a triple)
+                    if (possibleCellsd2.length > 3) continue;
+                    // reaches here if this digit can only go in 3 or less locations in this row
+                    // ensure that this digit shares the same cells as d0 and d1, reject if not
+                    let possibleCellsd0d1d2 = new Set([...possibleCellsd0, ...possibleCellsd1, ...possibleCellsd2]);
+                    if (possibleCellsd0d1d2.size > 3) continue;
+
+                    // reaches here if d0, d1, and d2 occupy a max of 3 different cells
+                    // highlight d2's positions
+                    // for (const location of possibleCellsd2)
+                    //     sudokuBoard.cellColors[i][location][COLOR_ORANGE] = 1;
+                    // mark d2 with top digits
+                    for (const location of possibleCellsd2)
+                        sudokuBoard.topDigits[i][location][d2] = 1;
+                    
+                    // this is a triple so isolate it if there are other digits in those cells
+                    for (const cellj of possibleCellsd0d1d2)
+                    {
+                        // zero out any non-triple digits
+                        for (let d = sudokuBoard.low; d < sudokuBoard.high; ++d)
+                        {
+                            // leave triple digits alone
+                            if (!(d != d0 && d != d1 && d != d2)) continue;
+
+                            // ensure digit was penciled in
+                            if (sudokuBoard.centerDigits[i][cellj][d] == 0) continue;
+
+                            // reaches here if digit, d, is penciled in and not a triple digit
+                            // we need to remove this digit to isolate the triple
+                            sudokuBoard.centerDigits[i][cellj][d] = 0;
+                            // mark cell as red to denote that a digit was removed
+                            sudokuBoard.cellColors[i][cellj][COLOR_RED] = 1;
+                        }
+
+                        // highlight triple cell
+                        sudokuBoard.cellColors[i][cellj][COLOR_GREEN] = 1;
+                    }
+                }
+            }
         }
     }
 
@@ -1399,22 +1480,24 @@ function hiddenTriplesInCol ()
     // for each column
     for (let j = 0; j < sudokuBoard.cols; ++j)
     {
-        // we need two digits that mutually occupy the same two cells in the same column
-        // lets start with finding a digit that occupies only two cells
+        // we need 3 digits that mutually occupy the same 3 cells in the same column
+        // lets start with finding a first digit that occupies 3 or less cells
+        // for each digit
         for (let d0 = sudokuBoard.low; d0 < sudokuBoard.high; ++d0)
         {
             // find possible positions of this digit in this column
             let isAlreadyFilledIn = false;
-            let possibleLocationsI = [];
-            for (let i = 0; i < sudokuBoard.rows; ++i)
+            let possibleCellsd0 = [];
+            for (let i = 0; i < sudokuBoard.cols; ++i)
             {
                 // this is a possible location
                 // if d0 is penciled here
+                // and as long as this cell isnt already filled in
                 if (sudokuBoard.centerDigits[i][j][d0] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
-                    possibleLocationsI.push (i);
+                    possibleCellsd0.push (i);
 
-                // we can also ignore if d0 was already filled in this column
-                if (sudokuBoard.board[i][j] == d0) 
+                // we can also ignore if d0 was already filled in this row
+                if (sudokuBoard.board[i][j] == d0)
                 {
                     isAlreadyFilledIn = true;
                     break;
@@ -1422,64 +1505,116 @@ function hiddenTriplesInCol ()
             }
             // ensure digit wasnt already filled in
             if (isAlreadyFilledIn) continue;
-            // ensure this digit has exactly 2 valid locations (to make a pair)
-            if (possibleLocationsI.length != 2) continue;
-            // reaches here if this digit can only go in 2 locations in this column
-            // highlight those two positions
-            // sudokuBoard.cellColors[possibleLocationsI[0]][j][COLOR_BLUE] = 1;
-            // sudokuBoard.cellColors[possibleLocationsI[1]][j][COLOR_BLUE] = 1;
+            // ensure this digit has 3 or less valid locations (to make a triple)
+            if (possibleCellsd0.length > 3) continue;
+            // reaches here if this digit can only go in 3 or less locations in this column
+            // highlight those positions
+            // for (const location of possibleCellsd0)
+            //     sudokuBoard.cellColors[location][j][COLOR_BLUE] = 1;
             // mark the digit
-            sudokuBoard.topDigits[possibleLocationsI[0]][j][d0] = 1;
-            sudokuBoard.topDigits[possibleLocationsI[1]][j][d0] = 1;
-            // we will use the digit marks to determine if two digits occupy the same two cells
-        }
-        // search for two cells with the same digit pair
-        for (let i = 0; i < sudokuBoard.rows; ++i)
-        {
-            // ignore if cell is already filled in
-            if (sudokuBoard.board[i][j] != EMPTY_CELL) continue;
+            for (const location of possibleCellsd0)
+                sudokuBoard.topDigits[location][j][d0] = 1;
 
-            let digits0 = sudokuBoard.getTopDigits (i,j);
-            // ignore if not a pair
-            if (digits0.length != 2) continue;
-            // look for another pair that matches
-            for (let ii = i+1; ii < sudokuBoard.rows; ++ii)
+            // d0 could be a part of a triple, lets look for another possible triple digit
+            // for each next digit, d1
+            for (let d1 = d0+1; d1 < sudokuBoard.high; ++d1)
             {
-                // ignore if cell is already filled in
-                if (sudokuBoard.board[ii][j] != EMPTY_CELL) continue;
-
-                let digits1 = sudokuBoard.getTopDigits (ii,j);
-                // ignore if not a pair
-                if (digits1.length != 2) continue;
-                // ensure pairs match
-                if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
-                // reaches here if pairs match
-
-                // ignore if cells are naked pairs already
-                // this is not necessary
-                // this is just so we only color the cells if there is a change to note
-                if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(ii,j).length == 2) break;
-
-                // pairs match so isolate them
-                // aka remove other penciled digits from these cells
-
-                // clear all pencil marks
-                for (let d = sudokuBoard.low; d < sudokuBoard.high; ++d)
+                // find possible positions of this digit in this row
+                let isAlreadyFilledIn = false;
+                let possibleCellsd1 = [];
+                for (let i = 0; i < sudokuBoard.cols; ++i)
                 {
-                    sudokuBoard.centerDigits[i ][j][d] = 0;
-                    sudokuBoard.centerDigits[ii][j][d] = 0;
+                    // this is a possible location
+                    // if d1 is penciled here
+                    if (sudokuBoard.centerDigits[i][j][d1] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                        possibleCellsd1.push (i);
+
+                    // we can also ignore if d1 was already filled in this row
+                    if (sudokuBoard.board[i][j] == d1)
+                    {
+                        isAlreadyFilledIn = true;
+                        break;
+                    }
                 }
+                // ensure digit wasnt already filled in
+                if (isAlreadyFilledIn) continue;
+                // ensure this digit has 3 or less valid locations (to make a triple)
+                if (possibleCellsd1.length > 3) continue;
+                // reaches here if this digit can only go in 3 or less locations in this column
+                // ensure that this digit shares the same cells as d0, reject if not
+                let possibleCellsd0d1 = new Set([...possibleCellsd0, ...possibleCellsd1]);
+                if (possibleCellsd0d1.size > 3) continue;
 
-                // pencil only the pair digits
-                sudokuBoard.centerDigits[i ][j][digits0[0]] = 1;
-                sudokuBoard.centerDigits[ii][j][digits0[0]] = 1;
-                sudokuBoard.centerDigits[i ][j][digits1[1]] = 1;
-                sudokuBoard.centerDigits[ii][j][digits1[1]] = 1;
+                // reaches here if d0 and d1 occupy a max of 3 different cells
+                // highlight those positions
+                // for (const location of possibleCellsd1)
+                //     sudokuBoard.cellColors[location][j][COLOR_PURPLE] = 1;
+                // mark the digit
+                for (const location of possibleCellsd1)
+                    sudokuBoard.topDigits[location][j][d1] = 1;
 
-                // highlight isolated cells
-                sudokuBoard.cellColors[i ][j][COLOR_GREEN] = 1;
-                sudokuBoard.cellColors[ii][j][COLOR_GREEN] = 1;
-            } 
+                // look for third digit to complete the triple
+                // for each next digit, d2
+                for (let d2 = d1+1; d2 < sudokuBoard.high; ++d2)
+                {
+                    // find possible positions of this digit in this column
+                    let isAlreadyFilledIn = false;
+                    let possibleCellsd2 = [];
+                    for (let i = 0; i < sudokuBoard.cols; ++i)
+                    {
+                        // this is a possible location
+                        // if d2 is penciled here
+                        if (sudokuBoard.centerDigits[i][j][d2] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                            possibleCellsd2.push (i);
+
+                        // we can also ignore if d2 was already filled in this row
+                        if (sudokuBoard.board[i][j] == d2)
+                        {
+                            isAlreadyFilledIn = true;
+                            break;
+                        }
+                    }
+                    // ensure digit wasnt already filled in
+                    if (isAlreadyFilledIn) continue;
+                    // ensure this digit has 3 or less valid locations (to make a triple)
+                    if (possibleCellsd2.length > 3) continue;
+                    // reaches here if this digit can only go in 3 or less locations in this column
+                    // ensure that this digit shares the same cells as d0 and d1, reject if not
+                    let possibleCellsd0d1d2 = new Set([...possibleCellsd0, ...possibleCellsd1, ...possibleCellsd2]);
+                    if (possibleCellsd0d1d2.size > 3) continue;
+
+                    // reaches here if d0, d1, and d2 occupy a max of 3 different cells
+                    // highlight d2's positions
+                    // for (const location of possibleCellsd2)
+                    //     sudokuBoard.cellColors[location][j][COLOR_ORANGE] = 1;
+                    // mark d2 with top digits
+                    for (const location of possibleCellsd2)
+                        sudokuBoard.topDigits[location][j][d2] = 1;
+                    
+                    // this is a triple so isolate it if there are other digits in those cells
+                    for (const celli of possibleCellsd0d1d2)
+                    {
+                        // zero out any non-triple digits
+                        for (let d = sudokuBoard.low; d < sudokuBoard.high; ++d)
+                        {
+                            // leave triple digits alone
+                            if (!(d != d0 && d != d1 && d != d2)) continue;
+
+                            // ensure digit was penciled in
+                            if (sudokuBoard.centerDigits[celli][j][d] == 0) continue;
+
+                            // reaches here if digit, d, is penciled in and not a triple digit
+                            // we need to remove this digit to isolate the triple
+                            sudokuBoard.centerDigits[celli][j][d] = 0;
+                            // mark cell as red to denote that a digit was removed
+                            sudokuBoard.cellColors[celli][j][COLOR_RED] = 1;
+                        }
+
+                        // highlight triple cell
+                        sudokuBoard.cellColors[celli][j][COLOR_GREEN] = 1;
+                    }
+                }
+            }
         }
     }
 
@@ -1505,109 +1640,205 @@ function hiddenTriplesInBox ()
     {
         for (let boxj = 0; boxj < sudokuBoard.boxCols; ++boxj)
         {
-            // we need two digits that mutually occupy the same two cells in the same box
-            // lets start with finding a digit that occupies only two cells
+            // we need 3 digits that mutually occupy the same 3 cells in the same box
+            // lets start with finding a first digit that occupies 3 or less cells
+            // for each digit
             for (let d0 = sudokuBoard.low; d0 < sudokuBoard.high; ++d0)
             {
                 // find possible positions of this digit in this box
                 let isAlreadyFilledIn = false;
-                let possibleLocationsI = [];
-                let possibleLocationsJ = [];
+                let possibleCellsd0 = [];
                 for (let i = boxi*sudokuBoard.boxRows; i < (boxi+1)*sudokuBoard.boxRows; ++i)
                 {
                     for (let j = boxj*sudokuBoard.boxCols; j < (boxj+1)*sudokuBoard.boxCols; ++j)
                     {
                         // this is a possible location
                         // if d0 is penciled here
+                        // and as long as this cell isnt already filled in
                         if (sudokuBoard.centerDigits[i][j][d0] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
-                        {
-                            possibleLocationsI.push (i);
-                            possibleLocationsJ.push (j);
-                        }
-
-                        // we can also ignore if d0 was already filled in this box
-                        if (sudokuBoard.board[i][j] == d0) 
+                            possibleCellsd0.push ([i,j]);
+        
+                        // we can also ignore if d0 was already filled in this row
+                        if (sudokuBoard.board[i][j] == d0)
                         {
                             isAlreadyFilledIn = true;
                             break;
                         }
                     }
-                    if (isAlreadyFilledIn) break;
                 }
                 // ensure digit wasnt already filled in
                 if (isAlreadyFilledIn) continue;
-                // ensure this digit has exactly 2 valid locations (to make a pair)
-                if (possibleLocationsI.length != 2) continue;
-                // reaches here if this digit can only go in 2 locations in this box
-                // highlight those two positions
-                // sudokuBoard.cellColors[possibleLocationsI[0]][possibleLocationsJ[0]][COLOR_BLUE] = 1;
-                // sudokuBoard.cellColors[possibleLocationsI[1]][possibleLocationsJ[1]][COLOR_BLUE] = 1;
+                // ensure this digit has 3 or less valid locations (to make a triple)
+                if (possibleCellsd0.length > 3) continue;
+                // reaches here if this digit can only go in 3 or less locations in this row
+                // highlight those positions
+                // for (const location of possibleCellsd0)
+                //     sudokuBoard.cellColors[i][location][COLOR_BLUE] = 1;
                 // mark the digit
-                sudokuBoard.topDigits[possibleLocationsI[0]][possibleLocationsJ[0]][d0] = 1;
-                sudokuBoard.topDigits[possibleLocationsI[1]][possibleLocationsJ[1]][d0] = 1;
-                // we will use the digit marks to determine if two digits occupy the same two cells
-            }
-            // search for two cells with the same digit pair
-            for (let i = boxi*sudokuBoard.boxRows; i < (boxi+1)*sudokuBoard.boxRows; ++i)
-            {
-                for (let j = boxj*sudokuBoard.boxCols; j < (boxj+1)*sudokuBoard.boxCols; ++j)
+                for (const [celli, cellj] of possibleCellsd0)
+                    sudokuBoard.topDigits[celli][cellj][d0] = 1;
+    
+                // d0 could be a part of a triple, lets look for another possible triple digit
+                // for each next digit, d1
+                for (let d1 = d0+1; d1 < sudokuBoard.high; ++d1)
                 {
-                    // ignore if cell is already filled in
-                    if (sudokuBoard.board[i][j] != EMPTY_CELL) continue;
-
-                    let digits0 = sudokuBoard.getTopDigits (i,j);
-                    // ignore if not a pair
-                    if (digits0.length != 2) continue;
-                    // look for another pair that matches
-                    for (let ii = boxi*sudokuBoard.boxRows; ii < (boxi+1)*sudokuBoard.boxRows; ++ii)
+                    // find possible positions of this digit in this row
+                    let isAlreadyFilledIn = false;
+                    let possibleCellsd1 = [];
+                    for (let i = boxi*sudokuBoard.boxRows; i < (boxi+1)*sudokuBoard.boxRows; ++i)
                     {
-                        for (let jj = boxj*sudokuBoard.boxCols; jj < (boxj+1)*sudokuBoard.boxCols; ++jj)
+                        for (let j = boxj*sudokuBoard.boxCols; j < (boxj+1)*sudokuBoard.boxCols; ++j)
                         {
-                            // ignore if we are looking at the same cell
-                            if (i == ii && j == jj) continue;
-                            // ignore if cell is already filled in
-                            if (sudokuBoard.board[ii][jj] != EMPTY_CELL) continue;
-
-                            let digits1 = sudokuBoard.getTopDigits (ii,jj);
-                            // ignore if not a pair
-                            if (digits1.length != 2) continue;
-                            // ensure pairs match
-                            if (!(digits0[0] == digits1[0] && digits0[1] == digits1[1])) continue;
-                            // reaches here if pairs match
-
-                            // ignore if cells are naked pairs already
-                            // this is not necessary
-                            // this is just so we only color the cells if there is a change to note
-                            if (sudokuBoard.getCenterDigits(i,j).length == 2 && sudokuBoard.getCenterDigits(ii,jj).length == 2) break;
-
-                            // pairs match so isolate them
-                            // aka remove other penciled digits from these cells
-
-                            // clear all pencil marks
-                            for (let d = sudokuBoard.low; d <= sudokuBoard.high; ++d)
+                            // this is a possible location
+                            // if d1 is penciled here
+                            // and as long as this cell isnt already filled in
+                            if (sudokuBoard.centerDigits[i][j][d1] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                                possibleCellsd1.push ([i,j]);
+            
+                            // we can also ignore if d1 was already filled in this row
+                            if (sudokuBoard.board[i][j] == d1)
                             {
-                                sudokuBoard.centerDigits[i ][j ][d] = 0;
-                                sudokuBoard.centerDigits[ii][jj][d] = 0;
+                                isAlreadyFilledIn = true;
+                                break;
                             }
-
-                            // pencil only the pair digits
-                            sudokuBoard.centerDigits[i ][j ][digits0[0]] = 1;
-                            sudokuBoard.centerDigits[ii][jj][digits0[0]] = 1;
-                            sudokuBoard.centerDigits[i ][j ][digits1[1]] = 1;
-                            sudokuBoard.centerDigits[ii][jj][digits1[1]] = 1;
-
-                            // highlight isolated cells
-                            sudokuBoard.cellColors[i ][j ][COLOR_GREEN] = 1;
-                            sudokuBoard.cellColors[ii][jj][COLOR_GREEN] = 1;
                         }
-                    } 
+                    }
+                    // ensure digit wasnt already filled in
+                    if (isAlreadyFilledIn) continue;
+                    // ensure this digit has 3 or less valid locations (to make a triple)
+                    if (possibleCellsd1.length > 3) continue;
+                    // reaches here if this digit can only go in 3 or less locations in this row
+                    // ensure that this digit shares the same cells as d0, reject if not
+                    let possibleCellsd0d1 = new Set([...possibleCellsd0]);
+                    // add to set ensuring no duplicates - Sets cant handle checking list elements
+                    for (const [celli_d1, cellj_d1] of possibleCellsd1)
+                    {
+                        // check if it is already in set
+                        let alreadyExists = false;
+                        for (const [celli, cellj] of possibleCellsd0d1)
+                        {
+                            if (celli == celli_d1 && cellj == cellj_d1)
+                            {
+                                alreadyExists = true;
+                                break;
+                            }
+                        }
+                        // if not in set, add it
+                        if (alreadyExists) continue;
+                        possibleCellsd0d1.add ([celli_d1, cellj_d1]);
+                    }
+                    if (possibleCellsd0d1.size > 3) continue;
+    
+                    // reaches here if d0 and d1 occupy a max of 3 different cells
+                    // highlight those positions
+                    // for (const location of possibleCellsd1)
+                    //     sudokuBoard.cellColors[i][location][COLOR_PURPLE] = 1;
+                    // mark the digit
+                    for (const [celli, cellj] of possibleCellsd1)
+                        sudokuBoard.topDigits[celli][cellj][d1] = 1;
+    
+                    // look for third digit to complete the triple
+                    // for each next digit, d2
+                    for (let d2 = d1+1; d2 < sudokuBoard.high; ++d2)
+                    {
+                        // find possible positions of this digit in this row
+                        let isAlreadyFilledIn = false;
+                        let possibleCellsd2 = [];
+                        for (let i = boxi*sudokuBoard.boxRows; i < (boxi+1)*sudokuBoard.boxRows; ++i)
+                        {
+                            for (let j = boxj*sudokuBoard.boxCols; j < (boxj+1)*sudokuBoard.boxCols; ++j)
+                            {
+                                // this is a possible location
+                                // if d2 is penciled here
+                                // and as long as this cell isnt already filled in
+                                if (sudokuBoard.centerDigits[i][j][d2] == 1 && sudokuBoard.board[i][j] == EMPTY_CELL)
+                                    possibleCellsd2.push ([i,j]);
+                
+                                // we can also ignore if d2 was already filled in this row
+                                if (sudokuBoard.board[i][j] == d2)
+                                {
+                                    isAlreadyFilledIn = true;
+                                    break;
+                                }
+                            }
+                        }
+                        // ensure digit wasnt already filled in
+                        if (isAlreadyFilledIn) continue;
+                        // ensure this digit has 3 or less valid locations (to make a triple)
+                        if (possibleCellsd2.length > 3) continue;
+                        // reaches here if this digit can only go in 3 or less locations in this row
+                        // ensure that this digit shares the same cells as d0 and d1, reject if not
+                        let possibleCellsd0d1d2 = new Set([...possibleCellsd0]);
+                        // add to set ensuring no duplicates - Sets cant handle checking list elements
+                        for (const [celli_d1, cellj_d1] of possibleCellsd1)
+                        {
+                            // check if it is already in set
+                            let alreadyExists = false;
+                            for (const [celli, cellj] of possibleCellsd0d1d2)
+                            {
+                                if (celli == celli_d1 && cellj == cellj_d1)
+                                {
+                                    alreadyExists = true;
+                                    break;
+                                }
+                            }
+                            // if not in set, add it
+                            if (alreadyExists) continue;
+                            possibleCellsd0d1d2.add ([celli_d1, cellj_d1]);
+                        }
+                        for (const [celli_d2, cellj_d2] of possibleCellsd2)
+                        {
+                            // check if it is already in set
+                            let alreadyExists = false;
+                            for (const [celli, cellj] of possibleCellsd0d1d2)
+                            {
+                                if (celli == celli_d2 && cellj == cellj_d2)
+                                {
+                                    alreadyExists = true;
+                                    break;
+                                }
+                            }
+                            // if not in set, add it
+                            if (alreadyExists) continue;
+                            possibleCellsd0d1d2.add ([celli_d2, cellj_d2]);
+                        }
+                        if (possibleCellsd0d1d2.size > 3) continue;
+    
+                        // reaches here if d0, d1, and d2 occupy a max of 3 different cells
+                        // highlight d2's positions
+                        // for (const location of possibleCellsd2)
+                        //     sudokuBoard.cellColors[i][location][COLOR_ORANGE] = 1;
+                        // mark d2 with top digits
+                        for (const [celli, cellj] of possibleCellsd2)
+                            sudokuBoard.topDigits[celli][cellj][d2] = 1;
+                        
+                        // this is a triple so isolate it if there are other digits in those cells
+                        for (const [celli, cellj] of possibleCellsd0d1d2)
+                        {
+                            // zero out any non-triple digits
+                            for (let d = sudokuBoard.low; d < sudokuBoard.high; ++d)
+                            {
+                                // leave triple digits alone
+                                if (!(d != d0 && d != d1 && d != d2)) continue;
+    
+                                // ensure digit was penciled in
+                                if (sudokuBoard.centerDigits[celli][cellj][d] == 0) continue;
+    
+                                // reaches here if digit, d, is penciled in and not a triple digit
+                                // we need to remove this digit to isolate the triple
+                                sudokuBoard.centerDigits[celli][cellj][d] = 0;
+                                // mark cell as red to denote that a digit was removed
+                                sudokuBoard.cellColors[celli][cellj][COLOR_RED] = 1;
+                            }
+    
+                            // highlight triple cell
+                            sudokuBoard.cellColors[celli][cellj][COLOR_GREEN] = 1;
+                        }
+                    }
                 }
             }
-            
         }
     }
-
-        
 
 
     editMode = MODE_SOLVER;
