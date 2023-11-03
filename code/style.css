@@ -124,7 +124,7 @@ a {
 }
 
 .panelButton {
-    background-color: #dd55dd;
+    background-color: #249090;
     min-width: 50px;
     width: 100%;
     min-height: 50px;
@@ -149,7 +149,7 @@ button {
 .topDigitButtonLabel {
     font-size: 14;
     position: absolute;
-    top: 0px;
+    top: 4px;
 }
 
 .smallDigitButtonLabel {

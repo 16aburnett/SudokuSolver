@@ -1,5 +1,7 @@
 
 const EMPTY_CELL = -1;
+const NOT_A_GIVEN_DIGIT = 0;
+const IS_A_GIVEN_DIGIT = 1;
 
 const DOMINO_NONE = 0;
 const DOMINO_KROPKI_WHITE = 1;
@@ -41,9 +43,11 @@ class SudokuBoard
         }
 
         // Board state/data
-        // the board stores the filled in digits for each cell
+        // the board stores the filled-in, final digits for each cell
         this.board = [];
-        // this represents given, unchangable digits
+        // this represents given, unchangable digits (rows*cols)
+        // this is just a boolean where 1 means a cell is given and 0 means it is not
+        // we do this to keep the cell's final digits in the board
         this.givenDigits = [];
         // this stores which cells are currently selected
         this.selectedCells = [];
@@ -81,7 +85,7 @@ class SudokuBoard
             for (let j = 0; j < this.cols; ++j)
             {
                 this.board[i]        .push (EMPTY_CELL);
-                this.givenDigits[i]  .push (EMPTY_CELL);
+                this.givenDigits[i]  .push (0);
                 this.selectedCells[i].push (0);
                 this.topDigits[i]    .push ([]);
                 this.centerDigits[i] .push ([]);
@@ -124,7 +128,9 @@ class SudokuBoard
 
         // Board coloring
         this.boardBackgroundColor = DARKMODE_BACKGROUND0;
-        this.digitColor = DARKMODE_FOREGROUND0;
+        this.digitColor = "#009";
+        this.givenDigitColor = DARKMODE_FOREGROUND0;
+        this.digitOutline = DARKMODE_BACKGROUND0;
         this.borderColor = DARKMODE_FOREGROUND0;
         // let selectionColor = [50, 50, 200, 220];
         this.selectionBorderColor = [50, 255, 255, 220];
@@ -132,8 +138,9 @@ class SudokuBoard
 
         this.cageBorderColor = DARKMODE_FOREGROUND0;
         this.cageSumColor = DARKMODE_FOREGROUND0;
-        this.cageTextSize = 12;
-        this.cageTextFont = "Sans";
+        this.cageSumBackgroundColor = DARKMODE_BACKGROUND0;
+        this.cageTextSize = 16;
+        this.cageTextFont = "Arial";
 
         this.dominoBorderColor = DARKMODE_FOREGROUND0;
         this.dominoColor = DARKMODE_BACKGROUND0;
@@ -723,23 +730,20 @@ class SudokuBoard
     cageSelectedCells ()
     {
         // ensure selected cells are orthogonally connected
-        let dfsBoard = [
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0],
-        ];
+        let dfsBoard = [];
         let firsti = -1;
         let firstj = -1;
+
+        // loop over ever cell and find first selected cell
+        // also initialize dfs board
         for (let i = 0; i < this.rows; ++i)
         {
+            // initialize this row
+            dfsBoard.push ([]);
             for (let j = 0; j < this.cols; ++j)
             {
+                // initialize this col
+                dfsBoard[i].push (0);
                 if (firsti == -1 && this.selectedCells[i][j])
                 {
                     firsti = i; firstj = j;
@@ -986,13 +990,6 @@ class SudokuBoard
             return;
         }
 
-        // ** temporarily treat board maker digits as play digits
-        let prevEditMode = editMode;
-        if (editMode == MODE_BOARD_MAKER && boardMakerMode == BOARD_MAKER_MODE_DIGIT) 
-        {
-            editMode = MODE_PLAY;
-            playMode = PLAY_MODE_DIGIT;
-        }
         // 1. given digit is -1 - should clear all info from selected
         //   for the given mode
         if (digit == EMPTY_CELL)
@@ -1006,7 +1003,17 @@ class SudokuBoard
                     {
                         if (editMode == MODE_PLAY && playMode == PLAY_MODE_DIGIT)
                         {
+                            // ensure cell is not a given digit
+                            // given digits cannot be changed
+                            if (this.givenDigits[i][j] == NOT_A_GIVEN_DIGIT)
+                            {
+                                this.board[i][j] = EMPTY_CELL;
+                            }
+                        }
+                        else if (editMode == MODE_BOARD_MAKER && boardMakerMode == BOARD_MAKER_MODE_DIGIT)
+                        {
                             this.board[i][j] = EMPTY_CELL;
+                            this.givenDigits[i][j] = NOT_A_GIVEN_DIGIT;
                         }
                         else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == EMPTY_CELL)
                         {
@@ -1039,12 +1046,23 @@ class SudokuBoard
         {
             for (let j = 0; j < this.cols; ++j)
             {
-                // delete if cell is selected
+                // check if cell is selected
                 if (this.selectedCells[i][j])
                 {
                     if (editMode == MODE_PLAY && playMode == PLAY_MODE_DIGIT && this.board[i][j] != digit)
                     {
+                        // ensure cell is not a given digit
+                        // given digits cannot be changed
+                        if (this.givenDigits[i][j] == NOT_A_GIVEN_DIGIT)
+                        {
+                            this.board[i][j] = digit;
+                            wasChanged = true;
+                        }
+                    }
+                    else if (editMode == MODE_BOARD_MAKER && boardMakerMode == BOARD_MAKER_MODE_DIGIT && (this.board[i][j] != digit || this.givenDigits[i][j] != IS_A_GIVEN_DIGIT))
+                    {
                         this.board[i][j] = digit;
+                        this.givenDigits[i][j] = IS_A_GIVEN_DIGIT;
                         wasChanged = true;
                     }
                     else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == EMPTY_CELL && this.topDigits[i][j][digit] == 0)
@@ -1073,12 +1091,21 @@ class SudokuBoard
             {
                 for (let j = 0; j < this.cols; ++j)
                 {
-                    // delete if cell is selected
                     if (this.selectedCells[i][j])
                     {
                         if (editMode == MODE_PLAY && playMode == PLAY_MODE_DIGIT)
                         {
+                            // ensure cell is not a given digit
+                            // given digits cannot be changed
+                            if (this.givenDigits[i][j] == NOT_A_GIVEN_DIGIT)
+                            {
+                                this.board[i][j] = EMPTY_CELL;
+                            }
+                        }
+                        else if (editMode == MODE_BOARD_MAKER && boardMakerMode == BOARD_MAKER_MODE_DIGIT)
+                        {
                             this.board[i][j] = EMPTY_CELL;
+                            this.givenDigits[i][j] = NOT_A_GIVEN_DIGIT;
                         }
                         else if (editMode == MODE_PLAY && playMode == PLAY_MODE_TOP && this.board[i][j] == EMPTY_CELL)
                         {
@@ -1098,9 +1125,6 @@ class SudokuBoard
             }
         }
     
-        // ** temporary
-        editMode = prevEditMode;
-    
     }    
 
     //====================================================================
@@ -1108,13 +1132,16 @@ class SudokuBoard
     setDarkMode ()
     {
         this.boardBackgroundColor = DARKMODE_BACKGROUND0;
-        this.digitColor = DARKMODE_FOREGROUND0;
+        this.digitColor = "#7777ff";
+        this.givenDigitColor = DARKMODE_FOREGROUND0;
+        this.digitOutline = DARKMODE_BACKGROUND0;
         this.borderColor = DARKMODE_FOREGROUND0;
-        this.cageBorderColor = DARKMODE_FOREGROUND0;
-        this.cageSumColor = DARKMODE_FOREGROUND0;
         this.selectionBorderColor = [50, 255, 255, 220];
         this.cursorBorderColor =    [250, 255, 50, 220];
 
+        this.cageBorderColor = DARKMODE_FOREGROUND0;
+        this.cageSumColor = DARKMODE_FOREGROUND0;
+        this.cageSumBackgroundColor = DARKMODE_BACKGROUND0;
         this.dominoBorderColor = DARKMODE_BACKGROUND0;
         this.dominoColor = DARKMODE_FOREGROUND0;
     }
@@ -1124,13 +1151,16 @@ class SudokuBoard
     setLightMode ()
     {
         this.boardBackgroundColor = LIGHTMODE_BACKGROUND0;
-        this.digitColor = LIGHTMODE_FOREGROUND0;
+        this.digitColor = "#0000ee";
+        this.givenDigitColor = LIGHTMODE_FOREGROUND0;
+        this.digitOutline = LIGHTMODE_BACKGROUND0;
         this.borderColor = LIGHTMODE_FOREGROUND0;
-        this.cageBorderColor = LIGHTMODE_FOREGROUND0;
-        this.cageSumColor = LIGHTMODE_FOREGROUND0;
         this.selectionBorderColor = [50, 50, 200, 220];
         this.cursorBorderColor =    [50, 255, 50, 220];
 
+        this.cageBorderColor = LIGHTMODE_FOREGROUND0;
+        this.cageSumColor = LIGHTMODE_FOREGROUND0;
+        this.cageSumBackgroundColor = LIGHTMODE_BACKGROUND0;
         this.dominoBorderColor = LIGHTMODE_BACKGROUND0;
         this.dominoColor = LIGHTMODE_FOREGROUND0;
     }
@@ -1140,6 +1170,8 @@ class SudokuBoard
     // draws the board to the canvas
     show ()
     {
+        textStyle (NORMAL);
+
         let digitMapping = "0123456789abcdef";
         // draw each cell
         for (let i = 0; i < this.rows; ++i)
@@ -1203,11 +1235,16 @@ class SudokuBoard
                     line (x+selectPadding, y+selectPadding, x+selectPadding, y+this.cellHeight-selectPadding);
                 }
 
-                // draw filled digit, if filled in
+                // draw filled-in digit, if filled-in
                 if (this.board[i][j] != EMPTY_CELL)
                 {
-                    noStroke ();
-                    fill (this.digitColor);
+                    stroke (this.digitOutline);
+                    strokeWeight(2);
+                    // determine if digit is given or filled-in
+                    if (this.givenDigits[i][j] == IS_A_GIVEN_DIGIT)
+                        fill (this.givenDigitColor);
+                    else
+                        fill (this.digitColor);
                     textFont (globalTextFont);
                     textAlign (CENTER, CENTER);
                     textSize (this.cellHeight-10);
@@ -1224,11 +1261,12 @@ class SudokuBoard
                             topDigitsStr = topDigitsStr + digitMapping[p];
                     }
 
-                    // Ensure we have pencil marks
+                    // Ensure we have top digit pencil marks
                     if (topDigitsStr.length > 0)
                     {
-                        noStroke ();
-                        fill (this.digitColor);
+                        stroke (this.digitOutline);
+                        strokeWeight (1);
+                        fill (this.givenDigitColor);
                         textFont (globalTextFont);
                         textAlign (CENTER, CENTER);
                         // iteratively decrease size until it fits
@@ -1248,12 +1286,12 @@ class SudokuBoard
                             pencilMarksStr = pencilMarksStr + digitMapping[p];
                     }
 
-                    // Ensure we have pencil marks
+                    // Ensure we have center digit pencil marks
                     if (pencilMarksStr.length > 0)
                     {
-                        stroke (this.digitColor);
+                        stroke (this.digitOutline);
                         strokeWeight (1);
-                        fill (this.digitColor);
+                        fill (this.givenDigitColor);
                         textFont (globalTextFont);
                         textAlign (CENTER, CENTER);
                         // iteratively decrease size until it fits
@@ -1364,15 +1402,6 @@ class SudokuBoard
                 }
             }
 
-            // write cage num
-            fill (this.cageSumColor);
-            noStroke ();
-            textFont (this.cageTextFont);
-            textSize (this.cageTextSize);
-            let topPadding = 3;
-            text (cageSum, this.x + leftj * this.cellWidth + (this.cellWidth / 3), this.y + topi * this.cellHeight + (this.cageTextSize / 2) + topPadding)
-            // console.warn (cage[0]);
-
             // draw cage outline
             for (let i = 0 ; i < cageCells.length; ++i)
             {
@@ -1384,9 +1413,9 @@ class SudokuBoard
                 let y = this.y + celli * this.cellHeight;
                 let x = this.x + cellj * this.cellWidth;
                 stroke (this.cageBorderColor);
-                strokeWeight (2);
+                strokeWeight (1.5);
                 drawingContext.setLineDash([5]);
-                let cageBorderPadding = 5;
+                let cageBorderPadding = 4;
 
                 // ensure cage doesnt continue to the north
                 let hasNorthCell = false;
@@ -1404,9 +1433,9 @@ class SudokuBoard
                     if (celljj == cellj-1 && cellii == celli) hasWestCell  = true;
                 }
                 if (!hasNorthCell)
-                    if (isTopLeftCell)
-                        line (x+(this.cellWidth / 2)+cageBorderPadding, y+cageBorderPadding, x+this.cellWidth-cageBorderPadding, y+cageBorderPadding);
-                    else
+                    // if (isTopLeftCell)
+                    //     line (x+(this.cellWidth / 2)+cageBorderPadding, y+cageBorderPadding, x+this.cellWidth-cageBorderPadding, y+cageBorderPadding);
+                    // else
                         line (x+cageBorderPadding, y+cageBorderPadding, x+this.cellWidth-cageBorderPadding, y+cageBorderPadding);
                 if (!hasEastCell)
                     line (x+this.cellWidth-cageBorderPadding, y+cageBorderPadding, x+this.cellWidth-cageBorderPadding, y+this.cellHeight-cageBorderPadding);
@@ -1416,6 +1445,20 @@ class SudokuBoard
                     line (x+cageBorderPadding, y+cageBorderPadding, x+cageBorderPadding, y+this.cellHeight-cageBorderPadding);
                 drawingContext.setLineDash([]);
             }
+            
+            // draw cage sum's backdrop
+            fill (this.cageSumBackgroundColor);
+            noStroke ();
+            rect (this.x + leftj * this.cellWidth + 2, this.y + topi * this.cellHeight + 2, this.cageTextSize * 1.5, this.cageTextSize);
+
+            // write cage sum
+            fill (this.cageSumColor);
+            noStroke ();
+            textFont (this.cageTextFont);
+            textSize (this.cageTextSize);
+            let topPadding = 3;
+            text (cageSum, this.x + leftj * this.cellWidth + this.cageTextSize / 1.5 + 3, this.y + topi * this.cellHeight + (this.cageTextSize / 2) + topPadding)
+            // console.warn (cage[0]);
         }
     }
 

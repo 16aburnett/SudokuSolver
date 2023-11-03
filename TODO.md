@@ -11,6 +11,38 @@
 - hidden pairs
 [[4512], [6312], 345, 5643, ...]
 
+
+
+NEW TODO
+- undo/redo
+- [x] given digits
+    - should not be able to be changed
+    - allows us to select all and delete only placed digits
+    - use the same board for the solver? but have a bool board saying if a digit is given to prevent deletion
+    - boards read from saved data structure should make all digits given by default
+- refactor solver to not be allowed to directly change board
+    - it should have to call a function
+    - and that function should give an error or prevent changing given digits
+- killer cage pointing solver
+- 9 cell killer cage solver - must contain 1-9 once each
+- killer cage unique cells solver
+- double click to highlight all cells of the same kind
+- restrict select cell region to less than the cell so you can select more.
+- make killer cage outline smaller
+- make killer cage number more in the corner with a white backdrop
+- killer cage calculator
+- [x] change colors to be blue cos pink not it tbh
+- board maker mode should make any pencil marks light (dont remove)
+- split up negative domino constraint per domino type
+- rules to english desc generator
+- solution check button
+- auto detect solved state
+- solved message - congrats, you solved it!
+- ways to store solutions to puzzles for ensuring correct solutions - idk if needed
+
+
+- sudoku solver via neural net? idk
+
 - FEATURE: shift mechanic for touchscreen (make a btn that doesnt clear selected when clicking)
 
 - refactor solving tools into one tab

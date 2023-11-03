@@ -333,7 +333,7 @@
                         <!-- left tabs -->
                         <div id="boardMakerPanelTabContainer">
                             <div class="boardMakerPanelLeftTab boardMakerPanelSelectedTab" id="boardMakerPanelBoardTab" onclick="boardMakerPanelBoardTab()">Board</div>
-                            <div class="boardMakerPanelLeftTab" id="boardMakerPanelDigitTab" onclick="boardMakerPanelDigitTab()">Digit</div>
+                            <div class="boardMakerPanelLeftTab" id="boardMakerPanelDigitTab" onclick="boardMakerPanelDigitTab()">Given Digit</div>
                             <div class="boardMakerPanelLeftTab" id="boardMakerPanelCagesTab" onclick="boardMakerPanelCagesTab()">Cages</div>
                             <div class="boardMakerPanelLeftTab" id="boardMakerPanelDominoesTab" onclick="boardMakerPanelDominoesTab()">Dominoes</div>
                         </div>
@@ -391,7 +391,7 @@
                                 <table>
                                     <tr>
                                         <th class="color-foreground0" colspan="3">
-                                            Digits
+                                            Given Digits
                                         </th>
                                     </tr>
                                     <tr>
@@ -675,8 +675,14 @@
                                 <th class="color-foreground0" colspan="3">Killer Cage Sudokus</th>
                             </tr>
                             <tr>
-                                <td colspan="3">
-                                    <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (0)" title="Cage Board">Cage Board 0</button>
+                                <td colspan="1">
+                                    <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (0)" title="Cage Board">Killer Cage Board 0</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (1)" title="Cage Board">Killer Cage Board 1</button>
+                                </td>
+                                <td colspan="1">
+                                    <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (2)" title="Cage Board">Killer Cage Board 2</button>
                                 </td>
                             </tr>
                             <tr>

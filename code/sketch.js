@@ -5,7 +5,7 @@
 
 let sudokuBoard;
 
-let globalTextFont = "Courier";
+let globalTextFont = "Arial";
 
 // Color Theme
 let isDarkMode = false;
@@ -490,7 +490,7 @@ function mouseDragged ()
 
 function loadBoardFromData (data)
 {
-    // esnure base was provided
+    // ensure base was provided
     let base = 9;
     // if (!("base" in data))
     // {
@@ -526,8 +526,15 @@ function loadBoardFromData (data)
 
     // load board
     for (let i = 0; i < newSudokuBoard.rows; ++i)
+    {
         for (let j = 0; j < newSudokuBoard.cols; ++j)
+        {
             newSudokuBoard.board[i][j] = data["board"][i][j];
+            // treat each loaded digit as a given digit
+            if (data["board"][i][j] != EMPTY_CELL)
+                newSudokuBoard.givenDigits[i][j] = IS_A_GIVEN_DIGIT;
+        }
+    }
 
     // add cages, if there are any
     for (let cagei = 0; "cages" in data && cagei < data["cages"].length; ++cagei)
