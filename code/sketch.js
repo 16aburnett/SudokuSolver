@@ -227,7 +227,7 @@ function toggleLightAndDark ()
 function setup ()
 {
 
-    let canvas = createCanvas (600, 600);
+    let canvas = createCanvas (windowWidth / 2, windowHeight / 2);
     canvas.parent ("#canvasDiv");
 
     sudokuBoard = new SudokuBoard ();
@@ -255,21 +255,35 @@ function setup ()
     select ("#BLACK_BUTTON") .style ("background-color", `rgba(${RGBA_COLORS[COLOR_BLACK][0]}, ${RGBA_COLORS[COLOR_BLACK][1]}, ${RGBA_COLORS[COLOR_BLACK][2]}, ${RGBA_COLORS[COLOR_BLACK][3]})`)
     select ("#WHITE_BUTTON") .style ("background-color", `rgba(${RGBA_COLORS[COLOR_WHITE][0]}, ${RGBA_COLORS[COLOR_WHITE][1]}, ${RGBA_COLORS[COLOR_WHITE][2]}, ${RGBA_COLORS[COLOR_WHITE][3]})`)
 
+    // setup rule set
+    updateRuleSet ();
+
 }
 
 //========================================================================
 
 function draw ()
 {
+    // background ("#ff0000");
     background (sudokuBoard.boardBackgroundColor);
 
     sudokuBoard.show ();
 
     // ensure rules are updated
-    document.getElementById ("rules_normalSudoku").checked = true;
-    document.getElementById ("rules_uniqueCages").checked = true;
-    document.getElementById ("rules_fullDomino").checked = sudokuBoard.isFullDomino;
+    // document.getElementById ("rules_normalSudoku").checked = true;
+    // document.getElementById ("rules_uniqueCages").checked = true;
+    // document.getElementById ("rules_fullDomino").checked = sudokuBoard.isFullDomino;
 
+}
+
+//========================================================================
+
+function windowResized ()
+{
+    // we want the canvas to be square so use whatever is the more constrained dim
+    let smallestDimension = min (windowWidth * 0.50 - 10, windowHeight * 0.75 - 20);
+    resizeCanvas(smallestDimension, smallestDimension);
+    sudokuBoard.resizeBoard ();
 }
 
 //========================================================================
@@ -546,8 +560,18 @@ function loadBoardFromData (data)
             for (let j = 0; j < newSudokuBoard.cols; ++j)
                 for (let d = 0; d < DOMINO_NUM_DIRS; ++d)
                     newSudokuBoard.dominoes[i][j][d] = data["dominoes"][i][j][d];
-    if ("isFullDomino" in data)
-        newSudokuBoard.isFullDomino = data["isFullDomino"];
+    if ("areAllKropkiWhiteGiven" in data)
+        newSudokuBoard.areAllKropkiWhiteGiven = data["areAllKropkiWhiteGiven"];
+    if ("areAllKropkiBlackGiven" in data)
+        newSudokuBoard.areAllKropkiBlackGiven = data["areAllKropkiBlackGiven"];
+    if ("areAllSumVGiven" in data)
+        newSudokuBoard.areAllSumVGiven = data["areAllSumVGiven"];
+    if ("areAllSumXGiven" in data)
+        newSudokuBoard.areAllSumXGiven = data["areAllSumXGiven"];
+    if ("areAllLessThanGiven" in data)
+        newSudokuBoard.areAllLessThanGiven = data["areAllLessThanGiven"];
+    if ("areAllGreaterThanGiven" in data)
+        newSudokuBoard.areAllGreaterThanGiven = data["areAllGreaterThanGiven"];
 
     // swap in the newly loaded sudoku board
     sudokuBoard = newSudokuBoard;
@@ -563,8 +587,8 @@ function loadBoardFromData (data)
         setLightMode ();
     }
 
-    document.getElementById ("dominoFullnessSlider").checked = sudokuBoard.isFullDomino;
-    document.getElementById ("rules_fullDomino").checked = sudokuBoard.isFullDomino;
+    // Update Rule set of new puzzle
+    updateRuleSet ();
 
 }
 
@@ -643,11 +667,189 @@ function loadDominoBoard (boardIndex)
 
 //========================================================================
 
-function toggleDominoFullness ()
+// Board Maker: Killer Cages Interface
+
+function cageSelectedCells ()
 {
-    sudokuBoard.isFullDomino = document.getElementById ("dominoFullnessSlider").checked;
-    document.getElementById ("rules_fullDomino").checked = sudokuBoard.isFullDomino;
-    console.log (sudokuBoard.isFullDomino);
+    sudokuBoard.cageSelectedCells ();
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
+}
+
+function uncageSelectedCells ()
+{
+    sudokuBoard.uncageSelectedCells ();
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
+}
+
+function toggleCageUniqueness ()
+{
+    sudokuBoard.areCagedCellDigitsUnique = document.getElementById ("cageUniquenessSlider").checked;
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
+}
+
+//========================================================================
+
+// Board Maker: Dominoes Interface
+
+function markDominoWithSelectedCells (domino_type)
+{
+    sudokuBoard.markDominoWithSelectedCells (domino_type);
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
+}
+
+function clearAllDominoes ()
+{
+    sudokuBoard.clearDominoes ();
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
+}
+
+function toggleDominoFullness (type)
+{
+    // Update rule in board
+    if (type == DOMINO_KROPKI_WHITE)      sudokuBoard.areAllKropkiWhiteGiven = document.getElementById ("kropkiWhiteFullnessSlider").checked;
+    else if (type == DOMINO_KROPKI_BLACK) sudokuBoard.areAllKropkiBlackGiven = document.getElementById ("kropkiBlackFullnessSlider").checked;
+    else if (type == DOMINO_SUM_V)        sudokuBoard.areAllSumVGiven = document.getElementById ("sumVFullnessSlider").checked;
+    else if (type == DOMINO_SUM_X)        sudokuBoard.areAllSumXGiven = document.getElementById ("sumXFullnessSlider").checked;
+    else if (type == DOMINO_LESS_THAN)    sudokuBoard.areAllLessThanGiven = document.getElementById ("lessThanFullnessSlider").checked;
+    else if (type == DOMINO_GREATER_THAN) sudokuBoard.areAllGreaterThanGiven = document.getElementById ("greaterThanFullnessSlider").checked;
+    else console.log ("Error: unknown domino type", type);
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
+}
+
+//========================================================================
+
+// This function queries the current sudoku board to determine the rules
+// needed to solve the puzzle.
+function updateRuleSet ()
+{
+    let ruleSet = "";
+    // determine if normal sudoku rules apply.
+    if (sudokuBoard.isNormalSudokuRules && sudokuBoard.numDigits == NORMAL_SUDOKU_DIMENSIONS)
+        ruleSet += "Normal Sudoku rules apply. The digits [1,9] must appear once each in every row, column, and 3x3 box. "
+    else if (sudokuBoard.isNormalSudokuRules && sudokuBoard.numDigits == HEXADECIMAL_SUDOKU_DIMENSIONS)
+        ruleSet += "Normal Hexadecimal Sudoku rules apply. The hexadecimal digits [0,F] must appear once each in every row, column, and 4x4 box. "
+    else
+        ruleSet += "Normal Sudoku rules do NOT apply. "
+
+    // Variant Sudoku rules
+    // Killer Cages
+    if (sudokuBoard.hasKillerCages())
+    {
+        ruleSet += "Killer Cages: Digits in caged cells must sum to the clue in the top-left of the cage. "
+        // determine if digits must be unique within the cages
+        if (sudokuBoard.areCagedCellDigitsUnique)
+            ruleSet += "Digits in cages may not repeat. "
+    }
+
+    // Dominoes
+    // Kropki white
+    if (sudokuBoard.hasKropkiWhiteDominoes())
+    {
+        // determine if negative constraint applies
+        if (sudokuBoard.areAllKropkiWhiteGiven)
+        {
+            ruleSet += "Full Kropki White: Cells separated by a white dot contain consecutive digits; "
+            ruleSet += "All possible such dots are given. "
+        }
+        else
+        {
+            ruleSet += "Partial Kropki White: Cells separated by a white dot contain consecutive digits; "
+            ruleSet += "Not all such dots are given. "
+        }
+    }
+    // Kropki black
+    if (sudokuBoard.hasKropkiBlackDominoes())
+    {
+        // determine if negative constraint applies
+        if (sudokuBoard.areAllKropkiBlackGiven)
+        {
+            ruleSet += "Full Kropki Black: Cells separated by a black dot contain digits that have a 1:2 ratio; "
+            ruleSet += "All possible such dots are given. "
+        }
+        else
+        {
+            ruleSet += "Partial Kropki Black: Cells separated by a black dot contain digits that have a 1:2 ratio; "
+            ruleSet += "Not all such dots are given. "
+        }
+    }
+    // Both kropki + negative constraints
+    // this shows up because we dont want the Player to think that
+    // a black dot without a white dot means that digits must be 1:2 and not consecutive
+    // when actually we allow the case of 1 and 2 being on a black or white dot
+    // which are both consecutive and in a 1:2 relationship
+    if (sudokuBoard.hasKropkiWhiteDominoes() && sudokuBoard.hasKropkiBlackDominoes() && (sudokuBoard.areAllKropkiWhiteGiven || sudokuBoard.areAllKropkiBlackGiven))
+    {
+        ruleSet += "Black and white dots can overlap (meaning a black or white dot can have digits that are both in a 1:2 relationship and also consecutive). "
+    }
+    // Sum V
+    if (sudokuBoard.hasSumVDominoes())
+    {
+        // determine if negative constraint applies
+        if (sudokuBoard.areAllSumVGiven)
+        {
+            ruleSet += "Full Sum V: Cells separated by a V must sum to 5; "
+            ruleSet += "All possible Vs are given. "
+        }
+        else
+        {
+            ruleSet += "Partial Sum V: Cells separated by a V must sum to 5; "
+            ruleSet += "Not all Vs are given. "
+        }
+    }
+    // Sum X
+    if (sudokuBoard.hasSumXDominoes())
+    {
+        // determine if negative constraint applies
+        if (sudokuBoard.areAllSumXGiven)
+        {
+            ruleSet += "Full Sum X: Cells separated by a X must sum to 10; "
+            ruleSet += "All possible Xs are given. "
+        }
+        else
+        {
+            ruleSet += "Partial Sum X: Cells separated by a X must sum to 10; "
+            ruleSet += "Not all Xs are given. "
+        }
+    }
+    // less than
+    if (sudokuBoard.hasLessThanDominoes())
+    {
+        // determine if negative constraint applies
+        if (sudokuBoard.areAllLessThanGiven)
+        {
+            ruleSet += "Full Less Than: A < between two cells points to the smaller digit; "
+            ruleSet += "All possible < dominoes are given. "
+        }
+        else
+        {
+            ruleSet += "Partial Less Than: A < between two cells points to the smaller digit; "
+            ruleSet += "Not all possible < dominoes are given. "
+        }
+    }
+    // greater than
+    if (sudokuBoard.hasGreaterThanDominoes())
+    {
+        // determine if negative constraint applies
+        if (sudokuBoard.areAllGreaterThanGiven)
+        {
+            ruleSet += "Full Greater Than: A > between two cells points to the smaller digit; "
+            ruleSet += "All possible > dominoes are given. "
+        }
+        else
+        {
+            ruleSet += "Partial Greater Than: A > between two cells points to the smaller digit; "
+            ruleSet += "Not all possible > dominoes are given. "
+        }
+    }
+
+    // Update rule set
+    document.getElementById ("rules").innerText = ruleSet;
 }
 
 //========================================================================
@@ -666,6 +868,9 @@ function createDecimalBoard ()
     {
         setLightMode ();
     }
+    
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
 }
 
 //========================================================================
@@ -684,6 +889,9 @@ function createHexadecimalBoard ()
     {
         setLightMode ();
     }
+    
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
 }
 
 //========================================================================
@@ -703,6 +911,12 @@ function exportBoardToJSON ()
         cages: sudokuBoard.cages,
         dominoes: sudokuBoard.dominoes,
         isFullDomino: sudokuBoard.isFullDomino,
+        areAllKropkiWhiteGiven: sudokuBoard.areAllKropkiWhiteGiven,
+        areAllKropkiBlackGiven: sudokuBoard.areAllKropkiBlackGiven,
+        areAllSumVGiven: sudokuBoard.areAllSumVGiven,
+        areAllSumXGiven: sudokuBoard.areAllSumXGiven,
+        areAllLessThanGiven: sudokuBoard.areAllLessThanGiven,
+        areAllGreaterThanGiven: sudokuBoard.areAllGreaterThanGiven,
     };
     
     const filename = 'data.json';
@@ -718,6 +932,9 @@ function exportBoardToJSON ()
     element.click();
 
     document.body.removeChild(element);
+    
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
 }
 
 //========================================================================
@@ -743,6 +960,9 @@ function importBoardFromJSON ()
 
     };
     file_reader.readAsText (files.item(0));
+    
+    // Update Rule set since we changed a rule
+    updateRuleSet ();
 }
 
 //========================================================================
@@ -929,8 +1149,6 @@ function playPanelColorTab ()
 //========================================================================
 
 // board maker tabs
-
-
 function cycleBoardMakerMode (direction)
 {
     // cycle forward

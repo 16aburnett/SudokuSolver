@@ -36,10 +36,80 @@ NEW TODO
 - split up negative domino constraint per domino type
 - rules to english desc generator
 - solution check button
-- auto detect solved state
+- auto detect solved state 
 - solved message - congrats, you solved it!
 - ways to store solutions to puzzles for ensuring correct solutions - idk if needed
+- darkmode https://www.w3schools.com/howto/howto_js_toggle_dark_mode.asp
+- knights move chess
+- kings move chess
+- single reduction for each solver button
+    - but make it optional in the function
+    - would make solver slower
+    - maybe full solver button should not single step
+    - we can expand on this to add some output that explains what the single reduction was
+        similar to a teaching tool? or a hint tool?
 
+- scrap less/greater than dominoes - dont think they work as intended
+    - dont even have a puzzle that uses it
+    - but maybe it needs refinement
+
+- add solver log
+    - all penicl mark changes
+    - all filled-in digit changes
+    - [info,debug,trace] type format
+
+naive solver
+basic solver
+basic + naive where needed
+    - bifurcation ;__;
+    - but should be much faster than naive solver
+basic + advanced techniques
+    - need to learn and implement techniques like XY wing, coloring, etc
+basic + variant sudoku techniques
+    - dominoes techniques
+        - pointing dominoes
+        - domino chaining
+    - cage techniques
+        - pointing cages
+        - locked digit in cage
+        - cage calculator
+            - determine what comb are possible
+            - determine if any digits are common across comb
+            - determine if any digits are absent from all comb
+            - currently a 3 cell 6 cage apparently can have a 6 in it....
+        - 45 cage - must contain all digits
+
+black dot chaining
+- if a cell has 2 black dots which has all 3 cells in the same row, col, or box
+    then 3,6 cannot appear anywhere
+    and the middle cell cannot be 1 or 8
+- this is actually all that is needed to solve the first domino sudoku board :)
+
+
+
+- I think it is still possible for quadruples to help solve a puzzle
+    - 4 make a quadruple leaving 5 unknown cells
+    - never need to handle 5tuples nor 6tuples
+
+- boards should have names, authors, and url links to source
+    - and a way to add/edit name, author, and url from Board Maker - so I dont have to edit JSON
+
+- make more touchscreen/cell phone ready
+    - probs force playing with phone in landscape mode
+    - needs a way to select multiple cells tho
+    - and keep in mind that touchscreen can ONLY use the on-screen buttons so anything that can be done via keyboard, needs a translation into a button
+
+- XV dominoes
+   - https://app.crackingthecryptic.com/sudoku/P97Nt3HLmP
+
+- line sudoku
+   - Gemma Lines - https://app.crackingthecryptic.com/sudoku/P97Nt3HLmP
+
+- X wing technique
+[][][2][2][][][][][]
+...
+[][][2][2][][][][][]
+the topdigit 2s form an X wing which rules out 2s from elsewhere in those rows
 
 - sudoku solver via neural net? idk
 
