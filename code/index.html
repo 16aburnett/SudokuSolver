@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="style.css">
         <script type="text/javascript" src="naiveSolver.js"></script>
         <script type="text/javascript" src="basicSolver.js"></script>
+        <script type="text/javascript" src="variantSudokuSolver.js"></script>
         <script type="text/javascript" src="premadeBoards.js"></script>
         <script type="text/javascript" src="board.js"></script>
         <script type="text/javascript" src="sketch.js"></script>
@@ -831,7 +832,7 @@
                                             <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (0)" title="Domino Board">Full Kropki Sudoku</button>
                                         </td>
                                         <td colspan="1">
-                                            <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (1)" title="Domino Board">Puzzle Domino Sudoku</button>
+                                            <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (1)" title="Domino Board">Partial Domino Sudoku</button>
                                         </td>
                                         <td colspan="1">
                                             <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (2)" title="Domino Board">Full XV Sudoku</button>
@@ -940,7 +941,7 @@
                                             <button class="panelButton" id="lockedDigitInBox" onclick="lockedDigitInBox ()" title="Locked Digit In Box">Locked Digit In Box</button>
                                         </td>
                                     </tr>
-                                    <!-- <tr>
+                                    <tr>
                                         <th class="color-foreground0" colspan="3">Variant Sudoku Solver (no bifurcation)</th>
                                     </tr>
                                     <tr>
@@ -950,10 +951,24 @@
                                         <td colspan="3">
                                             <button class="panelButton" id="basicSolverSolveBtn" onclick="variantSudokuSolverSolve ()" title="Solve">Solve</button>
                                         </td>
-                                    </tr> -->
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1">
+                                            <button class="panelButton" id="basicSolverPencil" onclick="basicSolverPencilDigits ()" title="Pencil Digits">Pencil Digits</button>
+                                        </td>
+                                        <td colspan="1">
+                                            <button class="panelButton" id="basicSolverReduce" onclick="variantSudokuSolverReducePenciledDigits ()" title="Reduce Digits">Reduce w/ variant techniques</button>
+                                        </td>
+                                        <td colspan="1">
+                                            <button class="panelButton" id="basicSolverFill" onclick="basicSolverFillDigits ()" title="Fill Digits">Fill Digits</button>
+                                        </td>
+                                    </tr>
                                     <tr>
                                         <td colspan="1">
                                             <button class="panelButton" id="restrictDominoes" onclick="restrictDominoes ()" title="Restrict Dominoes">Restrict Dominoes</button>
+                                        </td>
+                                        <td colspan="1">
+                                            <button class="panelButton" id="restrictDominoes" onclick="restrictChainedKropki ()" title="Restrict Chained Kropki">Restrict Chained Kropki</button>
                                         </td>
                                     </tr>
                                 </table>

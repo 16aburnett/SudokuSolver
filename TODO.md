@@ -66,7 +66,7 @@ basic + naive where needed
     - but should be much faster than naive solver
 basic + advanced techniques
     - need to learn and implement techniques like XY wing, coloring, etc
-basic + variant sudoku techniques
+basic + advanced + variant sudoku techniques
     - dominoes techniques
         - pointing dominoes
         - domino chaining
@@ -85,6 +85,16 @@ basic + variant sudoku techniques
         - 45 cage - must contain all digits
         - unique digits constraint
 
+- foreach cell mechanism?
+    - bc a board can have 9 or 16 cells
+    foreach_cell (starti=0, startj=0, (rowi, colj) => {
+
+    });
+    foreach_box (starti=0, startj=0, (boxi, boxj) => {
+        foreach_cell_in_box (boxi=boxi, boxj=boxj, starti=0, startj=0, (rowi, colj) => {
+
+        })
+    });
 
 - I think it is still possible for quadruples to help solve a puzzle
     - 4 make a quadruple leaving 5 unknown cells
