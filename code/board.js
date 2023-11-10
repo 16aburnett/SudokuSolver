@@ -1,4 +1,7 @@
 
+const NORMAL_SUDOKU_DIMENSIONS = 9;
+const HEXADECIMAL_SUDOKU_DIMENSIONS = 16;
+
 const EMPTY_CELL = -1;
 const NOT_A_GIVEN_DIGIT = 0;
 const IS_A_GIVEN_DIGIT = 1;
@@ -22,7 +25,7 @@ class SudokuBoard
     constructor (base=9)
     {
         // Board structure
-        // options are decimal [1,9] or hexadecimal [0,F]
+        // options are decimal (9) [1,9] or hexadecimal (16) [0,F]
         this.numDigits = base;
         this.rows = this.numDigits;
         this.cols = this.numDigits;
@@ -58,19 +61,31 @@ class SudokuBoard
         // cell background colors (rows*cols*num_colors)
         this.cellColors = [];
 
-        // [advanced sudoku features]
+        // [variant sudoku features]
         // this stores the killer cages
         // in the form of a list of cages
         // each cage stores a cage sum
         // and a list of cells that make up the cage
         this.cages = [];
+        // Cages can be allowed/not-allowed to have repeated digits
+        this.areCagedCellDigitsUnique = true;
         // dominoes
         // this stores the 9x9 board and 4 values per cell representing N E S W relationships
         this.dominoes = [];
         // full dominoes means that all dominoes are given
         // and that the absense of a domino means that those two cells do not follow the dominoe's rules
         // partial dominoes is the opposite where two cells could follow a dominoes rules but might not have a domino marked
-        this.isFullDomino = false;
+        // this.isFullDomino = false;
+        this.areAllKropkiWhiteGiven = false;
+        this.areAllKropkiBlackGiven = false;
+        this.areAllSumVGiven = false;
+        this.areAllSumXGiven = false;
+        this.areAllLessThanGiven = false;
+        this.areAllGreaterThanGiven = false;
+
+        // this is for reporting the rules
+        // currently we only support puzzles that have normal sudoku rules
+        this.isNormalSudokuRules = true;
 
         // initialize board state
         for (let i = 0; i < this.rows; ++i)
@@ -107,24 +122,7 @@ class SudokuBoard
         }
 
         // Board positioning/visual structure
-        this.padding = 10;
-        this.x = this.padding;
-        this.y = this.padding;
-        this.width = width - 2 * this.padding;
-        this.height = height - 2 * this.padding;
-    
-        this.boxWidth = this.width / this.boxCols;
-        this.boxHeight = this.height / this.boxRows;
-    
-        let rowsPerBox = this.rows / this.boxRows;
-        let colsPerBox = this.cols / this.boxCols;
-        this.cellWidth = this.boxWidth / colsPerBox;
-        this.cellHeight = this.boxHeight / rowsPerBox;
-
-        this.cellBorderWidth = 1;
-        this.boxBorderWidth = 3;
-        this.selectBorderWidth = 6;
-        this.selectBorderPadding = 3;
+        this.resizeBoard ();
 
         // Board coloring
         this.boardBackgroundColor = DARKMODE_BACKGROUND0;
@@ -144,7 +142,33 @@ class SudokuBoard
 
         this.dominoBorderColor = DARKMODE_FOREGROUND0;
         this.dominoColor = DARKMODE_BACKGROUND0;
-        this.dominoSize = 20;
+        this.dominoSize = 24;
+    }
+
+    //========================================================================
+    
+    resizeBoard ()
+    {
+        this.padding = 10;
+        this.x = this.padding;
+        this.y = this.padding;
+        // we want the board to be square so just use whichever dimension is shorter
+        let smallerDimension = min (width, height);
+        this.width = smallerDimension - 2 * this.padding;
+        this.height = smallerDimension - 2 * this.padding;
+    
+        this.boxWidth = this.width / this.boxCols;
+        this.boxHeight = this.height / this.boxRows;
+    
+        let rowsPerBox = this.rows / this.boxRows;
+        let colsPerBox = this.cols / this.boxCols;
+        this.cellWidth = this.boxWidth / colsPerBox;
+        this.cellHeight = this.boxHeight / rowsPerBox;
+
+        this.cellBorderWidth = 1;
+        this.boxBorderWidth = 3;
+        this.selectBorderWidth = 6;
+        this.selectBorderPadding = 3;
     }
 
     //========================================================================
@@ -207,6 +231,14 @@ class SudokuBoard
 
     //========================================================================
     
+    hasKillerCages ()
+    {
+        // if we have a cage, then we have the killer cages ruleset
+        return this.cages.length != 0;
+    }
+
+    //========================================================================
+    
     clearDominoes ()
     {
         this.dominoes = [];
@@ -216,13 +248,180 @@ class SudokuBoard
             this.dominoes     .push ([]);
             for (let j = 0; j < this.cols; ++j)
             {
-                //                           North        East         South        West
-                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE, DOMINO_NONE, DOMINO_NONE]);
+                //                           East         South      
+                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE]);
             }
         }
     }
+
+    //========================================================================
     
+    // returns true if there is a white kropki dot in the board
+    // or if the negative white kropki dot constraint is set
+    hasKropkiWhiteDominoes ()
+    {
+        // check if the negative constraint is set
+        if (this.areAllKropkiWhiteGiven)
+            return true;
+        // search each cell/domino for kropki white
+        for (let i = 0; i < this.rows; ++i)
+        {
+            for (let j = 0; j < this.cols; ++j)
+            {
+                // dominoes only keep track of east and south
+                //                           East         South
+                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE]);
+                if (this.dominoes[i][j][DOMINO_EAST] == DOMINO_KROPKI_WHITE || this.dominoes[i][j][DOMINO_SOUTH] == DOMINO_KROPKI_WHITE)
+                {
+                    // found a white kropki dot, so yes, the board has kropki white
+                    return true;
+                }
+            }
+        }
+        // reaches here if no kropki white dots and no negative kropki white constraint
+        return false;
+    }
+
+    //========================================================================
     
+    // returns true if there is a black kropki dot in the board
+    // or if the negative black kropki dot constraint is set
+    hasKropkiBlackDominoes ()
+    {
+        // check if the negative constraint is set
+        if (this.areAllKropkiBlackeGiven)
+            return true;
+        // search each cell/domino for kropki black
+        for (let i = 0; i < this.rows; ++i)
+        {
+            for (let j = 0; j < this.cols; ++j)
+            {
+                // dominoes only keep track of east and south
+                //                           East         South
+                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE]);
+                if (this.dominoes[i][j][DOMINO_EAST] == DOMINO_KROPKI_BLACK || this.dominoes[i][j][DOMINO_SOUTH] == DOMINO_KROPKI_BLACK)
+                {
+                    // found a black kropki dot, so yes, the board has kropki black
+                    return true;
+                }
+            }
+        }
+        // reaches here if no kropki black dots and no negative kropki black constraint
+        return false;
+    }
+
+    //========================================================================
+    
+    // returns true if there is a sum V domino in the board
+    // or if the negative sum V constraint is set
+    hasSumVDominoes ()
+    {
+        // check if the negative constraint is set
+        if (this.areAllSumVGiven)
+            return true;
+        // search each cell/domino for sum V
+        for (let i = 0; i < this.rows; ++i)
+        {
+            for (let j = 0; j < this.cols; ++j)
+            {
+                // dominoes only keep track of east and south
+                //                           East         South
+                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE]);
+                if (this.dominoes[i][j][DOMINO_EAST] == DOMINO_SUM_V || this.dominoes[i][j][DOMINO_SOUTH] == DOMINO_SUM_V)
+                {
+                    // found a sum V domino, so yes, the board has sum V dominoes
+                    return true;
+                }
+            }
+        }
+        // reaches here if no sum V dominoes and no negative sum V constraint
+        return false;
+    }
+
+    //========================================================================
+    
+    // returns true if there is a sum X domino in the board
+    // or if the negative sum X constraint is set
+    hasSumXDominoes ()
+    {
+        // check if the negative constraint is set
+        if (this.areAllSumXGiven)
+            return true;
+        // search each cell/domino for sum X
+        for (let i = 0; i < this.rows; ++i)
+        {
+            for (let j = 0; j < this.cols; ++j)
+            {
+                // dominoes only keep track of east and south
+                //                           East         South
+                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE]);
+                if (this.dominoes[i][j][DOMINO_EAST] == DOMINO_SUM_X || this.dominoes[i][j][DOMINO_SOUTH] == DOMINO_SUM_X)
+                {
+                    // found a sum X domino, so yes, the board has sum X dominoes
+                    return true;
+                }
+            }
+        }
+        // reaches here if no sum X dominoes and no negative sum X constraint
+        return false;
+    }
+
+    //========================================================================
+    
+    // returns true if there is a less than domino in the board
+    // or if the negative less than constraint is set
+    hasLessThanDominoes ()
+    {
+        // check if the negative constraint is set
+        if (this.areAllLessThanGiven)
+            return true;
+        // search each cell/domino for less than
+        for (let i = 0; i < this.rows; ++i)
+        {
+            for (let j = 0; j < this.cols; ++j)
+            {
+                // dominoes only keep track of east and south
+                //                           East         South
+                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE]);
+                if (this.dominoes[i][j][DOMINO_EAST] == DOMINO_LESS_THAN || this.dominoes[i][j][DOMINO_SOUTH] == DOMINO_LESS_THAN)
+                {
+                    // found a less than domino, so yes, the board has less than dominoes
+                    return true;
+                }
+            }
+        }
+        // reaches here if no less than dominoes and no negative less than constraint
+        return false;
+    }
+
+    //========================================================================
+    
+    // returns true if there is a greater than domino in the board
+    // or if the negative greater than constraint is set
+    hasGreaterThanDominoes ()
+    {
+        // check if the negative constraint is set
+        if (this.areAllGreaterThanGiven)
+            return true;
+        // search each cell/domino for greater than
+        for (let i = 0; i < this.rows; ++i)
+        {
+            for (let j = 0; j < this.cols; ++j)
+            {
+                // dominoes only keep track of east and south
+                //                           East         South
+                this.dominoes[i]     .push ([DOMINO_NONE, DOMINO_NONE]);
+                if (this.dominoes[i][j][DOMINO_EAST] == DOMINO_GREATER_THAN || this.dominoes[i][j][DOMINO_SOUTH] == DOMINO_GREATER_THAN)
+                {
+                    // found a greater than domino, so yes, the board has greater than dominoes
+                    return true;
+                }
+            }
+        }
+        // reaches here if no greater than dominoes and no negative greater than constraint
+        return false;
+    }
+
     //========================================================================
     
     isAllCellsSelected ()
@@ -457,7 +656,8 @@ class SudokuBoard
             }
         }
 
-        // [additional constraints]
+        // [variant sudoku constraints]
+        // === Killer Cages
         // check that this digit does not break any containing cages
         for (let c = 0; c < this.cages.length; ++c)
         {
@@ -505,7 +705,7 @@ class SudokuBoard
             }
         }
 
-        // Dominoes
+        // === Dominoes
         // check the dominoes in each direction from the given cell
         for (let d = 0; d < 4; ++d)
         {
@@ -532,6 +732,9 @@ class SudokuBoard
             {
                 otheri = i;
                 otherj = j+1;
+                // ignore if no cell to the east
+                if (otherj >= this.cols)
+                    continue;
                 domino_type = this.dominoes[i][j][DOMINO_EAST];
                 isNorthWest =  false;
             }
@@ -541,6 +744,9 @@ class SudokuBoard
             {
                 otheri = i+1;
                 otherj = j;
+                // ignore if no cell to the south
+                if (otheri >= this.rows)
+                    continue;
                 domino_type = this.dominoes[i][j][DOMINO_SOUTH];
                 isNorthWest =  false;
             }
@@ -550,7 +756,7 @@ class SudokuBoard
             {
                 otheri = i;
                 otherj = j-1;
-                // ignore if no cell to the south
+                // ignore if no cell to the west
                 if (otherj < 0)
                     continue;
                 // check West's east - we do not save West dominoes
@@ -708,10 +914,75 @@ class SudokuBoard
                 }
                 
             }
-            else
+
+            // Negative domino constraints
+            // Kropki white
+            // kropki black can be consecutive too
+            if (this.areAllKropkiWhiteGiven && domino_type != DOMINO_KROPKI_WHITE && domino_type != DOMINO_KROPKI_BLACK)
             {
-                // draw nothing because no dot
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    // since we know all kropki white dots are given,
+                    // then dominoes without a white dot should NOT be consecutive
+                    // lets ensure these dominoes are NOT consecutive
+                    if (otherDigit-1 == digit || otherDigit+1 == digit)
+                        // consecutive
+                        return false;
+                }
             }
+            // Kropki black
+            // kropki white can be 1:2 too
+            if (this.areAllKropkiBlackGiven && domino_type != DOMINO_KROPKI_WHITE && domino_type != DOMINO_KROPKI_BLACK)
+            {
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    // since we know all kropki black dots are given,
+                    // then dominoes without a black dot should NOT be 1:2
+                    // lets ensure these dominoes are NOT 1:2
+                    if (otherDigit*2 == digit || otherDigit == digit*2)
+                        // consecutive
+                        return false;
+                }
+            }
+            // Sum V
+            if (this.areAllSumVGiven && domino_type != DOMINO_SUM_V)
+            {
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    // since we know all Vs are given,
+                    // then dominoes without a V should NOT sum to 5
+                    // lets ensure these dominoes dont sum to 5
+                    if (otherDigit + digit == 5)
+                        // sums to 5
+                        return false;
+                }
+            }
+            // Sum X
+            if (this.areAllSumXGiven && domino_type != DOMINO_SUM_X)
+            {
+                // ensure both digits are filled in
+                let otherDigit = this.board[otheri][otherj];
+                let isOtherFilledIn = otherDigit != EMPTY_CELL;
+                if (isOtherFilledIn)
+                {
+                    // since we know all Xs are given,
+                    // then dominoes without a X should NOT sum to 10
+                    // lets ensure these dominoes dont sum to 10
+                    if (otherDigit + digit == 10)
+                        // sums to 10
+                        return false;
+                }
+            }
+            // ** ignoring less than and greater than for now
 
 
         }

@@ -94,6 +94,7 @@ function basicSolverPencilDigits ()
 
 function basicSolverReducePenciledDigits ()
 {
+    prevPlayMode = playMode;
     // clear previous selections
     sudokuBoard.clearSelectedCells ();
 
@@ -118,6 +119,7 @@ function basicSolverReducePenciledDigits ()
     restrictDominoes ();
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
 }
 
 //========================================================================
@@ -125,6 +127,7 @@ function basicSolverReducePenciledDigits ()
 function basicSolverFillDigits ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_DIGIT;
     // clear previous selections
     sudokuBoard.clearSelectedCells ();
@@ -160,6 +163,7 @@ function basicSolverFillDigits ()
     }
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
 }
 
 //========================================================================
@@ -169,6 +173,7 @@ function basicSolverFillDigits ()
 function hiddenSinglesInRow ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -215,6 +220,7 @@ function hiddenSinglesInRow ()
         }
     }
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return hasChanged;
 }
 
@@ -225,6 +231,7 @@ function hiddenSinglesInRow ()
 function hiddenSinglesInCol ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -271,6 +278,7 @@ function hiddenSinglesInCol ()
         }
     }
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return hasChanged;
 }
 
@@ -281,6 +289,7 @@ function hiddenSinglesInCol ()
 function hiddenSinglesInBox ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -337,6 +346,7 @@ function hiddenSinglesInBox ()
         }
     }
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return hasChanged;
 }
 
@@ -347,6 +357,7 @@ function hiddenSinglesInBox ()
 function nakedPairsInRow ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -407,6 +418,7 @@ function nakedPairsInRow ()
         }
     }
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -415,6 +427,7 @@ function nakedPairsInRow ()
 function nakedPairsInCol ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -475,6 +488,7 @@ function nakedPairsInCol ()
         }
     }
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -483,6 +497,7 @@ function nakedPairsInCol ()
 function nakedPairsInBox ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -562,7 +577,9 @@ function nakedPairsInBox ()
             }
         }
     }
+
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -573,6 +590,7 @@ function nakedPairsInBox ()
 function hiddenPairsInRow ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -667,6 +685,7 @@ function hiddenPairsInRow ()
     }
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -677,6 +696,7 @@ function hiddenPairsInRow ()
 function hiddenPairsInCol ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -771,6 +791,7 @@ function hiddenPairsInCol ()
     }
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -781,6 +802,7 @@ function hiddenPairsInCol ()
 function hiddenPairsInBox ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -894,10 +916,8 @@ function hiddenPairsInBox ()
         }
     }
 
-        
-
-
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -911,6 +931,7 @@ function hiddenPairsInBox ()
 function nakedTriplesInRow ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -1021,6 +1042,7 @@ function nakedTriplesInRow ()
         }
     }
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -1031,6 +1053,7 @@ function nakedTriplesInRow ()
 function nakedTriplesInCol ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -1141,6 +1164,7 @@ function nakedTriplesInCol ()
         }
     }
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -1151,6 +1175,7 @@ function nakedTriplesInCol ()
 function nakedTriplesInBox ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -1282,37 +1307,18 @@ function nakedTriplesInBox ()
         }
     }
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
 //========================================================================
-
-// for each digit, d0
-//    loop over region
-//       reject d0 if it is already filled in
-//       reject d0 if it can be in >3 cells in the region
-//    if digit is not rejected, then move on to next digit
-//    for each next digit, d1
-//       loop over region
-//          reject second digit if it is already filled in
-//          reject second digit if it can be in >3 cells in the region
-//       reject second digit if second digit possible cells + first digit possible cells is >3 different cells
-//       for each next digit, d2
-//          loop over region
-//             reject third digit if it is already filled in
-//             reject third digit if it can be in >3 cells in the region
-//          reject third digit if combined with first and second results in >3 cells
-//          reaches here if we found 3 digits (d0,d1,d2) that occupy a total of 3 cells
-//          this is a triple so isolate it if there are other digits in those cells
-
-
-
 
 // searches for hidden triples of digits and isolates them 
 // by removing other penciled digits from the triple's cells
 function hiddenTriplesInRow ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -1461,6 +1467,7 @@ function hiddenTriplesInRow ()
     }
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -1471,6 +1478,7 @@ function hiddenTriplesInRow ()
 function hiddenTriplesInCol ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -1619,6 +1627,7 @@ function hiddenTriplesInCol ()
     }
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -1629,6 +1638,7 @@ function hiddenTriplesInCol ()
 function hiddenTriplesInBox ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_SMALL;
 
     sudokuBoard.clearSelectedCells ();
@@ -1842,6 +1852,7 @@ function hiddenTriplesInBox ()
 
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
     return true;
 }
 
@@ -1855,6 +1866,7 @@ function hiddenTriplesInBox ()
 function lockedDigitInRow ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_COLOR;
 
     sudokuBoard.clearSelectedCells ();
@@ -1947,6 +1959,7 @@ function lockedDigitInRow ()
     }
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
 }
 
 //========================================================================
@@ -1958,6 +1971,7 @@ function lockedDigitInRow ()
 function lockedDigitInCol ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_COLOR;
 
     sudokuBoard.clearSelectedCells ();
@@ -2050,6 +2064,7 @@ function lockedDigitInCol ()
     }
 
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
 }
 
 //========================================================================
@@ -2060,6 +2075,7 @@ function lockedDigitInCol ()
 function lockedDigitInBox ()
 {
     editMode = MODE_PLAY;
+    prevPlayMode = playMode;
     playMode = PLAY_MODE_COLOR;
 
     sudokuBoard.clearSelectedCells ();
@@ -2186,12 +2202,18 @@ function lockedDigitInBox ()
     }
     
     editMode = MODE_SOLVER;
+    playMode = prevPlayMode;
 }
 
 //========================================================================
+//=== Variant Sudoku solving techniques
+//========================================================================
 
+// Assigns each cell a value and checking if that breaks any dominoes connected to that cell
+// and repeats for all cells/possible dominoes
 function restrictDominoes ()
 {
+    prevPlayMode = playMode;
     for (let i = 0; i < sudokuBoard.rows; ++i)
     {
         for (let j = 0; j < sudokuBoard.cols; ++j)
@@ -2299,6 +2321,8 @@ function restrictDominoes ()
             } // endfor - domino direction
         } // endfor - j cols
     } // endfor - i rows
+    
+    playMode = prevPlayMode;
 } // endfunction
 
 
