@@ -2325,7 +2325,3 @@ function restrictDominoes ()
     playMode = prevPlayMode;
 } // endfunction
 
-
-
-
-

@@ -23,18 +23,15 @@ NEW TODO
 - refactor solver to not be allowed to directly change board
     - it should have to call a function
     - and that function should give an error or prevent changing given digits
-- killer cage pointing solver
-- 9 cell killer cage solver - must contain 1-9 once each
-- killer cage unique cells solver
 - double click to highlight all cells of the same kind
 - restrict select cell region to less than the cell so you can select more.
-- make killer cage outline smaller
-- make killer cage number more in the corner with a white backdrop
+- [x] make killer cage outline smaller
+- [x] make killer cage number more in the corner with a white backdrop
 - killer cage calculator
 - [x] change colors to be blue cos pink not it tbh
 - board maker mode should make any pencil marks light (dont remove)
-- split up negative domino constraint per domino type
-- rules to english desc generator
+- [x] split up negative domino constraint per domino type
+- [x] rules to english desc generator
 - solution check button
 - auto detect solved state 
 - solved message - congrats, you solved it!
@@ -48,6 +45,10 @@ NEW TODO
     - maybe full solver button should not single step
     - we can expand on this to add some output that explains what the single reduction was
         similar to a teaching tool? or a hint tool?
+- 6x6 soduko boards
+    - i believe is 2x3 or 3x2 boxes so give option
+    - and give digit options
+
 
 - scrap less/greater than dominoes - dont think they work as intended
     - dont even have a puzzle that uses it
@@ -69,6 +70,10 @@ basic + variant sudoku techniques
     - dominoes techniques
         - pointing dominoes
         - domino chaining
+            - if a cell has 2 black dots which has all 3 cells in the same row, col, or box
+                then 3,6 cannot appear anywhere
+                and the middle cell cannot be 1 or 8
+            - this is actually all that is needed to solve the first domino sudoku board :)
     - cage techniques
         - pointing cages
         - locked digit in cage
@@ -78,13 +83,7 @@ basic + variant sudoku techniques
             - determine if any digits are absent from all comb
             - currently a 3 cell 6 cage apparently can have a 6 in it....
         - 45 cage - must contain all digits
-
-black dot chaining
-- if a cell has 2 black dots which has all 3 cells in the same row, col, or box
-    then 3,6 cannot appear anywhere
-    and the middle cell cannot be 1 or 8
-- this is actually all that is needed to solve the first domino sudoku board :)
-
+        - unique digits constraint
 
 
 - I think it is still possible for quadruples to help solve a puzzle

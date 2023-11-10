@@ -24,6 +24,11 @@ class SudokuBoard
 {
     constructor (base=9)
     {
+        // Board credits
+        this.name = "Untitled";
+        this.author = "No Authors";
+        this.URL = "";
+
         // Board structure
         // options are decimal (9) [1,9] or hexadecimal (16) [0,F]
         this.numDigits = base;
@@ -1084,6 +1089,7 @@ class SudokuBoard
         }
 
         // prompt user for the cage's sum
+        // **** fix this - shouldnt be in board code
         let sum = parseInt (prompt ("Enter the desired cage sum"));
 
         // ensure valid sum provided

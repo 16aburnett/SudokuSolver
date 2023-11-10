@@ -501,6 +501,86 @@ function mouseDragged ()
 }
 
 //========================================================================
+//=== Board Maker Interface ==============================================
+//========================================================================
+
+// prompts the user for a new name for the current board
+// only changes name locally, board must be exported to JSON after
+function addBoardName ()
+{
+    let name = prompt ("Enter the Name of the board", sudokuBoard.name);
+    // ensure user did not cancel
+    if (name === null)
+        return;
+    sudokuBoard.name = name;
+
+    // Update Rule set of new puzzle to load new name
+    // I know that this isnt a ruleset change,
+    // so this should probably be a different function
+    // but this seemed like the easiest/quickest solution
+    updateRuleSet ();
+}
+
+//========================================================================
+
+// prompts the user for the author(s) of the puzzle
+// only changes name locally, board must be exported to JSON after
+function addBoardAuthors ()
+{
+    let author = prompt ("Enter the Author(s) of the board", sudokuBoard.author);
+    // ensure user did not cancel
+    if (name === null)
+        return;
+    sudokuBoard.author = author;
+    
+    // Update Rule set of new puzzle to load new name
+    // I know that this isnt a ruleset change,
+    // so this should probably be a different function
+    // but this seemed like the easiest/quickest solution
+    updateRuleSet ();
+}
+
+//========================================================================
+
+// prompts the user for the url source of the puzzle
+// only changes name locally, board must be exported to JSON after
+function addBoardURL ()
+{
+    let URL = prompt ("Enter the URL source of the board", sudokuBoard.URL);
+    // ensure user did not cancel
+    if (name === null)
+        return;
+    sudokuBoard.URL = URL;
+
+    // Update Rule set of new puzzle to load new name
+    // I know that this isnt a ruleset change,
+    // so this should probably be a different function
+    // but this seemed like the easiest/quickest solution
+    updateRuleSet ();
+}
+
+//========================================================================
+
+function clearEverything ()
+{
+    sudokuBoard = new SudokuBoard(sudokuBoard.numDigits);
+
+    // darkmode setup
+    if (isDarkMode)
+    {
+        setDarkMode ();
+    }
+    // lightmode setup
+    else
+    {
+        setLightMode ();
+    }
+
+    // Update Rule set of new puzzle
+    updateRuleSet ();
+}
+
+//========================================================================
 
 function loadBoardFromData (data)
 {
@@ -537,6 +617,14 @@ function loadBoardFromData (data)
     }
 
     newSudokuBoard = new SudokuBoard (base);
+    
+    // load credits
+    if ("name" in data)
+        newSudokuBoard.name = data["name"];
+    if ("author" in data)
+        newSudokuBoard.author = data["author"];
+    if ("URL" in data)
+        newSudokuBoard.URL = data["URL"];
 
     // load board
     for (let i = 0; i < newSudokuBoard.rows; ++i)
@@ -651,6 +739,13 @@ function loadToughHexadecimalBoard (boardIndex)
 
 //========================================================================
 
+function loadSuperToughHexadecimalBoard (boardIndex)
+{
+    loadBoardFromData (superToughHexadecimalBoards[boardIndex]);
+}
+
+//========================================================================
+
 function loadCageBoard (boardIndex)
 {
     loadBoardFromData (cagesBoards[boardIndex]);
@@ -728,6 +823,12 @@ function toggleDominoFullness (type)
 // needed to solve the puzzle.
 function updateRuleSet ()
 {
+    // update credits
+    // this should really be a different function
+    document.getElementById ("rulesSectionBoardTitle").innerText   = sudokuBoard.name;
+    document.getElementById ("rulesSectionBoardAuthors").innerText = sudokuBoard.author;
+    document.getElementById ("rulesSectionBoardURL").href          = sudokuBoard.URL;
+
     let ruleSet = "";
     // determine if normal sudoku rules apply.
     if (sudokuBoard.isNormalSudokuRules && sudokuBoard.numDigits == NORMAL_SUDOKU_DIMENSIONS)
@@ -736,12 +837,14 @@ function updateRuleSet ()
         ruleSet += "Normal Hexadecimal Sudoku rules apply. The hexadecimal digits [0,F] must appear once each in every row, column, and 4x4 box. "
     else
         ruleSet += "Normal Sudoku rules do NOT apply. "
-
+    
     // Variant Sudoku rules
     // Killer Cages
     if (sudokuBoard.hasKillerCages())
     {
-        ruleSet += "Killer Cages: Digits in caged cells must sum to the clue in the top-left of the cage. "
+        // Line breaks for readability + separation of rules
+        ruleSet += "<br/><br/>";
+        ruleSet += "<b>Killer Cages:</b> Digits in caged cells must sum to the clue in the top-left of the cage. "
         // determine if digits must be unique within the cages
         if (sudokuBoard.areCagedCellDigitsUnique)
             ruleSet += "Digits in cages may not repeat. "
@@ -751,30 +854,34 @@ function updateRuleSet ()
     // Kropki white
     if (sudokuBoard.hasKropkiWhiteDominoes())
     {
+        // Line breaks for readability + separation of rules
+        ruleSet += "<br/><br/>";
         // determine if negative constraint applies
         if (sudokuBoard.areAllKropkiWhiteGiven)
         {
-            ruleSet += "Full Kropki White: Cells separated by a white dot contain consecutive digits; "
+            ruleSet += "<b>Full Kropki White:</b> Cells separated by a white dot contain consecutive digits; "
             ruleSet += "All possible such dots are given. "
         }
         else
         {
-            ruleSet += "Partial Kropki White: Cells separated by a white dot contain consecutive digits; "
+            ruleSet += "<b>Partial Kropki White:</b> Cells separated by a white dot contain consecutive digits; "
             ruleSet += "Not all such dots are given. "
         }
     }
     // Kropki black
     if (sudokuBoard.hasKropkiBlackDominoes())
     {
+        // Line breaks for readability + separation of rules
+        ruleSet += "<br/><br/>";
         // determine if negative constraint applies
         if (sudokuBoard.areAllKropkiBlackGiven)
         {
-            ruleSet += "Full Kropki Black: Cells separated by a black dot contain digits that have a 1:2 ratio; "
+            ruleSet += "<b>Full Kropki Black:</b> Cells separated by a black dot contain digits that have a 1:2 ratio; "
             ruleSet += "All possible such dots are given. "
         }
         else
         {
-            ruleSet += "Partial Kropki Black: Cells separated by a black dot contain digits that have a 1:2 ratio; "
+            ruleSet += "<b>Partial Kropki Black:</b> Cells separated by a black dot contain digits that have a 1:2 ratio; "
             ruleSet += "Not all such dots are given. "
         }
     }
@@ -785,71 +892,79 @@ function updateRuleSet ()
     // which are both consecutive and in a 1:2 relationship
     if (sudokuBoard.hasKropkiWhiteDominoes() && sudokuBoard.hasKropkiBlackDominoes() && (sudokuBoard.areAllKropkiWhiteGiven || sudokuBoard.areAllKropkiBlackGiven))
     {
-        ruleSet += "Black and white dots can overlap (meaning a black or white dot can have digits that are both in a 1:2 relationship and also consecutive). "
+        ruleSet += "A domino with the digits 1 and 2 can have either a white dot or a black dot. "
     }
     // Sum V
     if (sudokuBoard.hasSumVDominoes())
     {
+        // Line breaks for readability + separation of rules
+        ruleSet += "<br/><br/>";
         // determine if negative constraint applies
         if (sudokuBoard.areAllSumVGiven)
         {
-            ruleSet += "Full Sum V: Cells separated by a V must sum to 5; "
+            ruleSet += "<b>Full Sum V:</b> Cells separated by a V must sum to 5; "
             ruleSet += "All possible Vs are given. "
         }
         else
         {
-            ruleSet += "Partial Sum V: Cells separated by a V must sum to 5; "
+            ruleSet += "<b>Partial Sum V:</b> Cells separated by a V must sum to 5; "
             ruleSet += "Not all Vs are given. "
         }
     }
     // Sum X
     if (sudokuBoard.hasSumXDominoes())
     {
+        // Line breaks for readability + separation of rules
+        ruleSet += "<br/><br/>";
         // determine if negative constraint applies
         if (sudokuBoard.areAllSumXGiven)
         {
-            ruleSet += "Full Sum X: Cells separated by a X must sum to 10; "
+            ruleSet += "<b>Full Sum X:</b> Cells separated by a X must sum to 10; "
             ruleSet += "All possible Xs are given. "
         }
         else
         {
-            ruleSet += "Partial Sum X: Cells separated by a X must sum to 10; "
+            ruleSet += "<b>Partial Sum X:</b> Cells separated by a X must sum to 10; "
             ruleSet += "Not all Xs are given. "
         }
     }
     // less than
     if (sudokuBoard.hasLessThanDominoes())
     {
+        // Line breaks for readability + separation of rules
+        ruleSet += "<br/><br/>";
         // determine if negative constraint applies
         if (sudokuBoard.areAllLessThanGiven)
         {
-            ruleSet += "Full Less Than: A < between two cells points to the smaller digit; "
+            ruleSet += "<b>Full Less Than:</b> A < between two cells points to the smaller digit; "
             ruleSet += "All possible < dominoes are given. "
         }
         else
         {
-            ruleSet += "Partial Less Than: A < between two cells points to the smaller digit; "
+            ruleSet += "<b>Partial Less Than:</b> A < between two cells points to the smaller digit; "
             ruleSet += "Not all possible < dominoes are given. "
         }
     }
     // greater than
     if (sudokuBoard.hasGreaterThanDominoes())
     {
+        // Line breaks for readability + separation of rules
+        ruleSet += "<br/><br/>";
         // determine if negative constraint applies
         if (sudokuBoard.areAllGreaterThanGiven)
         {
-            ruleSet += "Full Greater Than: A > between two cells points to the smaller digit; "
+            ruleSet += "<b>Full Greater Than:</b> A > between two cells points to the smaller digit; "
             ruleSet += "All possible > dominoes are given. "
         }
         else
         {
-            ruleSet += "Partial Greater Than: A > between two cells points to the smaller digit; "
+            ruleSet += "<b>Partial Greater Than:</b> A > between two cells points to the smaller digit; "
             ruleSet += "Not all possible > dominoes are given. "
         }
     }
 
     // Update rule set
-    document.getElementById ("rules").innerText = ruleSet;
+    document.getElementById ("rules").innerHTML = ruleSet;
 }
 
 //========================================================================

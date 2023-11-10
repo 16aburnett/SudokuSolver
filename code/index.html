@@ -29,7 +29,10 @@
                 <div class="fillContainer">
                     <div id="rulesSection">
                         <div id="rulesSectionHeader">
-                            <h3>Rules</h3>
+                            <h3 id="rulesSectionBoardTitle">Untitled</h3>
+                            <a id="rulesSectionBoardURL" href="" target="_blank" rel="noopener noreferrer">
+                                <h3 id="rulesSectionBoardAuthors">No Authors</h3>
+                            </a>
                         </div>
                         <div id="rulesSectionRuleSet">
                             <p id="rules"></p>
@@ -39,7 +42,7 @@
                         <div id="panelTabs">
                             <div class="panelTab selectedTab" id="playTab"       onclick="playTab()"><p>Play</p></div>
                             <div class="panelTab"             id="boardMakerTab" onclick="boardMakerTab()"><p>Board Maker</p></div>
-                            <div class="panelTab"             id="boardTab"      onclick="boardTab()"><p>Board Gen</p></div>
+                            <div class="panelTab"             id="boardTab"      onclick="boardTab()"><p>Pre-Made Boards</p></div>
                             <div class="panelTab"             id="solverTab"     onclick="solverTab()"><p>Solver</p></div>
                         </div>
                         <div>
@@ -355,12 +358,28 @@
                                         <table>
                                             <tr>
                                                 <th class="color-foreground0" colspan="3">
+                                                    Board Credits
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="1">
+                                                    <button class="panelButton" onclick="addBoardName()">Add Board Name</button>
+                                                </td>
+                                                <td colspan="1">
+                                                    <button class="panelButton" onclick="addBoardAuthors()">Add Board Author(s)</button>
+                                                </td>
+                                                <td colspan="1">
+                                                    <button class="panelButton" onclick="addBoardURL()">Add Board URL Source</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="color-foreground0" colspan="3">
                                                     Board Settings
                                                 </th>
                                             </tr>
                                             <tr>
                                                 <td colspan="3">
-                                                    <button class="panelButton" onclick="sudokuBoard.clearEverything()">Clear Board</button>
+                                                    <button class="panelButton" onclick="clearEverything()">Full Clear Board</button>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -780,17 +799,28 @@
                                         </td>
                                     </tr>
                                     <tr>
+                                        <td colspan="1">
+                                            <button class="panelButton" id="hexadecimalBoardButton" onclick="loadSuperToughHexadecimalBoard (0)" title="Super Tough Board">Super Tough Board 0</button>
+                                        </td>
+                                        <td colspan="1">
+                                            <button class="panelButton" id="hexadecimalBoardButton" onclick="loadSuperToughHexadecimalBoard (1)" title="Super Tough Board">Super Tough Board 1</button>
+                                        </td>
+                                        <td colspan="1">
+                                            <button class="panelButton" id="hexadecimalBoardButton" onclick="loadSuperToughHexadecimalBoard (2)" title="Super Tough Board">Super Tough Board 2</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <th class="color-foreground0" colspan="3">Killer Cage Sudokus</th>
                                     </tr>
                                     <tr>
                                         <td colspan="1">
-                                            <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (0)" title="Cage Board">Killer Cage Board 0</button>
+                                            <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (0)" title="Cage Board">Colour To The Nines</button>
                                         </td>
                                         <td colspan="1">
-                                            <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (1)" title="Cage Board">Killer Cage Board 1</button>
+                                            <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (1)" title="Cage Board">Killer Cage - Easy</button>
                                         </td>
                                         <td colspan="1">
-                                            <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (2)" title="Cage Board">Killer Cage Board 2</button>
+                                            <button class="panelButton" id="cageBoardButton" onclick="loadCageBoard (2)" title="Cage Board">Killer Cage - Hard</button>
                                         </td>
                                     </tr>
                                     <tr>
@@ -798,13 +828,13 @@
                                     </tr>
                                     <tr>
                                         <td colspan="1">
-                                            <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (0)" title="Domino Board">Domino Board 0</button>
+                                            <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (0)" title="Domino Board">Full Kropki Sudoku</button>
                                         </td>
                                         <td colspan="1">
-                                            <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (1)" title="Domino Board">Domino Board 1</button>
+                                            <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (1)" title="Domino Board">Puzzle Domino Sudoku</button>
                                         </td>
                                         <td colspan="1">
-                                            <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (2)" title="Domino Board">Domino Board 2</button>
+                                            <button class="panelButton" id="dominoBoardButton" onclick="loadDominoBoard (2)" title="Domino Board">Full XV Sudoku</button>
                                         </td>
                                     </tr>
                                 </table>
@@ -822,7 +852,6 @@
                                             <button class="panelButton" id="naiveSolverSolveButton" onclick="naiveSolverSolve ()" title="Solve">Solve</button>
                                         </td>
                                     </tr>
-                                    
                                     <tr>
                                         <th class="color-foreground0" colspan="3">Basic Solver (no bifurcation)</th>
                                     </tr>
@@ -911,6 +940,17 @@
                                             <button class="panelButton" id="lockedDigitInBox" onclick="lockedDigitInBox ()" title="Locked Digit In Box">Locked Digit In Box</button>
                                         </td>
                                     </tr>
+                                    <!-- <tr>
+                                        <th class="color-foreground0" colspan="3">Variant Sudoku Solver (no bifurcation)</th>
+                                    </tr>
+                                    <tr>
+                                        <td class="color-foreground0" colspan="3">This solver uses techniques for solving puzzles that have additional rules like Domino or Killer Cage sudokus. Currently, this solver assumes that variant sudoku puzzles have the normal sudoku constraints and uses the Basic Solver's techniques (from above).</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <button class="panelButton" id="basicSolverSolveBtn" onclick="variantSudokuSolverSolve ()" title="Solve">Solve</button>
+                                        </td>
+                                    </tr> -->
                                     <tr>
                                         <td colspan="1">
                                             <button class="panelButton" id="restrictDominoes" onclick="restrictDominoes ()" title="Restrict Dominoes">Restrict Dominoes</button>
@@ -925,7 +965,7 @@
         </div>
 
         <div id="pageFooter">
-            <p>This Sudoku Game simulator is inspired by Cracking The Cryptic and their associated online Sudoku Game (<a href="https://app.crackingthecryptic.com/">https://app.crackingthecryptic.com/</a>).
+            <p>This Sudoku Game simulator is inspired by Cracking The Cryptic and their associated online Sudoku Game (<a href="https://app.crackingthecryptic.com/" target="_blank" rel="noopener noreferrer">https://app.crackingthecryptic.com/</a>).
                 There are simularities between my simulator and theirs because there are a lot of nice features that I wanted to capture as well.
                 But the primary goal of this project is to experiment, explore, and ultimately build a Sudoku Solver which requires me to have a Sudoku simulator first.
                 I am not an expert in Sudoku solving or advanced techniques so this project is meant to help me explore and get better at Sudokus
