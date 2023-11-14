@@ -226,8 +226,8 @@ function toggleLightAndDark ()
 
 function setup ()
 {
-
-    let canvas = createCanvas (windowWidth / 2, windowHeight / 2);
+    let smallestDimension = min (windowWidth * 0.50 - 10, windowHeight * 0.75 - 20);
+    let canvas = createCanvas (smallestDimension, smallestDimension);
     canvas.parent ("#canvasDiv");
 
     sudokuBoard = new SudokuBoard ();
